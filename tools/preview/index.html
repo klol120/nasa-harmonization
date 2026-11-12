@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Export Preview</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <style>
+    body { font: 13px system-ui, sans-serif; margin: 12px; background: #fff; color: #222; }
+    header { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    main { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; }
+    #map { width: 520px; height: 520px; max-width: 100%; border: 1px solid #ccc; }
+    #heatmap text { font-size: 10px; fill: #444; }
+    #heatmap g { cursor: pointer; }
+    .note { color: #555; max-width: 560px; }
+  </style>
+</head>
+<body>
+  <header>
+    <b>Export preview (sanity check only)</b>
+    <label>Region
+      <select id="region"><option>lebanon</option><option>greece</option><option>eastmed</option></select>
+    </label>
+    <span>
+      <label><input type="radio" name="var" value="modis_raw"> MODIS</label>
+      <label><input type="radio" name="var" value="viirs_raw"> VIIRS</label>
+      <label><input type="radio" name="var" value="harmonized" checked> Harmonized</label>
+    </span>
+  </header>
+  <p id="status" class="note">Loading…</p>
+  <main>
+    <section>
+      <svg id="heatmap"></svg>
+      <p id="scale" class="note"></p>
+    </section>
+    <section>
+      <div id="map"></div>
+      <p id="mapnote" class="note"></p>
+    </section>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

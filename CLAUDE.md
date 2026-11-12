@@ -1,6 +1,6 @@
 # CLAUDE.md — MODIS/VIIRS burning-activity calendar (NASA Space Apps 2026)
 
-Status: **Phases 4–5 done autonomously 2026-11-12 on branch `autonomous-phase4-5` (74 tests). See docs/reports/WHILE_YOU_WERE_AWAY.md.** Phases 0–3 approved.
+Status: **All phases done and merged to `main` (81 tests), 2026-11-12. See docs/reports/WHILE_YOU_WERE_AWAY.md.**
 
 ## Working rules
 - Work in phases and stop after each one for review. Phase 4 must not continue until every difference from the
@@ -403,3 +403,17 @@ download: {...}                     # Phase 0 section, unchanged
 - **Export contract:** 0.2 (`docs/data_contract.md`).
 - **Git:** `main` holds Phases 0–3. The Phase 4–5 work is on `autonomous-phase4-5`. data/ is not
   tracked, except the manifest.
+
+## Second autonomous session (2026-11-12)
+- **Per-region settings:** `by_region` overrides work in `low_confidence` and `anomalies`
+  (`config.region_settings`).
+  - Lebanon: 80% zero-MODIS share and a 2012–2025 baseline.
+  - Greece and EastMed: 95% and a 2001–2025 baseline.
+- **Composite strategies** (`calibration.composites`): the monthly shape comes from `shape` and each
+  year's estimated total from `level`. Lebanon's default is `affine_shape_single_level`
+  (shape `affine_blend:cyprus`, level `single`).
+- **Config overrides:** a key ending in `!` replaces a section instead of merging it. Test configs use
+  `regions!` and `donors!`.
+- **Shared exports** are whitelisted in .gitignore: everything for Lebanon, all region_monthly.json,
+  and cells.geojson files under 5 MB.
+- **`tools/preview/`** is the static export preview (sanity check only).
