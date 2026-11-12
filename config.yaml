@@ -96,6 +96,13 @@ donors:
   israel_palestine: {region: eastmed, countries: [Israel, Palestine]}
   eastmed_pool:     {region: eastmed, countries: [Cyprus, Turkey, Syria, Israel, Palestine]}
 
+# Pre-2012 estimates are low_confidence in calendar months where, on the overlap years, the local
+# region has < min_modis_fire_days MODIS fire-days, or >= max_zero_modis_share of VIIRS fire-days
+# fall in cell-days with no MODIS detection (tools/lebanon_experiment.py, Phase 4 experiment).
+low_confidence:
+  min_modis_fire_days: 20
+  max_zero_modis_share: 0.95
+
 years:
   stats_last_year: 2025                 # 2026 partial: display only
   display_last_month: 2026-12

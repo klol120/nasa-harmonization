@@ -108,7 +108,6 @@ def main():
     m_step = (rs[rs.year.isin(after)].M.sum()) / (rs[rs.year.isin(before)].M.sum())
     boot = cfg["calibration"]["bootstrap"]
     W = bootstrap_weights(len(ov), boot["n"], boot["seed"])
-    rng = np.random.default_rng(boot["seed"])
 
     def h_mean(years, a, b):
         s = rs[rs.year.isin(years)]
@@ -144,6 +143,7 @@ def main():
         o = o.assign(pred=a[mm] * o.M.to_numpy() + b[mm] * (o.ndays / o.month_days).to_numpy())
         py = o.groupby("year")[["pred", "V"]].sum()
         obs_pred = (py.V / py.pred).to_numpy()
+        rng = np.random.default_rng(boot["seed"])          # same noise draws for every strategy
         noise = rng.choice(obs_pred, (len(draws), 3)).mean(1) / obs_pred.mean()
         old = np.nanquantile(draws, [0.05, 0.95])
         new = np.nanquantile(draws * noise, [0.05, 0.95])
@@ -152,7 +152,13 @@ def main():
                     "insample_pred_over_obs": float(py.pred.sum() / py.V.sum())})
         rows.append(rec)
     res = pd.DataFrame(rows)
-    res["score"] = (res.step_index - 1).abs() + res.bias_forward.abs()
+    # Ranking (continuity and bias first, WAPE second):
+    #  1. continuity not flagged under the new band;
+    #  2. score = |step index - 1| + mean(|forward bias|, |reverse bias|)  (both hold-out folds: one
+    #     4-year fold alone is too noisy for Lebanon);
+    #  3. forward WAPE.
+    res["bias_both"] = (res.bias_forward.abs() + res.bias_reverse.abs()) / 2
+    res["score"] = (res.step_index - 1).abs() + res.bias_both
     res = res.sort_values(["flag_new", "score", "wape_forward"]).reset_index(drop=True)
     by_year = pd.DataFrame(by_year)
 
@@ -177,17 +183,17 @@ def write_report(cfg, region, res, by_year, zs, scale, n_local, excl):
          "k chosen by leave-one-year-out on the fit years (on the overlap for continuity).", "",
          f"Affine donor intercepts are scaled by footprint size: {region} has {n_local} cells; scale = "
          + ", ".join(f"{g} {s:.3f}" for g, s in scale.items()) + ".", "",
-         "Ranked by: continuity flagged under the new band (no first), then |step index − 1| + |forward bias|, "
-         "then forward WAPE.", "",
-         "| rank | strategy | step index | old band (factor bootstrap) | new band (+ year spread) | forward bias | forward WAPE | reverse bias | reverse WAPE | in-sample pred/obs | k (fwd / overlap) |",
-         "|---|---|---|---|---|---|---|---|---|---|---|"]
+         "Ranked by (1) continuity not flagged under the new band, (2) score = |step index − 1| + "
+         "mean(|forward bias|, |reverse bias|), (3) forward WAPE.", "",
+         "| rank | strategy | step index | old band (factor bootstrap) | new band (+ year spread) | forward bias | forward WAPE | reverse bias | reverse WAPE | score | in-sample pred/obs | k (fwd / overlap) |",
+         "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for i, x in res.iterrows():
         fo = "**flag**" if x.flag_old else "ok"
         fn = "**flag**" if x.flag_new else "ok"
         k = "" if x.k_forward is None or pd.isna(x.k_forward) else f"{x.k_forward:g} / {x.k_overlap:g}"
         L.append(f"| {i + 1} | {x.strategy} | {x.step_index:.3f} | [{x.old_band[0]:.2f}, {x.old_band[1]:.2f}] {fo} | "
                  f"[{x.new_band[0]:.2f}, {x.new_band[1]:.2f}] {fn} | {x.bias_forward:+.1%} | {x.wape_forward:.3f} | "
-                 f"{x.bias_reverse:+.1%} | {x.wape_reverse:.3f} | {x.insample_pred_over_obs:.2f} | {k} |")
+                 f"{x.bias_reverse:+.1%} | {x.wape_reverse:.3f} | {x.score:.3f} | {x.insample_pred_over_obs:.2f} | {k} |")
     top = list(res.strategy.head(4)) + [s for s in ("local", "blend:eastmed_pool") if s not in list(res.strategy.head(4))]
     L += ["", "## Hold-out bias by year", "", "bias = (pred − obs) / obs for each test year.", "",
           "| strategy | " + " | ".join(str(y) for y in range(2012, 2021)) + " |", "|---|" + "---|" * 9]
@@ -201,6 +207,14 @@ def write_report(cfg, region, res, by_year, zs, scale, n_local, excl):
           "| month | VIIRS fire-days | of which MODIS zero | share | MODIS fire-days |", "|---|---|---|---|---|"]
     for m, x in zs.iterrows():
         L.append(f"| {m} | {x.viirs} | {x.zero_modis} | {x.share:.0%} | {x.modis_fire_days} |")
+    lc = cfg.get("low_confidence", {"min_modis_fire_days": 20, "max_zero_modis_share": 0.95})
+    flag = (zs.modis_fire_days < lc["min_modis_fire_days"]) | (zs.share >= lc["max_zero_modis_share"])
+    L += ["", "## low_confidence rule (applied in export)", "",
+          f"A pre-2012 (estimated) month is `low_confidence` when its calendar month has, on the overlap years, "
+          f"fewer than {lc['min_modis_fire_days']} local MODIS fire-days (the factor rests on too few MODIS "
+          f"observations) or at least {lc['max_zero_modis_share']:.0%} of VIIRS fire-days in cell-days without "
+          "any MODIS detection (the activity is almost invisible to MODIS, so the estimate cannot see it).", "",
+          f"{region}: flagged calendar months = " + (", ".join(str(m) for m in zs.index[flag]) or "none") + "."]
     out.write_text("\n".join(L) + "\n")
 
 
