@@ -79,13 +79,15 @@ gaps:
 terra:
   fit_years: [2003, 2020]
   strategies: [single, local, "donor:*", "pooled:*", "blend:*"]
-  strategy: local
+  strategy: {greece: local, eastmed: local, lebanon: single}   # Lebanon: winter Terra counts too thin for monthly kT
 
 calibration:
   overlap_years: [2012, 2020]
   holdout: {fit: [2012, 2016], test: [2017, 2020]}
   strategies: [single, local, "donor:*", "pooled:*", "blend:*"]
-  strategy: {greece: local, lebanon: "blend:eastmed_pool", eastmed: local}
+  # Lebanon: top-ranked in tools/lebanon_experiment.py (continuity + bias first, WAPE second), Phase 5.
+  # Alternatives stay selectable: local, "blend:<group>", affine_local, "affine_blend:<group>", ...
+  strategy: {greece: local, lebanon: single, eastmed: local}
   blend_k_grid: [0, 5, 10, 20, 50, 100, 1000000000]   # last ~ donor only
   bootstrap: {n: 1000, seed: 2026, ci: 0.90}
 

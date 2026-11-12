@@ -14,7 +14,10 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from .calibration import YearMonth, choose_k, fit_with_bootstrap, year_month_table
+from .calibration import (YearMonth, affine_factors, bootstrap_weights, choose_k, factors, fit_with_bootstrap,
+                          wape_bias, year_month_table)
+from .config import path
+from .geo import footprint_cells
 from .io import read_stage, stage_file
 from .outages import satellite_coverage
 
@@ -88,26 +91,86 @@ def chosen(cfg: dict, section: str, region: str, default: str = "local") -> str:
     return s.get(region, default) if isinstance(s, dict) else s
 
 
+def footprint_size(cfg: dict, countries, region: str) -> int:
+    r = cfg["regions"][region]
+    return len(footprint_cells(path(cfg, "boundaries"), tuple(countries), tuple(r["bbox"]), cfg["grid"]["size_deg"]))
+
+
+def intercept_scale(cfg: dict, region: str, group: str) -> float:
+    """Local / donor footprint cells: converts a donor's affine intercept (count per region-month)."""
+    d = donor_groups(cfg, region)[group]
+    return footprint_size(cfg, cfg["regions"][region]["countries"], region) / footprint_size(cfg, d["countries"], d["region"])
+
+
+def fit_ab(strategy: str, local: YearMonth, donor: YearMonth | None, k, scale: float, weights=None):
+    """(a, b) arrays (B, 12); b = 0 for ratio strategies."""
+    if strategy.startswith("affine"):
+        return affine_factors(strategy, local, donor, k, scale, weights)
+    a = factors(strategy, local.sums(weights), donor.sums(weights) if donor is not None else None, k)["a"]
+    return a, np.zeros_like(a)
+
+
+def choose_k_ab(strategy: str, local: YearMonth, donor: YearMonth, scale: float, grid) -> tuple[float, pd.DataFrame]:
+    """Leave-one-year-out WAPE over the k grid for any blended strategy (ratio or affine)."""
+    rows = []
+    for k in map(float, grid):
+        obs, pred = [], []
+        for y in local.years:
+            others = [x for x in local.years if x != y]
+            a, b = fit_ab(strategy, local.select(others), donor.select(others), k, scale)
+            t = local.select([y])
+            obs.append(t.num)
+            pred.append(a[0] * t.den + b[0])
+        w, bias = wape_bias(np.concatenate(obs), np.concatenate(pred))
+        rows.append({"k": k, "wape_loyo": w, "bias_loyo": bias})
+    t = pd.DataFrame(rows)
+    return float(t.k[t.wape_loyo.idxmin()]), t
+
+
+def is_blended(strategy: str) -> bool:
+    return strategy.split(":")[0] in ("blend", "affine_blend", "affine_blend_a")
+
+
 def fit_all(cfg: dict, region: str, spec: FitSpec, strategies: list[str]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Fit each strategy on spec.years. Returns (factors, boot draws, k-selection table)."""
+    """Fit each strategy on spec.years. Returns (factors, bootstrap draws, k-selection table).
+
+    factors: strategy, month, a, a_low, a_high, b, b_low, b_high, w_local, fallback, n_local_num,
+    n_local_den, k. Ratio strategies have b = 0. Draws: strategy, draw, month, a, b."""
     local = table(cfg, region, spec)
     boot = cfg["calibration"]["bootstrap"]
     groups = donor_groups(cfg, region)
-    donors = {}
-    rows, draws, ks = [], [], []
+    W = bootstrap_weights(len(local.years), boot["n"], boot["seed"])
+    lo, hi = (1 - boot["ci"]) / 2, 1 - (1 - boot["ci"]) / 2
+    donors, rows, draws, ks = {}, [], [], []
     for strat in strategies:
         kind, _, g = strat.partition(":")
-        donor, k = None, None
+        donor, k, scale = None, None, 1.0
         if g:
             if g not in donors:
                 donors[g] = table(cfg, groups[g]["region"], spec, groups[g]["countries"])
             donor = donors[g]
-        if kind == "blend":
-            k, kt = choose_k(local, donor, cfg["calibration"]["blend_k_grid"])
+            if kind.startswith("affine"):
+                scale = intercept_scale(cfg, region, g)
+        if is_blended(strat):
+            if kind == "blend":
+                k, kt = choose_k(local, donor, cfg["calibration"]["blend_k_grid"])
+            else:
+                k, kt = choose_k_ab(strat, local, donor, scale, cfg["calibration"]["blend_k_grid"])
             ks.append(kt.assign(strategy=strat))
-        f, d = fit_with_bootstrap(strat, local, donor, k, boot)
-        rows.append(f.assign(strategy=strat, k=k))
-        draws.append(pd.DataFrame(d, columns=range(1, 13)).rename_axis("draw").reset_index()
-                     .melt(id_vars="draw", var_name="month", value_name="a").assign(strategy=strat))
+        if kind.startswith("affine"):
+            a, b = fit_ab(strat, local, donor, k, scale)
+            A, B = fit_ab(strat, local, donor, k, scale, W)
+            nl, dl = local.sums()
+            f = pd.DataFrame({"month": np.arange(1, 13), "a": a[0], "a_low": np.nanquantile(A, lo, 0),
+                              "a_high": np.nanquantile(A, hi, 0), "w_local": np.nan, "fallback": False,
+                              "n_local_num": nl, "n_local_den": dl})
+        else:
+            f, A = fit_with_bootstrap(strat, local, donor, k, boot)
+            b, B = np.zeros((1, 12)), np.zeros_like(A)
+        f["b"], f["b_low"], f["b_high"] = b[0], np.nanquantile(B, lo, 0), np.nanquantile(B, hi, 0)
+        rows.append(f.assign(strategy=strat, k=k, intercept_scale=scale))
+        d = pd.DataFrame({"draw": np.repeat(np.arange(len(A)), 12), "month": np.tile(np.arange(1, 13), len(A)),
+                          "a": A.ravel(), "b": B.ravel()})
+        draws.append(d.assign(strategy=strat))
     kt = pd.concat(ks, ignore_index=True) if ks else pd.DataFrame(columns=["k", "wape_loyo", "bias_loyo", "strategy"])
     return pd.concat(rows, ignore_index=True), pd.concat(draws, ignore_index=True), kt
