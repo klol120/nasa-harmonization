@@ -15,7 +15,7 @@ from ..io import read_report, read_stage
 from ..outages import runs
 
 log = logging.getLogger(__name__)
-CONTRACT_VERSION = "0.2"
+CONTRACT_VERSION = "0.3"
 CALENDAR_COLUMNS = {
     "cell_id": "string", "year": "int16", "month": "int8", "modis_raw": "Int16", "viirs_raw": "Int16",
     "harmonized": "float32", "harmonized_low": "float32", "harmonized_high": "float32",

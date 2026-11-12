@@ -1,6 +1,16 @@
 # Data contract: burning-activity calendar export
 
-Version 0.2 (draft, 2026-11-12). Producer: `firecal export`. Consumer: the frontend team (browser app).
+Version 0.3 (draft, 2026-11-12). Producer: `firecal export`. Consumer: the frontend team (browser app).
+
+Changes from 0.2 (no column changes; meta only):
+- `meta.calibration.composite`. When the strategy is a composite (Lebanon: `affine_shape_single_level`),
+  this lists the `shape` and `level` strategies and their factors. `meta.calibration.factors` are then the
+  level model's. A composite's bands carry the level model's uncertainty only.
+- `meta.low_confidence_rule` holds the region's own thresholds (`low_confidence.by_region`; Lebanon uses an
+  80% zero-MODIS share, the others 95%).
+- `meta.anomalies.baseline_years` is per region (Lebanon 2012–2025, Greece and EastMed 2001–2025), and
+  `meta.anomalies.baseline_source` says whether it came from `anomalies.by_region`. Recompute area z
+  with the region's own baseline.
 
 Changes from 0.1:
 - Added `low_confidence` and `is_persistent` to the calendar.
@@ -93,7 +103,7 @@ Rows cover every cell in `cells.json` and every month from `meta.time.first_mont
 
 ```json
 {
-  "contract_version": "0.2",
+  "contract_version": "0.3",
   "grid_size_deg": 0.05,
   "cell_id_rule": "row = floor((lat + 90) / 0.05), col = floor((lon + 180) / 0.05), cell_id = f'{row}_{col}'",
   "cells": [
@@ -118,7 +128,7 @@ Rows cover every cell in `cells.json` and every month from `meta.time.first_mont
 
 ```json
 {
-  "contract_version": "0.2",
+  "contract_version": "0.3",
   "region": "lebanon",
   "bbox": [35.00, 33.00, 36.70, 34.75],
   "countries": ["Lebanon"],
