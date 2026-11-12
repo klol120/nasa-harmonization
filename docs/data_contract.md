@@ -1,213 +1,171 @@
 # Data contract: burning-activity calendar export
 
-Version 0.3 (draft, 2026-11-12). Producer: `firecal export`. Consumer: the frontend team (browser app).
+Version **0.4** (draft, 2026-11-12). Producer: `firecal export`. Consumer: the frontend team (browser app).
+The formats are still pending confirmation from the frontend team.
 
-Changes from 0.2 (no column changes; meta only):
-- `meta.calibration.composite`. When the strategy is a composite (Lebanon: `affine_shape_single_level`),
-  this lists the `shape` and `level` strategies and their factors. `meta.calibration.factors` are then the
-  level model's. A composite's bands carry the level model's uncertainty only.
-- `meta.low_confidence_rule` holds the region's own thresholds (`low_confidence.by_region`; Lebanon uses an
-  80% zero-MODIS share, the others 95%).
-- `meta.anomalies.baseline_years` is per region (Lebanon 2012–2025, Greece and EastMed 2001–2025), and
-  `meta.anomalies.baseline_source` says whether it came from `anomalies.by_region`. Recompute area z
-  with the region's own baseline.
+**Changes from 0.3** (breaking):
+- **New compact per-cell file:** `cells_series/{year}.json`.
+- **Region-wide flags moved to `region_monthly`:** `is_estimate`, `has_gap`, `data_available`,
+  `partial_month`, `display_only` and `low_confidence` are no longer repeated on calendar rows.
+- **`is_persistent` is now only in `cells.geojson`.**
+- **New `ym` field** ("YYYY-MM") in the calendar, `region_monthly` and the series files.
+- **`cells.json` dropped**; use `cells.geojson`.
+- **New `meta.files`** listing every file with its size in bytes.
 
-Changes from 0.1:
-- Added `low_confidence` and `is_persistent` to the calendar.
-- Added `n_persistent_cells` to region_monthly.
-- Added `is_persistent` to cells.
-- Added `low_confidence_rule`, `formats_status`, the affine intercept `b` and both continuity bands to meta.
+## Files (`data/export/{region}/`, region = lebanon | greece | eastmed)
 
-> **The formats are pending confirmation from the frontend team.** Parquet, CSV.gz and JSON are all
-> produced. Tell us which ones you'll use.
+| file | content | use |
+|---|---|---|
+| `region_monthly.json` / `.csv` | one row per month: region totals **and all region-wide flags** | calendar heatmap, region charts, flags for every map view |
+| `cells.geojson` | one Polygon per 0.05° cell, cell attributes in `properties` | map geometry |
+| `cells_series/{year}.json` | compact per-cell monthly values for one year | map colouring |
+| `calendar.parquet` / `calendar.csv.gz` | one row per cell per month, all per-cell values incl. bands and z | analysis, area aggregation, download |
+| `meta.json` | units, dates, calibration, validation, rules, file sizes | legends, labels, about box |
 
-## Files
-All files live in `data/export/{region}/`, where `{region}` is one of `lebanon`, `greece`, `eastmed`.
+Compatibility: fields may be added in a minor version, so ignore unknown fields. A rename, removal or type
+change bumps the version (`contract_version` in meta.json and the series files).
 
-| file | content |
-|---|---|
-| `calendar.parquet` | one row per cell per month (canonical) |
-| `calendar.csv.gz` | the same rows as CSV (UTF-8, header, `,` separator, empty field = null) |
-| `region_monthly.csv` | one row per month: region totals, with the same columns minus `cell_id` |
-| `region_monthly.json` | the same rows as a JSON array of objects (null = JSON `null`) |
-| `cells.json` | grid cell attributes (and bounds) |
-| `cells.geojson` | the same cells as a GeoJSON FeatureCollection of polygons; properties as in cells.json |
-| `meta.json` | units, dates, calibration factors, validation summary, caveats |
+## Units and what the numbers are
+- **Fire-day:** one 0.05° cell with at least one active-fire detection on one UTC day. A cell-month value
+  lies between 0 and the number of days in the month. Fire-days measure burning activity, not burned area.
+- **`harmonized`** is in **VIIRS-equivalent fire-days**. It is observed VIIRS from 2012-01-20 onward;
+  before that it is a model estimate converted from MODIS.
+- **`viirs_raw`** is in VIIRS fire-days (null before 2012-01).
+- **`modis_raw` is in MODIS fire-days, a different and much smaller unit.** MODIS sees roughly 3–6× fewer
+  fire-days than VIIRS for the same activity (about 3× in Greece, about 6× in Lebanon). It is not
+  comparable with `harmonized` or `viirs_raw`. **Give MODIS its own colour scale** and never share a
+  legend between MODIS and the VIIRS-unit variables.
+- **Pre-2012 cell values are modelled, not detections.** This matters most for Lebanon. A pre-2012 cell
+  value is a region-level conversion of MODIS spread over cells, and with Lebanon's default strategy
+  (`affine_shape_single_level_pool`) part of it is an intercept spread over cells by their 2012–2020
+  VIIRS share. So a cell can show activity in a month in which no satellite detected anything there.
+  - **Any map view of a month with `is_estimate = true` must say so**, e.g. "Modelled estimate (not
+    detections)".
+  - Every pre-2012 Lebanon month is also `low_confidence = true`. Show those with extra caution
+    (hatching, a muted palette).
+  - Greece and EastMed estimates come from a per-month ratio applied to each cell's own MODIS count, so
+    those cells are non-zero only where MODIS detected fire. They are still estimates and must be
+    labelled the same way.
 
-**Compatibility rules**
-- New columns or keys may be added in a minor version, so ignore any you don't know.
-- Renaming or removing a field, or changing a type, needs a major version bump. `meta.json` carries
-  `contract_version`.
+## region_monthly (the region-month table)
+One row per month from `meta.time.first_month` to `meta.time.last_month`; every month has a row.
 
-## Units
-Every count is in **fire-days**. A fire-day is one 0.05° cell with at least one active-fire detection on
-one UTC day, so a cell-month value is between 0 and the number of days in the month. `harmonized` is in
-**VIIRS-equivalent fire-days**. Fire-days measure burning activity, not burned area.
-
-## calendar (one row per `cell_id` × `year` × `month`)
-
-Rows cover every cell in `cells.json` and every month from `meta.time.first_month` (2000-11) to
-`meta.time.last_month` (2026-12), including months with no data. A missing row never means zero.
-
-| column | type | null? | meaning |
+| field | type | null? | meaning |
 |---|---|---|---|
-| `cell_id` | string | no | grid cell, see cells.json |
-| `year` | int16 | no | |
-| `month` | int8 | no | 1–12 |
-| `modis_raw` | int16 | yes | MODIS (Terra ∪ Aqua) fire-days, no corrections. Null when MODIS has no data for the month. |
-| `viirs_raw` | int16 | yes | VIIRS S-NPP fire-days. Null before 2012-01. January 2012 counts days ≥ 2012-01-20 only. |
-| `harmonized` | float32 | yes | VIIRS-equivalent fire-days. Estimated from MODIS before 2012-01-20, observed VIIRS after. Null iff `data_available` is false. |
-| `harmonized_low` | float32 | yes | lower bound of the 90% band. Equals `harmonized` when `is_estimate` is false. |
-| `harmonized_high` | float32 | yes | upper bound of the 90% band. Equals `harmonized` when `is_estimate` is false. |
-| `is_estimate` | bool | no | true if any part of the month is estimated from MODIS (all months ≤ 2011-12, plus 2012-01). The UI must label these as estimates. |
-| `has_gap` | bool | no | at least one satellite-outage day in the month for a sensor feeding `harmonized`. The value is a lower bound, because outage days are never filled. |
-| `data_available` | bool | no | false when the feeding sensor has no data for the month (e.g. 2026 months after the last standard-processing date). All value columns are then null: show "no data", not 0. |
-| `display_only` | bool | no | true for rows excluded from calibration, baselines and anomaly statistics (all of 2026, a partial year). |
-| `partial_month` | bool | no | true when `data_available` is true but the feeding sensor covers only part of the month (e.g. the current month in near-real-time data). The value is not comparable to full months; show it as partial. |
-| `low_confidence` | bool | no | true for estimated months (`is_estimate`) whose calendar month fails the low-confidence rule in `meta.low_confidence_rule`. On the overlap years, the local region either has fewer than `min_modis_fire_days` MODIS fire-days in that calendar month, or at least `max_zero_modis_share` of its VIIRS fire-days fall in cell-days without any MODIS detection. Show these with extra caution. Always false for observed months. |
-| `is_persistent` | bool | no | the cell contains a persistent source (industrial site or open waste burning: detected in most years, mostly at night). Constant per cell, also in cells.json. These cells are excluded when fitting the calibration but kept in the data; the UI may show or hide them. |
-| `anomaly_z` | float32 | yes | (harmonized − baseline mean) / baseline sd for this cell and calendar month (baseline years in `meta.anomalies`). Null when the baseline sd is 0 or `data_available` is false. Computed for 2026 too, against the same baseline, for display only. |
+| `ym` | string | no | "YYYY-MM" |
+| `year`, `month` | int | no | |
+| `modis_raw`, `viirs_raw` | int | yes | region sums (MODIS units / VIIRS units); null when that sensor has no data |
+| `harmonized`, `harmonized_low`, `harmonized_high` | float | yes | region sum and 90% band. Null iff `data_available` is false |
+| `anomaly_z` | float | yes | z of the region total against its own baseline (`meta.anomalies.baseline_years`) |
+| `is_estimate` | bool | no | the month is (wholly or partly) estimated from MODIS: all months ≤ 2011-12 and 2012-01 |
+| `has_gap` | bool | no | at least one satellite-outage day for a sensor feeding the month |
+| `data_available` | bool | no | false when the feeding sensor has no data (e.g. 2026 months after the last date). Show "no data", never 0 |
+| `partial_month` | bool | no | data covers only part of the month |
+| `display_only` | bool | no | partial year (2026): shown, but excluded from calibration and baselines |
+| `low_confidence` | bool | no | estimated month whose calendar month fails `meta.low_confidence_rule` |
+| `n_cells`, `n_persistent_cells` | int | no | cells in the region / cells flagged `is_persistent` |
 
-**Invariants** (checked by `tests/test_export_contract.py`)
-- `harmonized_low ≤ harmonized ≤ harmonized_high` wherever not null.
-- `data_available == false` ⇒ `modis_raw`, `viirs_raw` (if beyond VIIRS data), `harmonized`,
-  `harmonized_low`, `harmonized_high` and `anomaly_z` are null.
-- `is_estimate == false` ⇒ `harmonized == viirs_raw`.
-- (`cell_id`, `year`, `month`) is unique.
+These flags apply to **every cell** of the region in that month; the per-cell files do not repeat them.
+
+## cells.geojson
+A FeatureCollection with one Polygon per cell (WGS84, [lon, lat]). Properties:
+- `cell_id`, `row`, `col`, `lat_center`, `lon_center`;
+- `countries` (list), `primary_country`;
+- `is_persistent`: the cell contains a persistent industrial or waste-burning source. These cells are
+  excluded from calibration fitting but kept in the data, so the UI may show or hide them.
+
+`cell_id` = `f"{row}_{col}"` with row = floor((lat + 90) / 0.05) and col = floor((lon + 180) / 0.05). It
+is global, so the same cell has the same ID in every region.
+
+## cells_series/{year}.json (compact per-cell file)
+
+```json
+{"contract_version": "0.4", "year": 2007, "ym": ["2007-01", "...", "2007-12"],
+ "fields": {"h": "harmonized", "m": "modis_raw", "v": "viirs_raw"},
+ "omitted_cells": "no fire-days this year: 0 where data_available, else null",
+ "cells": {"2461_4303": {"h": [0, 0, ..., 0.17, 0, 0, 0], "m": [0, ...], "v": [null, ...]}}}
+```
+
+- The arrays are aligned with `ym`. `h` is rounded to 0.01; `m` and `v` are integers; `null` means no
+  data.
+- **Cells absent from `cells` had no fire-days that year.** Read them as 0 in months where
+  `region_monthly.data_available` is true, and as null otherwise.
+- Bands and z are not in the series files; take them from `calendar.parquet` when needed.
+- The 2026 file covers the months that exist (to 2026-12, data to 2026-07 for VIIRS).
+
+## calendar (one row per cell × month)
+
+| field | type | null? | meaning |
+|---|---|---|---|
+| `cell_id` | string | no | |
+| `ym` | string | no | "YYYY-MM" |
+| `year`, `month` | int16, int8 | no | |
+| `modis_raw` | Int16 | yes | MODIS (Terra ∪ Aqua) fire-days; **MODIS units** |
+| `viirs_raw` | Int16 | yes | VIIRS S-NPP fire-days; null before 2012-01; January 2012 counts days from the 20th |
+| `harmonized`, `harmonized_low`, `harmonized_high` | float32 | yes | VIIRS-equivalent value and 90% band. Bands equal the value for observed months |
+| `anomaly_z` | float32 | yes | cell z against the cell's baseline for that calendar month; null when baseline sd = 0 or no data |
+
+Invariants (checked by `tests/test_export_contract.py`):
+- `harmonized_low ≤ harmonized ≤ harmonized_high`;
+- `harmonized` is null iff the month's `data_available` is false;
+- for observed months `harmonized == viirs_raw`;
+- (`cell_id`, `ym`) is unique;
+- the series files equal the calendar values.
 
 ## Aggregating over areas (user-drawn polygons, provinces)
-- **Counts and bands add up.** Sum `modis_raw`, `viirs_raw`, `harmonized`, `harmonized_low` and
-  `harmonized_high` over the selected cells. The bands sum exactly, because every cell in a region uses the
-  same calibration draw.
-- **`anomaly_z` does not add up and must not be summed or averaged across cells.** Recompute it from the
-  summed `harmonized` series:
-  1. Sum `harmonized` over the cells for every month.
-  2. For each calendar month, take the mean and sd of that sum over the baseline years
-     (`meta.anomalies.baseline_years`, rows with `display_only = false`).
-  3. z = (sum − mean) / sd. It is null when sd = 0 or the month has `data_available = false`.
-- **Flags** propagate with OR (`is_estimate`, `has_gap`, `partial_month`, `display_only`, `low_confidence`)
-  and with AND (`data_available`).
-- **Hiding persistent cells.** Drop cells with `is_persistent` before summing. Then recompute
-  `anomaly_z` from the new sum; region_monthly includes all cells.
-
-## region_monthly.csv / region_monthly.json
-- These are the same columns without `cell_id` and `is_persistent`, plus `n_cells` and `n_persistent_cells`.
-- `region_monthly.json` holds the same rows as an array of objects; null is JSON `null`.
-- **Counts** are sums over cells.
-- **Bands** are the factor band applied to the region sum. That is the same calibration draw for every
-  cell, so the band sums exactly.
-- **`anomaly_z`** is computed on the region total against its own baseline. It is not the mean of the
-  cell z values.
-
-## cells.json
-
-```json
-{
-  "contract_version": "0.3",
-  "grid_size_deg": 0.05,
-  "cell_id_rule": "row = floor((lat + 90) / 0.05), col = floor((lon + 180) / 0.05), cell_id = f'{row}_{col}'",
-  "cells": [
-    {"cell_id": "2470_4300", "row": 2470, "col": 4300,
-     "lat_center": 33.525, "lon_center": 35.025,
-     "bounds": [35.00, 33.50, 35.05, 33.55],
-     "countries": ["Lebanon"], "primary_country": "Lebanon", "is_persistent": false}
-  ]
-}
-```
-
-- `bounds` is [west, south, east, north].
-- `countries` lists every country with detections or territory in the cell. `primary_country` is the one
-  with the largest share.
-- Which cells are included: every cell whose centre is in the region's footprint (the region's countries,
-  clipped to its bbox), plus any cell with at least one kept detection.
-- `cell_id` is global, so the same cell has the same ID in every region's export.
-- `cells.geojson` holds the same cells as Polygon features (WGS84, [lon, lat] order), with `cell_id` and the
-  attributes above in `properties`.
+- **Counts and bands add up.** Sum `harmonized`, `harmonized_low`, `harmonized_high`, `modis_raw` and
+  `viirs_raw` over the cells. Every cell of a region uses the same calibration draw, so the bands sum
+  exactly.
+- **`anomaly_z` must not be summed or averaged across cells.** Recompute it from the summed series:
+  1. For each calendar month, take the mean and sd of the summed `harmonized` over
+     `meta.anomalies.baseline_years`, using months with `display_only = false`. **The baseline is per
+     region:** Lebanon 2012–2025, Greece and EastMed 2001–2025.
+  2. z = (sum − mean) / sd. It is null when sd = 0 or `data_available` is false.
+- **Flags** come from `region_monthly` and are identical for every cell of the region.
+- **Hiding persistent cells:** drop cells with `is_persistent`, then recompute sums and z.
 
 ## meta.json
+- **Identity:** `contract_version`, `region`, `bbox`, `countries`, `generated_at`, `pipeline`
+  (version, config hash), `formats_status`, `units`, `n_cells`, `n_persistent_cells`.
+- **`files`:** `{path: bytes}` for every exported file.
+- **`time`:** `first_month`, `last_month`, `stats_last_year`, `display_only_years`, `splice_date`
+  (2012-01-20) and `terra_only_until` (2002-07-04). `sources`: first and last date per product.
+- **`calibration`:**
+  - `strategy`, `overlap_years`, `exclude_persistent_from_fit`;
+  - `factors[]` (`a, a_low, a_high, b, b_low, b_high, w_local` per month), plus `terra_strategy` and
+    `terra_correction[]`;
+  - `composite`, when the strategy is a composite: `shape` and `level` with their factors. In that case
+    `factors[]` are the level model's, and bands carry the level model's uncertainty only.
+- **`low_confidence_rule`:** the region's thresholds (`min_modis_fire_days`, `max_zero_modis_share`),
+  `months` (the flagged calendar months) and `by_month` (the statistics behind them).
+- **`validation`:** the hold-out table per strategy, and `continuity_2012` with `step_index`, `band`
+  (with year-to-year spread), `band_factor_only` and the flags.
+- **`anomalies`:** `baseline_years`, `baseline_source` and `sensitivity` (alternative baseline: correlation
+  and mean |Δz|). `outages`: confirmed outage runs. `caveats`: text for the about box.
 
-```json
-{
-  "contract_version": "0.3",
-  "region": "lebanon",
-  "bbox": [35.00, 33.00, 36.70, 34.75],
-  "countries": ["Lebanon"],
-  "generated_at": "2026-11-20T10:00:00Z",
-  "pipeline": {"version": "0.1.0", "config_hash": "sha256:…"},
-  "units": "VIIRS-equivalent fire-days per 0.05° cell per month",
-  "time": {
-    "first_month": "2000-11", "last_month": "2026-12",
-    "stats_last_year": 2025, "display_only_years": [2026],
-    "splice_date": "2012-01-20", "terra_only_until": "2002-07-04"
-  },
-  "sources": {
-    "MODIS_SP": {"satellites": ["Terra", "Aqua"], "first_date": "2000-11-01", "last_date": "2026-08-31"},
-    "VIIRS_SNPP_SP": {"satellites": ["SNPP"], "first_date": "2012-01-20", "last_date": "2026-07-31"}
-  },
-  "calibration": {
-    "strategy": "blend:eastmed_pool", "overlap_years": [2012, 2020], "blend_k": 20,
-    "factors": [{"month": 1, "a": 0.0, "a_low": 0.0, "a_high": 0.0, "w_local": 0.0}],
-    "terra_correction": [{"month": 1, "kT": 0.0, "kT_low": 0.0, "kT_high": 0.0}]
-  },
-  "validation": {
-    "holdout": {"fit": [2012, 2016], "test": [2017, 2020]},
-    "strategies": [{"strategy": "single", "wape": 0.0, "bias": 0.0}],
-    "continuity_2012": {"ratio": 0.0, "band": [0.0, 0.0], "step_flagged": false}
-  },
-  "anomalies": {"baseline_years": [2001, 2025], "method": "z-score per cell and calendar month",
-                "sensitivity": [{"baseline_years": [2012, 2025], "corr_z": 0.0, "mean_abs_dz": 0.0}]},
-  "outages": [{"satellite": "SNPP", "start": "2022-07-27", "end": "2022-08-10"}],
-  "caveats": [
-    "Pre-2012 values are estimates converted from MODIS and must be labelled as such.",
-    "Fire-days measure burning activity, not burned area.",
-    "2026 is a partial year shown for display only."
-  ]
-}
-```
+## Sizes (2026-11-12 run)
 
-The numbers above are placeholders. The keys are the contract.
+| region | cells | cells.geojson | cells_series (largest year / all) | region_monthly.json | calendar.parquet | calendar.csv.gz |
+|---|---|---|---|---|---|---|
+| lebanon | 429 | 0.15 MB | 0.06 / 0.93 MB | 0.11 MB | 0.29 MB | 0.67 MB |
+| greece | 5,910 | 1.99 MB | 0.20 / 3.60 MB | 0.11 MB | 1.27 MB | 6.40 MB |
+| eastmed | 15,872 | 5.32 MB | 0.72 / 10.4 MB | 0.11 MB | 3.88 MB | 17.2 MB |
 
-### meta.json additions in 0.2
-- `formats_status`: "pending confirmation from the frontend team".
-- `n_cells`, `n_persistent_cells`.
-- `calibration.factors[]`: `a, a_low, a_high, b, b_low, b_high, w_local` per month. `b` is the affine
-  intercept, 0 for ratio strategies. `calibration.terra_strategy` gives the strategy used for kT.
-- `low_confidence_rule`:
-  - `min_modis_fire_days` and `max_zero_modis_share`;
-  - `months`, the flagged calendar months;
-  - `by_month`, the statistics behind the flags.
-- `validation.continuity_2012`:
-  - `band` includes year-to-year variation;
-  - `band_factor_only` is the narrower factor-bootstrap band;
-  - each has a `step_flagged` flag.
+A browser map needs `region_monthly.json`, `cells.geojson` and one `cells_series/{year}.json` at a time:
+under 0.5 MB for Lebanon and about 6 MB for EastMed.
 
-### Sizes (2026-11-12 run)
-
-| region | cells | calendar rows | calendar.parquet | calendar.csv.gz | cells.geojson |
-|---|---|---|---|---|---|
-| lebanon | 429 | 134,706 | 0.1 MB | 0.4 MB | 0.15 MB |
-| greece | 5,910 | 1,855,740 | 1.1 MB | 5.6 MB | 2.0 MB |
-| eastmed | 15,872 | 4,983,808 | 3.4 MB | 15 MB | 5.3 MB |
-
-For the browser, region_monthly.json (about 110 kB) and cells.geojson are the natural starting point.
-Per-cell series can come from calendar.parquet (read with parquet-wasm or DuckDB-wasm) or
-calendar.csv.gz.
-
-## Shared files (in git, 2026-11-12)
-Committed under `data/export/` for sharing; the limit is 5 MB = 5,000,000 bytes:
-- `lebanon/`: all 7 files (calendar.parquet 0.27 MB, calendar.csv.gz 0.60 MB, region_monthly.csv,
-  region_monthly.json, cells.json, cells.geojson, meta.json).
-- `greece/` and `eastmed/`: `region_monthly.json` (about 0.11 MB each).
-- `greece/cells.geojson` (2.0 MB).
+## Shared files (in git)
+Committed for sharing, with a limit of 5 MB (5,000,000 bytes):
+- **`lebanon/`:** all files, including `cells_series/`.
+- **All regions:** `region_monthly.json` and `cells_series/` (each year file is 0.72 MB or less).
+- **`greece/cells.geojson`.**
 
 **Too large for git, share separately:**
 
 | file | size |
 |---|---|
 | `eastmed/cells.geojson` | 5.3 MB |
-| `greece/calendar.csv.gz` | 5.6 MB |
-| `eastmed/calendar.csv.gz` | 15.2 MB |
+| `greece/calendar.csv.gz` | 6.4 MB |
+| `eastmed/calendar.csv.gz` | 17.2 MB |
 
-Not committed although under 5 MB (not part of the shared set): `greece/` and `eastmed/`
-`calendar.parquet` (1.1 / 3.4 MB), `cells.json`, `region_monthly.csv` and `meta.json`. Regenerate any of
-them with `.venv/bin/python -m firecal all --region <region>`.
+Everything else regenerates with `.venv/bin/python -m firecal all --region <region>`.

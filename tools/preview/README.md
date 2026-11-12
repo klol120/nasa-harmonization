@@ -9,14 +9,15 @@ node tools/preview/check.mjs                # data checks of the helpers against
 What it shows:
 - A year × month heatmap from `region_monthly.json`, with a MODIS / VIIRS / Harmonized toggle (sqrt colour
   scale, grey for no data, hatching for `low_confidence`). Tooltips show the band, raw counts, z and flags.
-- A MapLibre map of `cells.geojson`. Persistent cells have a red outline. For Lebanon only, the cells are
-  coloured by the month clicked in the heatmap, from `calendar.csv.gz`.
+- A MapLibre map of `cells.geojson`, coloured by the month clicked in the heatmap from
+  `cells_series/{year}.json` (contract 0.4, all regions). Persistent cells have a red outline. A banner
+  names the month and says "MODELLED ESTIMATE (not detections)" when `is_estimate` is true.
 
 **Status:** the code passes `node --check`, and `check.mjs` passes on the real exports. The page has not
 been opened in a browser yet (built unattended). The basemap is MapLibre's public demo style, so it needs
 internet access.
 
-## What made the exports awkward to use in a browser
+## What made the 0.3 exports awkward (items 1, 3, 4, 5 and 6 are fixed in contract 0.4)
 1. **No small per-cell format.** Per-cell values exist only in `calendar.parquet` (needs parquet-wasm or
    DuckDB-wasm) or `calendar.csv.gz`. The CSV has to be downloaded whole and gunzipped in the page
    (5.6 MB Greece, 15 MB EastMed). A per-year or per-month JSON (cell_id → value) would suit a map much

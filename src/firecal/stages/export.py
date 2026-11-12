@@ -15,24 +15,57 @@ from ..io import read_report, read_stage
 from ..outages import runs
 
 log = logging.getLogger(__name__)
-CONTRACT_VERSION = "0.3"
+CONTRACT_VERSION = "0.4"
+# Per-cell values only; region-wide flags live in region_monthly (contract 0.4).
 CALENDAR_COLUMNS = {
-    "cell_id": "string", "year": "int16", "month": "int8", "modis_raw": "Int16", "viirs_raw": "Int16",
-    "harmonized": "float32", "harmonized_low": "float32", "harmonized_high": "float32",
-    "is_estimate": "bool", "has_gap": "bool", "data_available": "bool", "partial_month": "bool",
-    "display_only": "bool", "low_confidence": "bool", "is_persistent": "bool", "anomaly_z": "float32",
+    "cell_id": "string", "ym": "string", "year": "int16", "month": "int8", "modis_raw": "Int16",
+    "viirs_raw": "Int16", "harmonized": "float32", "harmonized_low": "float32", "harmonized_high": "float32",
+    "anomaly_z": "float32",
 }
-REGION_COLUMNS = [c for c in CALENDAR_COLUMNS if c not in ("cell_id", "is_persistent")] + ["n_cells", "n_persistent_cells"]
+FLAG_COLUMNS = ["is_estimate", "has_gap", "data_available", "partial_month", "display_only", "low_confidence"]
+REGION_COLUMNS = ["ym", "year", "month", "modis_raw", "viirs_raw", "harmonized", "harmonized_low", "harmonized_high",
+                  "anomaly_z", *FLAG_COLUMNS, "n_cells", "n_persistent_cells"]
+SERIES_FIELDS = {"h": "harmonized", "m": "modis_raw", "v": "viirs_raw"}
+
+
+def ym(year, month) -> pd.Series:
+    return pd.Series(year).astype(int).astype(str).str.zfill(4).values + "-" + \
+        pd.Series(month).astype(int).astype(str).str.zfill(2).values
 
 
 def calendar(cfg, region) -> pd.DataFrame:
     h = read_stage(cfg, region, "anomalies")
+    h["ym"] = ym(h.year, h.month)
     return h[list(CALENDAR_COLUMNS)].astype(CALENDAR_COLUMNS)
+
+
+def cell_series(cal: pd.DataFrame, reg: pd.DataFrame) -> dict[int, dict]:
+    """Per-year compact files: {cell_id: {h, m, v: [12 monthly values]}}.
+
+    Cells with no fire-day in the year (all values 0 or null) are omitted: read them as 0 in months
+    where the region has data (region_monthly.data_available) and null otherwise."""
+    out = {}
+    for year, g in cal.groupby("year"):
+        months = reg[reg.year == year].sort_values("month")
+        ms = months.month.tolist()
+        g = g[g.month.isin(ms)]
+        active = g.groupby("cell_id", observed=True)[["harmonized", "modis_raw", "viirs_raw"]] \
+            .apply(lambda x: bool((x.fillna(0) != 0).any().any()))
+        g = g[g.cell_id.isin(active.index[active])]
+        cells = {}
+        for cid, c in g.sort_values("month").groupby("cell_id", observed=True):
+            cells[cid] = {k: [None if pd.isna(v) else (round(float(v), 2) if k == "h" else int(v))
+                              for v in c[f].tolist()] for k, f in SERIES_FIELDS.items()}
+        out[int(year)] = {"contract_version": CONTRACT_VERSION, "year": int(year), "ym": months.ym.tolist(),
+                          "fields": SERIES_FIELDS, "omitted_cells": "no fire-days this year: 0 where data_available, else null",
+                          "cells": cells}
+    return out
 
 
 def region_table(cfg, region, cells) -> pd.DataFrame:
     r = read_stage(cfg, region, "region_monthly")
     r["n_persistent_cells"] = int(cells.is_persistent.sum())
+    r["ym"] = ym(r.year, r.month)
     r = r[REGION_COLUMNS].copy()
     for c in ("harmonized", "harmonized_low", "harmonized_high", "anomaly_z"):
         r[c] = r[c].astype("float32")
@@ -46,7 +79,7 @@ def _json_value(v):
         return None
     if isinstance(v, (np.integer,)):
         return int(v)
-    if isinstance(v, (np.floating,)):
+    if isinstance(v, (np.floating, float)):
         return None if np.isnan(v) else round(float(v), 4)
     if isinstance(v, (np.bool_,)):
         return bool(v)
@@ -77,7 +110,7 @@ def cells_json(cfg, cells: pd.DataFrame) -> tuple[dict, dict]:
     return cj, {"type": "FeatureCollection", "features": feats}
 
 
-def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
+def meta(cfg, region, cal: pd.DataFrame, cells, files: dict | None = None) -> dict:
     r = cfg["regions"][region]
     pick, pick_k = chosen(cfg, "calibration", region), chosen(cfg, "terra", region)
     allfac = read_stage(cfg, region, "factors")
@@ -93,9 +126,7 @@ def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
     fwd = ho[(ho.fold == "forward") & (ho.variant == variant)]
     outages = read_stage(cfg, region, "outages")
     cov = cfg["coverage"]
-    ym = cal.year.astype(int) * 12 + cal.month.astype(int) - 1
-    first = pd.Series({"year": ym.min() // 12, "month": ym.min() % 12 + 1})
-    last = pd.Series({"year": ym.max() // 12, "month": ym.max() % 12 + 1})
+    first, last = cal.ym.min(), cal.ym.max()
     return {
         "contract_version": CONTRACT_VERSION, "region": region, "bbox": r["bbox"], "countries": r["countries"],
         "generated_at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
@@ -103,9 +134,10 @@ def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
         "formats_status": "pending confirmation from the frontend team",
         "units": f"VIIRS-equivalent fire-days per {cfg['grid']['size_deg']}° cell per month",
         "n_cells": int(len(cells)), "n_persistent_cells": int(cells.is_persistent.sum()),
-        "time": {"first_month": f"{int(first.year)}-{int(first.month):02d}", "last_month": f"{int(last.year)}-{int(last.month):02d}",
+        "files": files or {},
+        "time": {"first_month": first, "last_month": last,
                  "stats_last_year": cfg["years"]["stats_last_year"],
-                 "display_only_years": sorted(int(y) for y in cal.year[cal.display_only].unique()),
+                 "display_only_years": sorted(int(y) for y in cal.year.unique() if y > cfg["years"]["stats_last_year"]),
                  "splice_date": str(as_date(cfg["sensors"]["viirs_start"])),
                  "terra_only_until": str(as_date(cfg["sensors"]["terra_only_until"]))},
         "sources": {"MODIS_SP": {"satellites": ["Terra", "Aqua"], "first_date": str(as_date(cov["MODIS_SP"][0])),
@@ -168,9 +200,17 @@ def run(cfg: dict, region_name: str) -> pd.DataFrame:
     cal.to_csv(out / "calendar.csv.gz", index=False, float_format="%.4g", compression="gzip")
     reg.to_csv(out / "region_monthly.csv", index=False, float_format="%.4f")
     (out / "region_monthly.json").write_text(json.dumps(records(reg)))
-    cj, gj = cells_json(cfg, cells)
-    (out / "cells.json").write_text(json.dumps(cj))
+    _, gj = cells_json(cfg, cells)
     (out / "cells.geojson").write_text(json.dumps(gj))
-    (out / "meta.json").write_text(json.dumps(meta(cfg, region_name, cal, cells), indent=2, default=_json_value))
+    (out / "cells.json").unlink(missing_ok=True)          # dropped in contract 0.4 (geometry is in cells.geojson)
+    sdir = out / "cells_series"
+    sdir.mkdir(exist_ok=True)
+    for f in sdir.glob("*.json"):
+        f.unlink()
+    for year, doc in cell_series(cal, reg).items():
+        (sdir / f"{year}.json").write_text(json.dumps(doc, separators=(",", ":")))
+    files = {p.relative_to(out).as_posix(): p.stat().st_size for p in sorted(out.rglob("*")) if p.is_file()
+             and p.name != "meta.json"}
+    (out / "meta.json").write_text(json.dumps(meta(cfg, region_name, cal, cells, files), indent=2, default=_json_value))
     log.info("export %s: %d rows, %d cells -> %s", region_name, len(cal), len(cells), out)
     return cal
