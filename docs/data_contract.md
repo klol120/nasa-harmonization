@@ -192,3 +192,22 @@ The numbers above are placeholders. The keys are the contract.
 For the browser, region_monthly.json (about 110 kB) and cells.geojson are the natural starting point.
 Per-cell series can come from calendar.parquet (read with parquet-wasm or DuckDB-wasm) or
 calendar.csv.gz.
+
+## Shared files (in git, 2026-11-12)
+Committed under `data/export/` for sharing; the limit is 5 MB = 5,000,000 bytes:
+- `lebanon/`: all 7 files (calendar.parquet 0.27 MB, calendar.csv.gz 0.60 MB, region_monthly.csv,
+  region_monthly.json, cells.json, cells.geojson, meta.json).
+- `greece/` and `eastmed/`: `region_monthly.json` (about 0.11 MB each).
+- `greece/cells.geojson` (2.0 MB).
+
+**Too large for git, share separately:**
+
+| file | size |
+|---|---|
+| `eastmed/cells.geojson` | 5.3 MB |
+| `greece/calendar.csv.gz` | 5.6 MB |
+| `eastmed/calendar.csv.gz` | 15.2 MB |
+
+Not committed although under 5 MB (not part of the shared set): `greece/` and `eastmed/`
+`calendar.parquet` (1.1 / 3.4 MB), `cells.json`, `region_monthly.csv` and `meta.json`. Regenerate any of
+them with `.venv/bin/python -m firecal all --region <region>`.

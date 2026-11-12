@@ -1,0 +1,812 @@
+{
+  "contract_version": "0.3",
+  "region": "lebanon",
+  "bbox": [
+    35.0,
+    33.0,
+    36.7,
+    34.75
+  ],
+  "countries": [
+    "Lebanon"
+  ],
+  "generated_at": "2026-11-12T15:27:09Z",
+  "pipeline": {
+    "version": "0.1.0",
+    "config_hash": "sha256:e28cdd8de58f89b0"
+  },
+  "formats_status": "pending confirmation from the frontend team",
+  "units": "VIIRS-equivalent fire-days per 0.05\u00b0 cell per month",
+  "n_cells": 429,
+  "n_persistent_cells": 6,
+  "time": {
+    "first_month": "2000-11",
+    "last_month": "2026-12",
+    "stats_last_year": 2025,
+    "display_only_years": [
+      2026
+    ],
+    "splice_date": "2012-01-20",
+    "terra_only_until": "2002-07-04"
+  },
+  "sources": {
+    "MODIS_SP": {
+      "satellites": [
+        "Terra",
+        "Aqua"
+      ],
+      "first_date": "2000-11-01",
+      "last_date": "2026-08-31"
+    },
+    "VIIRS_SNPP_SP": {
+      "satellites": [
+        "SNPP"
+      ],
+      "first_date": "2012-01-20",
+      "last_date": "2026-07-31"
+    }
+  },
+  "calibration": {
+    "strategy": "affine_shape_single_level",
+    "overlap_years": [
+      2012,
+      2020
+    ],
+    "exclude_persistent_from_fit": true,
+    "blend_k": null,
+    "factors": [
+      {
+        "month": 1,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 2,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 3,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 4,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 5,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 6,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 7,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 8,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 9,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 10,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 11,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 12,
+        "a": 5.47489539748954,
+        "a_low": 4.855059618441971,
+        "a_high": 6.426739267304135,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      }
+    ],
+    "composite": {
+      "description": "monthly shape from `shape`, each year's estimated total from `level`; `factors` above are the level model's",
+      "shape": {
+        "strategy": "affine_blend:cyprus",
+        "k": 0.0,
+        "factors": [
+          {
+            "month": 1,
+            "a": 0.0,
+            "a_low": 0.0,
+            "a_high": 2.7499999999999996,
+            "b": 2.888888888888889,
+            "b_low": 0.9999999999999999,
+            "b_high": 4.777777777777778,
+            "w_local": null
+          },
+          {
+            "month": 2,
+            "a": 0.0,
+            "a_low": 0.0,
+            "a_high": 3.2142857142857144,
+            "b": 4.555555555555555,
+            "b_low": 1.7482142857142853,
+            "b_high": 7.289719626168225,
+            "w_local": null
+          },
+          {
+            "month": 3,
+            "a": 0.0,
+            "a_low": 0.0,
+            "a_high": 3.9524999999999992,
+            "b": 7.444444444444445,
+            "b_low": 3.833333333333334,
+            "b_high": 10.448701973001034,
+            "w_local": null
+          },
+          {
+            "month": 4,
+            "a": 3.2857142857142856,
+            "a_low": 0.7500000000000011,
+            "a_high": 5.644585253456219,
+            "b": 6.428571428571429,
+            "b_low": 4.4,
+            "b_high": 39.87704439252335,
+            "w_local": null
+          },
+          {
+            "month": 5,
+            "a": 1.6249999999999982,
+            "a_low": 0.0,
+            "a_high": 8.375000000000002,
+            "b": 11.875000000000002,
+            "b_low": 9.0,
+            "b_high": 15.112134502923976,
+            "w_local": null
+          },
+          {
+            "month": 6,
+            "a": 5.400000000000002,
+            "a_low": 2.4169762845849823,
+            "a_high": 8.045745920745928,
+            "b": 11.133333333333326,
+            "b_low": 0.0,
+            "b_high": 20.094926470588224,
+            "w_local": null
+          },
+          {
+            "month": 7,
+            "a": 2.5941860465116258,
+            "a_low": 0.9063333333333381,
+            "a_high": 5.86707049226049,
+            "b": 34.41395348837211,
+            "b_low": 21.993560606060598,
+            "b_high": 44.03797453703706,
+            "w_local": null
+          },
+          {
+            "month": 8,
+            "a": 1.6267605633802822,
+            "a_low": 0.6150570942662774,
+            "a_high": 2.376808647435581,
+            "b": 35.070422535211264,
+            "b_low": 26.999264705882364,
+            "b_high": 44.33421052631584,
+            "w_local": null
+          },
+          {
+            "month": 9,
+            "a": 2.9428471248246826,
+            "a_low": 1.3418938578903623,
+            "a_high": 3.412873705666528,
+            "b": 19.625525946704094,
+            "b_low": 10.372131781190166,
+            "b_high": 36.53875143127402,
+            "w_local": null
+          },
+          {
+            "month": 10,
+            "a": 2.199236003342485,
+            "a_low": 1.9533093874895446,
+            "a_high": 3.1799604201235847,
+            "b": 15.500179061716608,
+            "b_low": 5.423017168708572,
+            "b_high": 21.807624525646446,
+            "w_local": null
+          },
+          {
+            "month": 11,
+            "a": 1.9936034115138594,
+            "a_low": 1.6002323343130354,
+            "a_high": 3.3258317025440314,
+            "b": 6.3710021321961605,
+            "b_low": 1.3094066018331638,
+            "b_high": 8.888967771016452,
+            "w_local": null
+          },
+          {
+            "month": 12,
+            "a": 0.6964285714285714,
+            "a_low": 0.0,
+            "a_high": 1.6113591269841268,
+            "b": 5.892857142857143,
+            "b_low": 3.0813953488372086,
+            "b_high": 8.371476759299375,
+            "w_local": null
+          }
+        ]
+      },
+      "level": {
+        "strategy": "single",
+        "factors": [
+          {
+            "month": 1,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 2,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 3,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 4,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 5,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 6,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 7,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 8,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 9,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 10,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 11,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 12,
+            "a": 5.47489539748954,
+            "a_low": 4.855059618441971,
+            "a_high": 6.426739267304135,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          }
+        ]
+      },
+      "bands": "level model's factor uncertainty only (shape uncertainty not propagated)"
+    },
+    "terra_strategy": "single",
+    "terra_correction": [
+      {
+        "month": 1,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 2,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 3,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 4,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 5,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 6,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 7,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 8,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 9,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 10,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 11,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      },
+      {
+        "month": 12,
+        "kT": 2.2,
+        "kT_low": 2.091227714441648,
+        "kT_high": 2.3315239015107827
+      }
+    ]
+  },
+  "low_confidence_rule": {
+    "min_modis_fire_days": 20,
+    "max_zero_modis_share": 0.8,
+    "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "by_month": [
+      {
+        "month": 1,
+        "viirs": 26,
+        "zero_modis": 26,
+        "modis": 3,
+        "zero_modis_share": 1.0,
+        "low_confidence": true
+      },
+      {
+        "month": 2,
+        "viirs": 41,
+        "zero_modis": 41,
+        "modis": 2,
+        "zero_modis_share": 1.0,
+        "low_confidence": true
+      },
+      {
+        "month": 3,
+        "viirs": 67,
+        "zero_modis": 67,
+        "modis": 3,
+        "zero_modis_share": 1.0,
+        "low_confidence": true
+      },
+      {
+        "month": 4,
+        "viirs": 71,
+        "zero_modis": 69,
+        "modis": 4,
+        "zero_modis_share": 0.971830985915493,
+        "low_confidence": true
+      },
+      {
+        "month": 5,
+        "viirs": 115,
+        "zero_modis": 114,
+        "modis": 5,
+        "zero_modis_share": 0.991304347826087,
+        "low_confidence": true
+      },
+      {
+        "month": 6,
+        "viirs": 246,
+        "zero_modis": 238,
+        "modis": 27,
+        "zero_modis_share": 0.967479674796748,
+        "low_confidence": true
+      },
+      {
+        "month": 7,
+        "viirs": 455,
+        "zero_modis": 431,
+        "modis": 56,
+        "zero_modis_share": 0.9472527472527472,
+        "low_confidence": true
+      },
+      {
+        "month": 8,
+        "viirs": 423,
+        "zero_modis": 390,
+        "modis": 66,
+        "zero_modis_share": 0.9219858156028369,
+        "low_confidence": true
+      },
+      {
+        "month": 9,
+        "viirs": 518,
+        "zero_modis": 470,
+        "modis": 116,
+        "zero_modis_share": 0.9073359073359073,
+        "low_confidence": true
+      },
+      {
+        "month": 10,
+        "viirs": 432,
+        "zero_modis": 362,
+        "modis": 133,
+        "zero_modis_share": 0.8379629629629629,
+        "low_confidence": true
+      },
+      {
+        "month": 11,
+        "viirs": 163,
+        "zero_modis": 139,
+        "modis": 53,
+        "zero_modis_share": 0.852760736196319,
+        "low_confidence": true
+      },
+      {
+        "month": 12,
+        "viirs": 60,
+        "zero_modis": 56,
+        "modis": 10,
+        "zero_modis_share": 0.9333333333333333,
+        "low_confidence": true
+      }
+    ]
+  },
+  "validation": {
+    "variant": "persistence_excluded",
+    "holdout": {
+      "fit": [
+        2012,
+        2016
+      ],
+      "test": [
+        2017,
+        2020
+      ]
+    },
+    "strategies": [
+      {
+        "strategy": "affine_blend:cyprus",
+        "k": 0.0,
+        "wape": 0.2829975405404723,
+        "bias": 0.032365739930075035
+      },
+      {
+        "strategy": "affine_shape_single_level",
+        "k": 0.0,
+        "wape": 0.33771099349275274,
+        "bias": -0.04689260780021504
+      },
+      {
+        "strategy": "blend:israel_palestine",
+        "k": 10.0,
+        "wape": 0.4135592071910492,
+        "bias": -0.1265777109895064
+      },
+      {
+        "strategy": "blend:eastmed_pool",
+        "k": 20.0,
+        "wape": 0.4365255213596235,
+        "bias": -0.27539162694196223
+      },
+      {
+        "strategy": "blend:southern_turkey",
+        "k": 20.0,
+        "wape": 0.44590148000842217,
+        "bias": -0.2968018593375591
+      },
+      {
+        "strategy": "blend:cyprus",
+        "k": 20.0,
+        "wape": 0.460397034881305,
+        "bias": -0.21284534636894337
+      },
+      {
+        "strategy": "blend:syria",
+        "k": 50.0,
+        "wape": 0.4664367666164662,
+        "bias": -0.25216867989809455
+      },
+      {
+        "strategy": "pooled:israel_palestine",
+        "k": null,
+        "wape": 0.4701545854641702,
+        "bias": -0.14151093985833713
+      },
+      {
+        "strategy": "pooled:cyprus",
+        "k": null,
+        "wape": 0.4717301008313081,
+        "bias": -0.19067185840166367
+      },
+      {
+        "strategy": "local",
+        "k": null,
+        "wape": 0.5254462783863867,
+        "bias": 0.01988983379522803
+      },
+      {
+        "strategy": "donor:israel_palestine",
+        "k": null,
+        "wape": 0.5371282775100096,
+        "bias": -0.09819962959635208
+      },
+      {
+        "strategy": "pooled:syria",
+        "k": null,
+        "wape": 0.538719330569137,
+        "bias": -0.3136556523848912
+      },
+      {
+        "strategy": "single",
+        "k": null,
+        "wape": 0.5465169747289613,
+        "bias": -0.04689260780021498
+      },
+      {
+        "strategy": "donor:syria",
+        "k": null,
+        "wape": 0.5487369243001999,
+        "bias": -0.31838196026244237
+      },
+      {
+        "strategy": "pooled:eastmed_pool",
+        "k": null,
+        "wape": 0.5930504051876065,
+        "bias": -0.5296151403703132
+      },
+      {
+        "strategy": "donor:eastmed_pool",
+        "k": null,
+        "wape": 0.5953025482101669,
+        "bias": -0.5348408514504092
+      },
+      {
+        "strategy": "pooled:southern_turkey",
+        "k": null,
+        "wape": 0.6179629060675451,
+        "bias": -0.5818982213758483
+      },
+      {
+        "strategy": "donor:southern_turkey",
+        "k": null,
+        "wape": 0.6219774175142597,
+        "bias": -0.5896812652714785
+      },
+      {
+        "strategy": "donor:cyprus",
+        "k": null,
+        "wape": 0.664343799787573,
+        "bias": -0.3657953841387856
+      }
+    ],
+    "continuity_2012": {
+      "step_index": 1.0250645546021928,
+      "band": [
+        0.7710489258352153,
+        1.2933468538355628
+      ],
+      "step_flagged": false,
+      "band_factor_only": [
+        0.8732455692318363,
+        1.1559325681418728
+      ],
+      "step_flagged_factor_only": false
+    }
+  },
+  "anomalies": {
+    "baseline_years": [
+      2012,
+      2025
+    ],
+    "baseline_source": "anomalies.by_region",
+    "method": "z-score per cell and calendar month",
+    "sensitivity": [
+      {
+        "baseline_years": [
+          2001,
+          2025
+        ],
+        "region_corr_z": 0.8934355183672343,
+        "region_mean_abs_dz": 0.4137789044844915,
+        "cells_corr_z": 0.7637299634530823,
+        "cells_mean_abs_dz": 0.19081196096676803
+      }
+    ]
+  },
+  "outages": [
+    {
+      "satellite": "SNPP",
+      "start": "2022-07-27",
+      "end": "2022-08-10"
+    },
+    {
+      "satellite": "Terra",
+      "start": "2001-06-15",
+      "end": "2001-07-02"
+    },
+    {
+      "satellite": "Terra",
+      "start": "2016-02-19",
+      "end": "2016-02-27"
+    }
+  ],
+  "caveats": [
+    "Pre-2012 values are estimates converted from MODIS and must be labelled as such.",
+    "low_confidence marks pre-2012 months where MODIS sees almost none of the VIIRS-detected activity or the factor rests on few MODIS fire-days; show them with extra caution.",
+    "Fire-days measure burning activity, not burned area.",
+    "2026 is a partial year shown for display only.",
+    "is_persistent cells contain persistent (industrial / waste-burning) sources; they are excluded from calibration but kept in the data so the UI can show or hide them."
+  ]
+}

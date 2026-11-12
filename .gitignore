@@ -10,3 +10,11 @@ data/**
 !data/raw/
 !data/raw/MANIFEST.md
 !data/raw/MANIFEST_NOTES.md
+# shared exports (step 7, 2026-11-12): Lebanon's full export, every region_monthly.json and cells.geojson,
+# except files over 5 MB (listed in docs/data_contract.md, shared separately)
+!data/export/
+!data/export/*/
+!data/export/lebanon/*
+!data/export/*/region_monthly.json
+!data/export/*/cells.geojson
+data/export/eastmed/cells.geojson
