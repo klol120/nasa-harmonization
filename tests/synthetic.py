@@ -142,7 +142,8 @@ def config_overrides(spec: SynthSpec, tmp: Path, region: str = "synth") -> dict:
     return {
         "paths": {"raw": str(tmp / "raw"), "interim": str(tmp / "interim"), "processed": str(tmp / "processed"),
                   "export": str(tmp / "export"), "reports": str(tmp / "reports")},
-        "regions": {region: {"bbox": spec.bbox, "countries": [spec.country]}},
+        "regions!": {region: {"bbox": spec.bbox, "countries": [spec.country]}},   # only the synthetic region
+        "donors!": {},
         "inputs": [
             {"path": "{raw}/{region}/MODIS_SP_[0-9][0-9][0-9][0-9].csv", "format": "firms_archive_csv", "source": "MODIS_SP"},
             {"path": "{raw}/{region}/VIIRS_SNPP_SP_[0-9][0-9][0-9][0-9].csv", "format": "firms_archive_csv", "source": "VIIRS_SNPP_SP"},

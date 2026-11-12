@@ -43,7 +43,6 @@ def synth_full(tmp_path_factory):
     ov = config_overrides(spec, tmp)
     ov["calibration"] = {"strategies": ["single", "local"], "strategy": "local", "bootstrap": {"n": 200}}
     ov["terra"] = {"strategies": ["single", "local"], "strategy": "local"}
-    ov["donors"] = {}
     cfg = load_config(overrides=ov)
     for stage in (ingest, clean, grid, terra, calibrate, validate):
         stage.run(cfg, "synth")

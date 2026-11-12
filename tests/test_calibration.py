@@ -146,3 +146,15 @@ def test_affine_blend_limits():
     assert np.allclose(a, 2) and np.allclose(b, 10)
     a, b = affine_factors("affine_blend:x", local, donor, k=1e12, scale=0.1)
     assert np.allclose(a, 4, atol=1e-6) and np.allclose(b, 10, atol=1e-4)    # donor b scaled: 100 * 0.1
+
+
+def test_shape_level_keeps_annual_total_and_shape():
+    from firecal.calibration import shape_level
+    shape = np.array([[1.0, 3.0, 0.0, 6.0], [0.0, 0.0, 0.0, 0.0]])
+    level = np.array([[5.0, 5.0, 5.0, 5.0], [1.0, 2.0, 3.0, 4.0]])
+    out = shape_level(shape, level)
+    assert np.allclose(out.sum(1), level.sum(1))
+    assert np.allclose(out[0], np.array([1, 3, 0, 6]) * 2.0)      # shape kept, scaled 20/10
+    assert np.allclose(out[1], level[1])                         # zero shape -> level
+    flat = shape_level(shape.ravel(), level.ravel(), np.repeat([2001, 2002], 4))
+    assert np.allclose(flat, out.ravel())

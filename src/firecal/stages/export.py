@@ -9,13 +9,13 @@ import numpy as np
 import pandas as pd
 
 from .. import __version__
-from ..config import as_date, config_hash, path, stage_dir
-from ..fitting import chosen
+from ..config import as_date, config_hash, path, region_settings, stage_dir
+from ..fitting import chosen, composite_spec
 from ..io import read_report, read_stage
 from ..outages import runs
 
 log = logging.getLogger(__name__)
-CONTRACT_VERSION = "0.2"
+CONTRACT_VERSION = "0.3"
 CALENDAR_COLUMNS = {
     "cell_id": "string", "year": "int16", "month": "int8", "modis_raw": "Int16", "viirs_raw": "Int16",
     "harmonized": "float32", "harmonized_low": "float32", "harmonized_high": "float32",
@@ -80,7 +80,10 @@ def cells_json(cfg, cells: pd.DataFrame) -> tuple[dict, dict]:
 def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
     r = cfg["regions"][region]
     pick, pick_k = chosen(cfg, "calibration", region), chosen(cfg, "terra", region)
-    fac = read_stage(cfg, region, "factors").query("strategy == @pick")
+    allfac = read_stage(cfg, region, "factors")
+    comp = composite_spec(cfg, pick)
+    fac = allfac[allfac.strategy == (comp["level"] if comp else pick)]
+    fcols = ["month", "a", "a_low", "a_high", "b", "b_low", "b_high", "w_local"]
     kt = read_stage(cfg, region, "kT").query("strategy == @pick_k")
     ho = read_stage(cfg, region, "holdout")
     hrep = read_report(cfg, region, "holdout")
@@ -113,11 +116,19 @@ def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
             "strategy": pick, "overlap_years": cfg["calibration"]["overlap_years"],
             "exclude_persistent_from_fit": cfg["persistence"]["exclude_from_calibration"],
             "blend_k": None if fac.k.isna().all() else float(fac.k.iloc[0]),
-            "factors": records(fac[["month", "a", "a_low", "a_high", "b", "b_low", "b_high", "w_local"]]),
+            "factors": records(fac[fcols]),
+            "composite": None if not comp else {
+                "description": "monthly shape from `shape`, each year's estimated total from `level`; "
+                               "`factors` above are the level model's",
+                "shape": {"strategy": comp["shape"],
+                          "k": _json_value(allfac[allfac.strategy == comp["shape"]].k.iloc[0]),
+                          "factors": records(allfac[allfac.strategy == comp["shape"]][fcols])},
+                "level": {"strategy": comp["level"], "factors": records(fac[fcols])},
+                "bands": "level model's factor uncertainty only (shape uncertainty not propagated)"},
             "terra_strategy": pick_k,
             "terra_correction": records(kt[["month", "kT", "kT_low", "kT_high"]]),
         },
-        "low_confidence_rule": {**cfg["low_confidence"],
+        "low_confidence_rule": {**region_settings(cfg, "low_confidence", region),
                                 "months": [int(m["month"]) for m in srep["low_confidence_months"] if m["low_confidence"]],
                                 "by_month": [{k: _json_value(v) for k, v in m.items()} for m in srep["low_confidence_months"]]},
         "validation": {
@@ -126,7 +137,9 @@ def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
             "continuity_2012": {k: hrep["continuity"][variant][k] for k in
                                 ("step_index", "band", "step_flagged", "band_factor_only", "step_flagged_factor_only")},
         },
-        "anomalies": {"baseline_years": cfg["anomalies"]["baseline_years"], "method": "z-score per cell and calendar month",
+        "anomalies": {"baseline_years": region_settings(cfg, "anomalies", region)["baseline_years"],
+                      "baseline_source": "anomalies.by_region" if region in (cfg["anomalies"].get("by_region") or {}) else "anomalies",
+                      "method": "z-score per cell and calendar month",
                       "sensitivity": [{"baseline_years": s["baseline_years"], "region_corr_z": s["region"]["corr_z"],
                                        "region_mean_abs_dz": s["region"]["mean_abs_dz"],
                                        "cells_corr_z": s["cells_all_months"]["corr_z"],

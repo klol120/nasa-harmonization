@@ -30,9 +30,13 @@ def load_config(path: str | Path | None = None, overrides: dict | None = None) -
 
 
 def deep_merge(base: dict, extra: dict) -> dict:
+    """Recursive merge; a key ending in "!" replaces instead of merging (e.g. {"donors!": {}})."""
     out = copy.deepcopy(base)
     for k, v in extra.items():
-        out[k] = deep_merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+        if k.endswith("!"):
+            out[k[:-1]] = copy.deepcopy(v)
+        else:
+            out[k] = deep_merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
     return out
 
 
@@ -79,3 +83,9 @@ def config_hash(cfg: dict) -> str:
     clean = {k: v for k, v in cfg.items() if not k.startswith("_")}
     blob = json.dumps(clean, sort_keys=True, default=str).encode()
     return "sha256:" + hashlib.sha256(blob).hexdigest()[:16]
+
+
+def region_settings(cfg: dict, section: str, region_name: str) -> dict:
+    """A config section with its `by_region.<region>` overrides applied (by_region itself removed)."""
+    sec = {k: v for k, v in cfg[section].items() if k != "by_region"}
+    return deep_merge(sec, (cfg[section].get("by_region") or {}).get(region_name, {}))

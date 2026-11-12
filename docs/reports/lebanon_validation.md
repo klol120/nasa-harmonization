@@ -1,6 +1,6 @@
 # lebanon: validation
 
-Strategy used downstream: `single`. Overlap [2012, 2020].
+Strategy used downstream: `affine_shape_single_level`. Overlap [2012, 2020].
 
 ## Ratio by counting unit (PDF Table 1)
 
@@ -21,6 +21,8 @@ WAPE = Σ|N_V − Ñ_V| / Σ N_V, bias = Σ(Ñ_V − N_V) / Σ N_V. Reverse fold
 
 | variant | strategy | k | WAPE | bias | WAPE (reverse) | bias (reverse) |
 |---|---|---|---|---|---|---|
+| pdf_rules | affine_blend:cyprus | 0 | 0.297 | +3.2% | 0.369 | +5.2% |
+| pdf_rules | affine_shape_single_level | 0 | 0.378 | -4.9% | 0.418 | +5.2% |
 | pdf_rules | blend:israel_palestine | 10 | 0.424 | -17.4% | 0.513 | +2.0% |
 | pdf_rules | blend:syria | 20 | 0.465 | -25.2% | 0.486 | -2.6% |
 | pdf_rules | blend:cyprus | 20 | 0.472 | -26.7% | 0.682 | +16.8% |
@@ -38,6 +40,8 @@ WAPE = Σ|N_V − Ñ_V| / Σ N_V, bias = Σ(Ñ_V − N_V) / Σ N_V. Reverse fold
 | pdf_rules | pooled:southern_turkey |  | 0.657 | -63.3% | 0.574 | -56.9% |
 | pdf_rules | donor:cyprus |  | 0.659 | -44.1% | 0.691 | -25.5% |
 | pdf_rules | donor:southern_turkey |  | 0.661 | -64.1% | 0.582 | -57.8% |
+| persistence_excluded | affine_blend:cyprus | 0 | 0.283 | +3.2% | 0.373 | -1.0% |
+| persistence_excluded | affine_shape_single_level | 0 | 0.338 | -4.7% | 0.417 | +4.9% |
 | persistence_excluded | blend:israel_palestine | 10 | 0.414 | -12.7% | 0.498 | +6.3% |
 | persistence_excluded | blend:eastmed_pool | 20 | 0.437 | -27.5% | 0.445 | -3.6% |
 | persistence_excluded | blend:southern_turkey | 20 | 0.446 | -29.7% | 0.440 | -5.2% |
@@ -63,15 +67,15 @@ WAPE = Σ|N_V − Ñ_V| / Σ N_V, bias = Σ(Ñ_V − N_V) / Σ N_V. Reverse fold
 
 ## Blend k selection on the full overlap (leave-one-year-out WAPE)
 
-| k | blend:cyprus | blend:eastmed_pool | blend:israel_palestine | blend:southern_turkey | blend:syria |
-|---|---|---|---|---|---|
-| 0 | 0.558 | 0.558 | 0.558 | 0.558 | 0.558 |
-| 5 | 0.467 | 0.423 | 0.448 | 0.417 | 0.434 |
-| 10 | 0.453 | 0.403 | 0.432 | 0.400 | 0.415 |
-| 20 | 0.448 | 0.398 | 0.427 | 0.399 | 0.410 |
-| 50 | 0.453 | 0.407 | 0.444 | 0.415 | 0.420 |
-| 100 | 0.477 | 0.436 | 0.468 | 0.457 | 0.430 |
-| 1e+09 | 0.596 | 0.550 | 0.571 | 0.586 | 0.519 |
+| k | affine_blend:cyprus | blend:cyprus | blend:eastmed_pool | blend:israel_palestine | blend:southern_turkey | blend:syria |
+|---|---|---|---|---|---|---|
+| 0 | 0.252 | 0.558 | 0.558 | 0.558 | 0.558 | 0.558 |
+| 5 | 0.305 | 0.467 | 0.423 | 0.448 | 0.417 | 0.434 |
+| 10 | 0.333 | 0.453 | 0.403 | 0.432 | 0.400 | 0.415 |
+| 20 | 0.374 | 0.448 | 0.398 | 0.427 | 0.399 | 0.410 |
+| 50 | 0.448 | 0.453 | 0.407 | 0.444 | 0.415 | 0.420 |
+| 100 | 0.516 | 0.477 | 0.436 | 0.468 | 0.457 | 0.430 |
+| 1e+09 | 0.686 | 0.596 | 0.550 | 0.571 | 0.586 | 0.519 |
 
 ## Continuity at 2012
 

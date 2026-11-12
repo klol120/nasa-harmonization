@@ -21,7 +21,6 @@ def exported(tmp_path_factory):
     ov = config_overrides(spec, tmp)
     ov["calibration"] = {"strategies": ["single", "local"], "strategy": "local", "bootstrap": {"n": 200}}
     ov["terra"] = {"strategies": ["single", "local"], "strategy": "local"}
-    ov["donors"] = {}
     ov["years"] = {"stats_last_year": 2019, "display_last_month": "2021-03"}   # 2020 display-only, 2021 no data
     ov["anomalies"] = {"baseline_years": [2001, 2019], "sensitivity_baselines": [[2012, 2019]], "min_sd": 0}
     cfg = load_config(overrides=ov)
