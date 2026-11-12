@@ -39,12 +39,16 @@
 | 5 | blend:israel_palestine | 1.126 | [0.89, 1.35] ok | flag | −12.7% | 0.414 | +6.3% | 0.498 | 0.221 |
 | 8 | affine_local | 1.138 | [1.02, 1.28] flag | flag | +3.2% | 0.283 | −3.3% | 0.298 | 0.170 |
 | 11 | affine_blend_a:israel_palestine | 1.159 | [1.03, 1.30] flag | flag | +5.2% | 0.260 | −3.3% | 0.261 | 0.201 |
-| 20 | blend:eastmed_pool (old default) | 1.284 | [1.01, 1.56] flag | flag | −27.5% | 0.437 | −3.6% | 0.445 | 0.312 |
+| 18 | blend:eastmed_pool (old default) | 1.284 | [1.01, 1.56] flag | flag | −27.5% | 0.437 | −3.6% | 0.445 | 0.439 |
 
 **Old vs new continuity band.**
 - The old band (factor bootstrap only) flags every strategy except `single` and `local`.
-- The new band (with year-to-year spread) flags all affine strategies except `affine_blend:cyprus`,
-  plus the pooled/donor strategies built on Cyprus, Syria, southern Turkey and the whole pool.
+- The new band (with year-to-year spread) flags 21 of 28 strategies:
+  - every affine strategy except `affine_blend:cyprus`;
+  - the ratio blends with Cyprus, southern Turkey and the whole pool;
+  - the pooled/donor strategies with Cyprus, Syria, southern Turkey and the whole pool.
+- 7 pass: `single`, `local`, `affine_blend:cyprus`, and the donor, pooled and blend strategies with
+  Israel/Palestine, plus `blend:syria`.
 
 **Hold-out bias by year (is it 2019–2020?).**
 - **2019:** every strategy under-predicts (−16% to −44%).
