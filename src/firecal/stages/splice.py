@@ -16,7 +16,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from ..config import path
+from ..config import path, region_settings
 from ..fitting import chosen, ensure_fire_days, usable_dates
 from ..geo import cell_id as make_cell_id, footprint_cells
 from ..io import read_stage, write_stage
@@ -51,7 +51,7 @@ def cell_table(cfg: dict, region: str, fs: pd.DataFrame) -> pd.DataFrame:
 
 def low_confidence_months(cfg: dict, region: str) -> pd.DataFrame:
     """Calendar months whose pre-2012 estimates are low_confidence (config low_confidence rule)."""
-    lc = cfg["low_confidence"]
+    lc = region_settings(cfg, "low_confidence", region)
     sfx = "_np" if cfg["persistence"]["exclude_from_calibration"] else ""
     y0, y1 = cfg["calibration"]["overlap_years"]
     fd = ensure_fire_days(cfg, region)

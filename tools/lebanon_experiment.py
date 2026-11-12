@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from firecal.calibration import (affine_factors, bootstrap_weights, factors, wape_bias)
-from firecal.config import load_config, path
+from firecal.config import load_config, path, region_settings
 from firecal.fitting import FitSpec, donor_groups, ensure_fire_days, table, usable_dates
 from firecal.geo import _boundaries
 from firecal.io import read_stage
@@ -207,7 +207,7 @@ def write_report(cfg, region, res, by_year, zs, scale, n_local, excl):
           "| month | VIIRS fire-days | of which MODIS zero | share | MODIS fire-days |", "|---|---|---|---|---|"]
     for m, x in zs.iterrows():
         L.append(f"| {m} | {x.viirs} | {x.zero_modis} | {x.share:.0%} | {x.modis_fire_days} |")
-    lc = cfg.get("low_confidence", {"min_modis_fire_days": 20, "max_zero_modis_share": 0.95})
+    lc = region_settings(cfg, "low_confidence", region)
     flag = (zs.modis_fire_days < lc["min_modis_fire_days"]) | (zs.share >= lc["max_zero_modis_share"])
     L += ["", "## low_confidence rule (applied in export)", "",
           f"A pre-2012 (estimated) month is `low_confidence` when its calendar month has, on the overlap years, "

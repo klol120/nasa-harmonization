@@ -104,6 +104,10 @@ donors:
 low_confidence:
   min_modis_fire_days: 20
   max_zero_modis_share: 0.95
+  by_region:
+    # 80% for Lebanon only: at 80% Greece and EastMed would flag 10 of 12 calendar months each
+    # (limit was 3), so they keep 95%. Lebanon at 80%: all 12 months (2026-11-12 decision).
+    lebanon: {max_zero_modis_share: 0.80}
 
 years:
   stats_last_year: 2025                 # 2026 partial: display only

@@ -29,3 +29,12 @@ def test_unknown_region(cfg):
 def test_hash_changes_with_config(cfg):
     other = load_config(overrides={"grid": {"size_deg": 0.1}})
     assert config_hash(cfg) != config_hash(other)
+
+
+def test_region_settings_override():
+    from firecal.config import region_settings
+    cfg = load_config(overrides={"low_confidence": {"max_zero_modis_share": 0.95,
+                                                    "by_region": {"lebanon": {"max_zero_modis_share": 0.8}}}})
+    assert region_settings(cfg, "low_confidence", "lebanon")["max_zero_modis_share"] == 0.8
+    assert region_settings(cfg, "low_confidence", "greece")["max_zero_modis_share"] == 0.95
+    assert "by_region" not in region_settings(cfg, "low_confidence", "greece")

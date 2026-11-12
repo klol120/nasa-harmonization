@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from .. import __version__
-from ..config import as_date, config_hash, path, stage_dir
+from ..config import as_date, config_hash, path, region_settings, stage_dir
 from ..fitting import chosen
 from ..io import read_report, read_stage
 from ..outages import runs
@@ -117,7 +117,7 @@ def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
             "terra_strategy": pick_k,
             "terra_correction": records(kt[["month", "kT", "kT_low", "kT_high"]]),
         },
-        "low_confidence_rule": {**cfg["low_confidence"],
+        "low_confidence_rule": {**region_settings(cfg, "low_confidence", region),
                                 "months": [int(m["month"]) for m in srep["low_confidence_months"] if m["low_confidence"]],
                                 "by_month": [{k: _json_value(v) for k, v in m.items()} for m in srep["low_confidence_months"]]},
         "validation": {

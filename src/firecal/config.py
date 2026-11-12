@@ -79,3 +79,9 @@ def config_hash(cfg: dict) -> str:
     clean = {k: v for k, v in cfg.items() if not k.startswith("_")}
     blob = json.dumps(clean, sort_keys=True, default=str).encode()
     return "sha256:" + hashlib.sha256(blob).hexdigest()[:16]
+
+
+def region_settings(cfg: dict, section: str, region_name: str) -> dict:
+    """A config section with its `by_region.<region>` overrides applied (by_region itself removed)."""
+    sec = {k: v for k, v in cfg[section].items() if k != "by_region"}
+    return deep_merge(sec, (cfg[section].get("by_region") or {}).get(region_name, {}))
