@@ -1,0 +1,123 @@
+# Every pipeline choice lives here. See CLAUDE.md for the meaning of each section.
+
+paths:
+  raw: data/raw
+  ext: data/ext
+  interim: data/interim
+  processed: data/processed
+  export: data/export
+  reports: docs/reports
+  boundaries: data/ext/ne_10m_admin_0_countries.zip
+
+regions:
+  lebanon:
+    bbox: [35.00, 33.00, 36.70, 34.75]   # west, south, east, north
+    countries: [Lebanon]
+  greece:
+    bbox: [19.20, 34.70, 29.80, 41.80]
+    countries: [Greece]
+  eastmed:
+    bbox: [30.00, 29.40, 42.40, 38.00]
+    countries: [Lebanon, Syria, Israel, Palestine, Cyprus, Turkey]
+
+# Inputs per region; "{region}" is substituted. format: firms_archive_csv | firms_api_csv |
+# firms_nrt_csv | shapefile | json | generic | auto. source: e.g. MODIS_SP, or auto (from instrument/version).
+inputs:
+  - {path: "{raw}/{region}/MODIS_SP_[0-9][0-9][0-9][0-9].csv", format: firms_archive_csv, source: MODIS_SP}
+  - {path: "{raw}/{region}/VIIRS_SNPP_SP_[0-9][0-9][0-9][0-9].csv", format: firms_archive_csv, source: VIIRS_SNPP_SP}
+  - {path: "{raw}/{region}/MODIS_SP_2026_api.csv", format: firms_api_csv, source: MODIS_SP}
+  - {path: "{raw}/{region}/VIIRS_SNPP_SP_2026_api.csv", format: firms_api_csv, source: VIIRS_SNPP_SP}
+
+# First/last date each product has data (FIRMS /api/data_availability, 2026-11-12). Used for
+# data_available / partial_month and to give SP precedence over NRT.
+coverage:
+  MODIS_SP: [2000-11-01, 2026-08-31]
+  VIIRS_SNPP_SP: [2012-01-20, 2026-07-31]
+
+# Clip every input to the archive footprint (Phase 0): Natural Earth country tag; a point in NE's sea
+# takes the nearest country within max_sea_km.
+footprint:
+  max_sea_km: 12
+
+grid:
+  size_deg: 0.05
+
+sensors:
+  satellites: [Terra, Aqua, SNPP]       # NOAA-20/21 excluded: constant constellation
+  terra_only_until: 2002-07-04          # first day of Aqua MODIS data
+  viirs_start: 2012-01-20
+
+clean:
+  fire_types: [0]                       # vegetation fires
+  confidence_classes: [nominal, high]
+  modis_confidence_bins: {low: [0, 29], nominal: [30, 79], high: [80, 100]}
+  dedup_keys: [lat, lon, datetime_utc, satellite]
+  origin_priority: [archive, api, shapefile, json, generic, nrt]
+
+# Persistent sources (fine cells detected most years, mostly at night): industrial sites, open dumps.
+persistence:
+  mode: auto                            # remove in clean: auto = only rows without fire_type; always; off
+  exclude_from_calibration: true        # drop flagged cells when fitting kT/a_m, locally and in donors
+  cell_deg: 0.01
+  min_year_frac: 0.6                    # share of that sensor's years with a detection
+  min_night_frac: 0.8
+  diagnostic_regions: [lebanon]         # report top cells, never remove
+  diagnostic_top_n: 20
+
+gaps:
+  reference_regions: [greece, eastmed]
+  p_threshold: 0.001                    # suspect if P(0 | Poisson(lambda)) below this
+  window_days: 31
+  use_suspects: false
+  review_first:                         # pinned to the top of docs/reports/outage_suspects.md
+    - {satellite: Aqua, start: 2020-08-26, end: 2020-08-28, why: "in the 2012-2020 calibration window"}
+  known:                                # confirmed outages (inclusive dates)
+    - {satellite: Terra, start: 2001-06-15, end: 2001-07-02, note: "Terra MODIS outage"}
+    - {satellite: Terra, start: 2016-02-19, end: 2016-02-27, note: "Terra safe mode"}
+    - {satellite: SNPP,  start: 2022-07-27, end: 2022-08-10, note: "S-NPP safe mode"}
+
+terra:
+  fit_years: [2003, 2020]
+  strategies: [single, local, "donor:*", "pooled:*", "blend:*"]
+  strategy: local
+
+calibration:
+  overlap_years: [2012, 2020]
+  holdout: {fit: [2012, 2016], test: [2017, 2020]}
+  strategies: [single, local, "donor:*", "pooled:*", "blend:*"]
+  strategy: {greece: local, lebanon: "blend:eastmed_pool", eastmed: local}
+  blend_k_grid: [0, 5, 10, 20, 50, 100, 1000000000]   # last ~ donor only
+  bootstrap: {n: 1000, seed: 2026, ci: 0.90}
+
+donors:
+  cyprus:           {region: eastmed, countries: [Cyprus]}
+  southern_turkey:  {region: eastmed, countries: [Turkey]}
+  syria:            {region: eastmed, countries: [Syria]}
+  israel_palestine: {region: eastmed, countries: [Israel, Palestine]}
+  eastmed_pool:     {region: eastmed, countries: [Cyprus, Turkey, Syria, Israel, Palestine]}
+
+years:
+  stats_last_year: 2025                 # 2026 partial: display only
+  display_last_month: 2026-12
+
+anomalies:
+  baseline_years: [2001, 2025]
+  sensitivity_baselines: [[2012, 2025]]
+  min_sd: 0
+
+# Phase 0 downloader (tools/download_firms.py)
+download:
+  raw_dir: data/raw
+  sources:
+    MODIS_SP:
+      archive_prefix: modis          # /data/country/modis/{y}/modis_{y}_{Country}.csv
+      first_year: 2000
+    VIIRS_SNPP_SP:
+      archive_prefix: viirs-snpp
+      first_year: 2012
+  archive_last_year: 2025            # last full year published as country archives
+  api_year: 2026                     # pulled via area API up to the SP max_date
+  api_day_range: 5                   # API rejects >5
+  archive_pause_s: 0.5
+  api_pause_s: 1.0
+  max_retries: 5

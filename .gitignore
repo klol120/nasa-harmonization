@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.idea/
+.pytest_cache/
+.venv/
+*.egg-info/
+# data: regenerate with tools/download_firms.py and `python -m firecal all`; only the manifest is tracked
+data/**
+!data/raw/
+!data/raw/MANIFEST.md
+!data/raw/MANIFEST_NOTES.md
