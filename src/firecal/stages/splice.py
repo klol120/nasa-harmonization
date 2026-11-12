@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from ..config import path, region_settings
-from ..fitting import chosen, ensure_fire_days, usable_dates
+from ..fitting import chosen, composite_spec, ensure_fire_days, usable_dates
 from ..geo import cell_id as make_cell_id, footprint_cells
 from ..io import read_stage, write_stage
 
@@ -66,9 +66,10 @@ def low_confidence_months(cfg: dict, region: str) -> pd.DataFrame:
     return t.rename_axis("month").reset_index()
 
 
-def factor_bands(cfg: dict, region: str) -> tuple[pd.DataFrame, str, str]:
+def factor_bands(cfg: dict, region: str, pick_a: str | None = None) -> tuple[pd.DataFrame, str, str]:
     """Point and band factors per (month, terra_only), and the intercept b per month."""
-    pick_a, pick_k = chosen(cfg, "calibration", region), chosen(cfg, "terra", region)
+    pick_a = pick_a or chosen(cfg, "calibration", region)
+    pick_k = chosen(cfg, "terra", region)
     fac = read_stage(cfg, region, "factors").query("strategy == @pick_a").set_index("month")
     kt = read_stage(cfg, region, "kT").query("strategy == @pick_k").set_index("month")
     A = read_stage(cfg, region, "factors_boot").query("strategy == @pick_a").pivot(index="draw", columns="month", values="a")
@@ -98,6 +99,51 @@ def cell_shares(cfg: dict, region: str) -> pd.DataFrame:
     return o[["cell_id", "month", "share"]]
 
 
+def estimate_rows(cfg: dict, region: str, fs: pd.DataFrame, seg_info: pd.DataFrame, fb: pd.DataFrame) -> pd.DataFrame:
+    """Estimated (pre-VIIRS) segment values per cell: a_m (x kT) x n_modis plus the spread intercept."""
+    c = fs.groupby(["cell_id", "year", "month", "seg"])[["n_modis"]].sum().reset_index()
+    c = c.merge(seg_info, on=["year", "month", "seg"])
+    c = c[~c.viirs_era & (c.modis_days > 0)].merge(fb, on=["month", "terra_only"], how="left")
+    parts = [pd.DataFrame({"cell_id": c.cell_id, "year": c.year, "month": c.month, "terra_only": c.terra_only,
+                           "val": c.n_modis * c.f, "lo": c.n_modis * c.f_low, "hi": c.n_modis * c.f_high})]
+    if (fb.b != 0).any():                      # affine intercept spread over cells by VIIRS share
+        sh = cell_shares(cfg, region)
+        es = seg_info[~seg_info.viirs_era & (seg_info.modis_days > 0)].merge(fb, on=["month", "terra_only"])
+        bi = sh.merge(es, on="month")
+        frac = bi.ndays / bi.month_days
+        parts.append(pd.DataFrame({"cell_id": bi.cell_id, "year": bi.year, "month": bi.month,
+                                   "terra_only": bi.terra_only, "val": bi.b * bi.share * frac,
+                                   "lo": bi.b_low * bi.share * frac, "hi": bi.b_high * bi.share * frac}))
+    return pd.concat(parts, ignore_index=True)
+
+
+def observed_rows(fs: pd.DataFrame, seg_info: pd.DataFrame) -> pd.DataFrame:
+    c = fs.groupby(["cell_id", "year", "month", "seg"])[["n_viirs"]].sum().reset_index()
+    c = c.merge(seg_info, on=["year", "month", "seg"])
+    c = c[c.viirs_era & (c.viirs_days > 0)]
+    return pd.DataFrame({"cell_id": c.cell_id, "year": c.year, "month": c.month,
+                         "val": c.n_viirs.astype(float), "lo": c.n_viirs.astype(float), "hi": c.n_viirs.astype(float)})
+
+
+def shape_level_rows(shape: pd.DataFrame, level: pd.DataFrame, fb_level: pd.DataFrame) -> pd.DataFrame:
+    """Composite: shape rows rescaled per year so the region's yearly estimated total equals the level
+    model's. Bands carry the level model's factor uncertainty (f_low/f, f_high/f per month); the
+    shape model's own uncertainty is not propagated. Years whose shape total is 0 keep the level rows."""
+    ts = shape.groupby("year").val.sum()
+    tl = level.groupby("year").val.sum()
+    scale = (tl / ts.where(ts > 0)).rename("scale")
+    out = shape.merge(scale, left_on="year", right_index=True, how="left")
+    keep_level = out.scale.isna()
+    out = out[~keep_level]
+    out["val"] = out.val * out.scale
+    r = fb_level.assign(r_lo=fb_level.f_low / fb_level.f, r_hi=fb_level.f_high / fb_level.f)[
+        ["month", "terra_only", "r_lo", "r_hi"]]
+    out = out.merge(r, on=["month", "terra_only"], how="left")
+    out["lo"], out["hi"] = out.val * out.r_lo, out.val * out.r_hi
+    fallback = level[level.year.isin(scale.index[scale.isna()])]
+    return pd.concat([out[["cell_id", "year", "month", "terra_only", "val", "lo", "hi"]], fallback], ignore_index=True)
+
+
 def month_flags(cfg: dict, seg: pd.DataFrame, lcm: pd.DataFrame) -> pd.DataFrame:
     """Region-wide flags per (year, month): availability, partial, estimate, gap, low confidence."""
     est = ~seg.viirs_era
@@ -120,28 +166,23 @@ def run(cfg: dict, region_name: str) -> pd.DataFrame:
     fs = read_stage(cfg, region_name, "fire_segments")
     seg = read_stage(cfg, region_name, "segments")
     cells = cell_table(cfg, region_name, fs)
-    fb, pick_a, pick_k = factor_bands(cfg, region_name)
+    pick = chosen(cfg, "calibration", region_name)
+    comp = composite_spec(cfg, pick)
     lcm = low_confidence_months(cfg, region_name)
     flags = month_flags(cfg, seg, lcm)
-
-    # sparse per-cell segment values (cells with fire-days)
     seg_info = seg[["year", "month", "seg", "ndays", "month_days", "modis_days", "viirs_days", "terra_only", "viirs_era"]]
-    c = fs.groupby(["cell_id", "year", "month", "seg"])[["n_modis", "n_viirs"]].sum().reset_index()
-    c = c.merge(seg_info, on=["year", "month", "seg"]).merge(fb, on=["month", "terra_only"], how="left")
-    est = ~c.viirs_era
-    has = np.where(est, c.modis_days, c.viirs_days) > 0
-    c["val"] = np.where(has, np.where(est, c.n_modis * c.f, c.n_viirs), 0.0)
-    c["lo"] = np.where(has, np.where(est, c.n_modis * c.f_low, c.n_viirs), 0.0)
-    c["hi"] = np.where(has, np.where(est, c.n_modis * c.f_high, c.n_viirs), 0.0)
-    parts = [c[["cell_id", "year", "month", "val", "lo", "hi"]]]
-    if (fb.b != 0).any():                      # affine intercept spread over cells by VIIRS share
-        sh = cell_shares(cfg, region_name)
-        es = seg_info[~seg_info.viirs_era & (seg_info.modis_days > 0)].merge(fb, on=["month", "terra_only"])
-        bi = sh.merge(es, on="month")
-        frac = bi.ndays / bi.month_days
-        parts.append(pd.DataFrame({"cell_id": bi.cell_id, "year": bi.year, "month": bi.month,
-                                   "val": bi.b * bi.share * frac, "lo": bi.b_low * bi.share * frac,
-                                   "hi": bi.b_high * bi.share * frac}))
+    if comp:
+        fbS, _, pick_k = factor_bands(cfg, region_name, comp["shape"])
+        fbL, _, _ = factor_bands(cfg, region_name, comp["level"])
+        est = shape_level_rows(estimate_rows(cfg, region_name, fs, seg_info, fbS),
+                               estimate_rows(cfg, region_name, fs, seg_info, fbL), fbL)
+        fb = pd.concat([fbS.assign(component="shape", strategy=comp["shape"]),
+                        fbL.assign(component="level", strategy=comp["level"])])
+    else:
+        fb, _, pick_k = factor_bands(cfg, region_name, pick)
+        est = estimate_rows(cfg, region_name, fs, seg_info, fb)
+    pick_a = pick
+    parts = [est[["cell_id", "year", "month", "val", "lo", "hi"]], observed_rows(fs, seg_info)]
     v = pd.concat(parts).groupby(["cell_id", "year", "month"])[["val", "lo", "hi"]].sum()
     raw = fs.groupby(["cell_id", "year", "month"])[["n_modis", "n_viirs"]].sum()
 

@@ -190,3 +190,22 @@ def affine_factors(strategy: str, local: YearMonth, donor: YearMonth | None = No
         sw = W.sum(1, keepdims=True)
         return a, np.clip((W @ local.num) / sw - a * (W @ local.den) / sw, 0, None)
     raise ValueError(f"unknown affine strategy {strategy!r}")
+
+
+def shape_level(shape_pred: np.ndarray, level_pred: np.ndarray, groups: np.ndarray | None = None) -> np.ndarray:
+    """Monthly shape from one model, annual level from another.
+
+    shape_pred and level_pred are predictions for the same rows (e.g. (ny, 12) year x month, or flat
+    segments with `groups` giving each element's year). Within each group the shape prediction is
+    rescaled so its sum equals the level prediction's sum. A group whose shape sums to 0 keeps the
+    level prediction."""
+    shape_pred, level_pred = np.asarray(shape_pred, float), np.asarray(level_pred, float)
+    if groups is None:
+        s, l = shape_pred.sum(-1, keepdims=True), level_pred.sum(-1, keepdims=True)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            return np.where(s > 0, shape_pred * (l / np.where(s > 0, s, 1)), level_pred)
+    g = pd.Series(groups)
+    s = pd.Series(shape_pred).groupby(g.values).transform("sum").to_numpy()
+    l = pd.Series(level_pred).groupby(g.values).transform("sum").to_numpy()
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(s > 0, shape_pred * (l / np.where(s > 0, s, 1)), level_pred)

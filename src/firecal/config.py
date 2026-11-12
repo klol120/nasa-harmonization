@@ -30,9 +30,13 @@ def load_config(path: str | Path | None = None, overrides: dict | None = None) -
 
 
 def deep_merge(base: dict, extra: dict) -> dict:
+    """Recursive merge; a key ending in "!" replaces instead of merging (e.g. {"donors!": {}})."""
     out = copy.deepcopy(base)
     for k, v in extra.items():
-        out[k] = deep_merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+        if k.endswith("!"):
+            out[k[:-1]] = copy.deepcopy(v)
+        else:
+            out[k] = deep_merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
     return out
 
 

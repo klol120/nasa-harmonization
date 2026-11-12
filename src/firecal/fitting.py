@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from .calibration import (YearMonth, affine_factors, bootstrap_weights, choose_k, factors, fit_with_bootstrap,
-                          wape_bias, year_month_table)
+                          shape_level, wape_bias, year_month_table)
 from .config import path
 from .geo import footprint_cells
 from .io import read_stage, stage_file
@@ -70,8 +70,10 @@ def table(cfg: dict, region: str, spec: FitSpec, countries: list[str] | None = N
 
 
 def donor_groups(cfg: dict, region: str) -> dict:
+    """Donor groups usable for `region`: their region is configured and shares no country with it."""
     local = set(cfg["regions"][region]["countries"])
-    return {g: d for g, d in cfg.get("donors", {}).items() if not local & set(d["countries"])}
+    return {g: d for g, d in (cfg.get("donors") or {}).items()
+            if d["region"] in cfg["regions"] and not local & set(d["countries"])}
 
 
 def expand_strategies(cfg: dict, region: str, patterns: list[str]) -> list[str]:
@@ -174,3 +176,42 @@ def fit_all(cfg: dict, region: str, spec: FitSpec, strategies: list[str]) -> tup
         draws.append(d.assign(strategy=strat))
     kt = pd.concat(ks, ignore_index=True) if ks else pd.DataFrame(columns=["k", "wape_loyo", "bias_loyo", "strategy"])
     return pd.concat(rows, ignore_index=True), pd.concat(draws, ignore_index=True), kt
+
+
+def composite_spec(cfg: dict, strategy: str) -> dict | None:
+    """{shape, level} for a composite strategy defined in calibration.composites, else None."""
+    return (cfg["calibration"].get("composites") or {}).get(strategy)
+
+
+def components(cfg: dict, strategy: str) -> list[str]:
+    """Plain strategies a (possibly composite) strategy needs fitted."""
+    c = composite_spec(cfg, strategy)
+    return [c["shape"], c["level"]] if c else [strategy]
+
+
+def fit_point(cfg: dict, region: str, strategy: str, years, exclude_persistent: bool):
+    """Point (a, b, k) of a plain strategy fitted on `years` (k chosen by leave-one-year-out there)."""
+    kind, _, g = strategy.partition(":")
+    local = table(cfg, region, FitSpec("a", years, exclude_persistent))
+    donor, scale, k = None, 1.0, None
+    if g:
+        d = donor_groups(cfg, region)[g]
+        donor = table(cfg, d["region"], FitSpec("a", years, exclude_persistent), d["countries"])
+        if kind.startswith("affine"):
+            scale = intercept_scale(cfg, region, g)
+    if is_blended(strategy):
+        k = (choose_k(local, donor, cfg["calibration"]["blend_k_grid"])[0] if kind == "blend"
+             else choose_k_ab(strategy, local, donor, scale, cfg["calibration"]["blend_k_grid"])[0])
+    a, b = fit_ab(strategy, local, donor, k, scale)
+    return a[0], b[0], k
+
+
+def predict_table(cfg: dict, region: str, strategy: str, fit_years, test: YearMonth, exclude_persistent: bool):
+    """Predicted VIIRS per (test year, month) for any strategy, composites included. Returns (pred, k)."""
+    c = composite_spec(cfg, strategy)
+    if c:
+        aS, bS, k = fit_point(cfg, region, c["shape"], fit_years, exclude_persistent)
+        aL, bL, _ = fit_point(cfg, region, c["level"], fit_years, exclude_persistent)
+        return shape_level(aS * test.den + bS, aL * test.den + bL), k
+    a, b, k = fit_point(cfg, region, strategy, fit_years, exclude_persistent)
+    return a * test.den + b, k

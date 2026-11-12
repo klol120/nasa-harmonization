@@ -10,7 +10,7 @@ import pandas as pd
 
 from .. import __version__
 from ..config import as_date, config_hash, path, region_settings, stage_dir
-from ..fitting import chosen
+from ..fitting import chosen, composite_spec
 from ..io import read_report, read_stage
 from ..outages import runs
 
@@ -80,7 +80,10 @@ def cells_json(cfg, cells: pd.DataFrame) -> tuple[dict, dict]:
 def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
     r = cfg["regions"][region]
     pick, pick_k = chosen(cfg, "calibration", region), chosen(cfg, "terra", region)
-    fac = read_stage(cfg, region, "factors").query("strategy == @pick")
+    allfac = read_stage(cfg, region, "factors")
+    comp = composite_spec(cfg, pick)
+    fac = allfac[allfac.strategy == (comp["level"] if comp else pick)]
+    fcols = ["month", "a", "a_low", "a_high", "b", "b_low", "b_high", "w_local"]
     kt = read_stage(cfg, region, "kT").query("strategy == @pick_k")
     ho = read_stage(cfg, region, "holdout")
     hrep = read_report(cfg, region, "holdout")
@@ -113,7 +116,15 @@ def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
             "strategy": pick, "overlap_years": cfg["calibration"]["overlap_years"],
             "exclude_persistent_from_fit": cfg["persistence"]["exclude_from_calibration"],
             "blend_k": None if fac.k.isna().all() else float(fac.k.iloc[0]),
-            "factors": records(fac[["month", "a", "a_low", "a_high", "b", "b_low", "b_high", "w_local"]]),
+            "factors": records(fac[fcols]),
+            "composite": None if not comp else {
+                "description": "monthly shape from `shape`, each year's estimated total from `level`; "
+                               "`factors` above are the level model's",
+                "shape": {"strategy": comp["shape"],
+                          "k": _json_value(allfac[allfac.strategy == comp["shape"]].k.iloc[0]),
+                          "factors": records(allfac[allfac.strategy == comp["shape"]][fcols])},
+                "level": {"strategy": comp["level"], "factors": records(fac[fcols])},
+                "bands": "level model's factor uncertainty only (shape uncertainty not propagated)"},
             "terra_strategy": pick_k,
             "terra_correction": records(kt[["month", "kT", "kT_low", "kT_high"]]),
         },

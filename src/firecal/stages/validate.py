@@ -11,10 +11,11 @@ import logging
 import numpy as np
 import pandas as pd
 
-from ..calibration import choose_k, factors, predict, wape_bias
+from ..calibration import shape_level, wape_bias
 from ..config import as_date, path
 from ..firedays import count_by_sensor
-from ..fitting import FitSpec, chosen, donor_groups, expand_strategies, fit_all, table
+from ..fitting import (FitSpec, chosen, components, composite_spec, donor_groups, expand_strategies, fit_all,
+                       predict_table, table)
 from ..geo import cell_index
 from ..io import read_report, read_stage, write_stage
 
@@ -28,26 +29,27 @@ def variants(cfg) -> list[tuple[str, bool]]:
     return v
 
 
+def available_strategies(cfg: dict, region: str) -> list[str]:
+    """Configured comparison strategies plus composites whose parts are usable for this region."""
+    plain = expand_strategies(cfg, region, cfg["calibration"]["strategies"])
+    groups = set(donor_groups(cfg, region))
+    ok = lambda s: not s.partition(":")[2] or s.partition(":")[2] in groups  # noqa: E731
+    pick = chosen(cfg, "calibration", region)
+    extra = [s for s in components(cfg, pick) if s not in plain and ok(s)]
+    comps = [c for c in (cfg["calibration"].get("composites") or {}) if all(ok(s) for s in components(cfg, c))]
+    return plain + extra + comps
+
+
 def holdout(cfg: dict, region: str) -> pd.DataFrame:
     h = cfg["calibration"]["holdout"]
     fit, test = list(range(h["fit"][0], h["fit"][1] + 1)), list(range(h["test"][0], h["test"][1] + 1))
-    groups = donor_groups(cfg, region)
-    strategies = expand_strategies(cfg, region, cfg["calibration"]["strategies"])
     rows = []
     for name, excl in variants(cfg):
         for fold, (fy, ty) in {"forward": (fit, test), "reverse": (test, fit)}.items():
-            lf, lt = table(cfg, region, FitSpec("a", fy, excl)), table(cfg, region, FitSpec("a", ty, excl))
-            donors = {}
-            for strat in strategies:
-                kind, _, g = strat.partition(":")
-                donor, k = None, None
-                if g:
-                    donors.setdefault(g, table(cfg, groups[g]["region"], FitSpec("a", fy, excl), groups[g]["countries"]))
-                    donor = donors[g]
-                if kind == "blend":
-                    k, _ = choose_k(lf, donor, cfg["calibration"]["blend_k_grid"])   # chosen on fit years only
-                a = factors(strat, lf.sums(), donor.sums() if donor else None, k)["a"][0]
-                wape, bias = wape_bias(lt.num, predict(a, lt.den))
+            lt = table(cfg, region, FitSpec("a", ty, excl))
+            for strat in available_strategies(cfg, region):
+                pred, k = predict_table(cfg, region, strat, fy, lt, excl)   # k chosen on fit years only
+                wape, bias = wape_bias(lt.num, pred)
                 rows.append({"variant": name, "fold": fold, "fit": f"{fy[0]}-{fy[-1]}", "test": f"{ty[0]}-{ty[-1]}",
                              "strategy": strat, "k": k, "wape": wape, "bias": bias,
                              "test_viirs": float(lt.num.sum()), "test_modis": float(lt.den.sum())})
@@ -106,31 +108,60 @@ def continuity(cfg: dict, region: str, exclude_persistent: bool) -> dict:
     because a perfect calibration still varies from year to year.
     """
     pick = chosen(cfg, "calibration", region)
+    comp = composite_spec(cfg, pick)
     y0, y1 = cfg["calibration"]["overlap_years"]
-    fac, draws_long, _ = fit_all(cfg, region, FitSpec("a", list(range(y0, y1 + 1)), exclude_persistent), [pick])
-    a, b = fac.set_index("month").a, fac.set_index("month").b
-    boot = draws_long.pivot(index="draw", columns="month", values="a")
-    boot_b = draws_long.pivot(index="draw", columns="month", values="b")
+    parts = components(cfg, pick)
+    fac, draws_long, _ = fit_all(cfg, region, FitSpec("a", list(range(y0, y1 + 1)), exclude_persistent), parts)
+
+    def ab(strategy):
+        f = fac[fac.strategy == strategy].set_index("month")
+        d = draws_long[draws_long.strategy == strategy]
+        return (f.a, f.b, d.pivot(index="draw", columns="month", values="a"),
+                d.pivot(index="draw", columns="month", values="b"))
+
+    a, b, boot, boot_b = ab(parts[0])
+    if comp:
+        aL, bL, bootL, bootL_b = ab(comp["level"])
     sfx = "_np" if exclude_persistent else ""
     rs = region_segments(cfg, region).rename(columns={f"n_modis{sfx}": "M", f"n_viirs{sfx}": "V"})
     before, after = [2009, 2010, 2011], [2012, 2013, 2014]
 
-    def h_total(years, a_by_month, b_by_month=None):
-        s = rs[rs.year.isin(years)]
+    def seg_est(s, a_by_month, b_by_month):
         est = s.M * s.month.map(a_by_month).to_numpy()
         if b_by_month is not None:   # affine intercept, prorated for partial segments
             est = est + s.month.map(b_by_month).to_numpy() * s.ndays / s.month_days
-        return np.where(s.viirs_era, s.V, est).sum() / len(years)
+        return est.to_numpy()
+
+    def estimates(s, a_by_month, b_by_month, level=None):
+        """Estimate per segment; for a composite, rescaled per year to the level model's total."""
+        est = seg_est(s, a_by_month, b_by_month)
+        if level is None:
+            return est
+        lv = seg_est(s, *level)
+        m = ~s.viirs_era.to_numpy()
+        out = est.copy()
+        out[m] = shape_level(est[m], lv[m], s.year.to_numpy()[m])
+        return out
+
+    def h_total(years, a_by_month, b_by_month=None, level=None):
+        s = rs[rs.year.isin(years)]
+        return np.where(s.viirs_era, s.V, estimates(s, a_by_month, b_by_month, level)).sum() / len(years)
 
     m_b = rs[rs.year.isin(before)].M.sum() / 3
     m_a = rs[rs.year.isin(after)].M.sum() / 3
-    idx = (h_total(after, a, b) / h_total(before, a, b)) / (m_a / m_b)
+    lvl = (aL, bL) if comp else None
+    idx = (h_total(after, a, b, lvl) / h_total(before, a, b, lvl)) / (m_a / m_b)
     ov = rs[rs.year.between(y0, y1) & rs.viirs_era]
-    per_year = ov.assign(pred=ov.M * ov.month.map(a) + ov.month.map(b) * ov.ndays / ov.month_days) \
-        .groupby("year")[["pred", "V"]].sum()
+    pred = seg_est(ov, a, b)
+    if comp:
+        pred = shape_level(pred, seg_est(ov, aL, bL), ov.year.to_numpy())
+    per_year = ov.assign(pred=pred).groupby("year")[["pred", "V"]].sum()
     obs_over_pred = (per_year.V / per_year.pred).to_numpy()
     rng = np.random.default_rng(cfg["calibration"]["bootstrap"]["seed"])
-    draws = np.array([(h_total(after, boot.loc[d], boot_b.loc[d]) / h_total(before, boot.loc[d], boot_b.loc[d]))
+    def lv(d):
+        return (bootL.loc[d], bootL_b.loc[d]) if comp else None
+
+    draws = np.array([(h_total(after, boot.loc[d], boot_b.loc[d], lv(d)) / h_total(before, boot.loc[d], boot_b.loc[d], lv(d)))
                       / (m_a / m_b) for d in boot.index])
     noise = rng.choice(obs_over_pred, (len(draws), 3)).mean(1) / obs_over_pred.mean()
     lo, hi = np.nanquantile(draws * noise, [0.05, 0.95])
@@ -138,7 +169,7 @@ def continuity(cfg: dict, region: str, exclude_persistent: bool) -> dict:
     return {"strategy": pick, "exclude_persistent": exclude_persistent, "before": before, "after": after,
             "step_index": float(idx), "band": [float(lo), float(hi)], "step_flagged": bool(not lo <= 1 <= hi),
             "band_factor_only": [float(olo), float(ohi)], "step_flagged_factor_only": bool(not olo <= 1 <= ohi),
-            "modis_step": float(m_a / m_b), "harmonized_step": float(h_total(after, a, b) / h_total(before, a, b)),
+            "modis_step": float(m_a / m_b), "harmonized_step": float(h_total(after, a, b, lvl) / h_total(before, a, b, lvl)),
             "overlap_pred_over_obs": (per_year.pred / per_year.V).round(3).to_dict()}
 
 

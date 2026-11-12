@@ -45,3 +45,8 @@ def test_anomaly_baseline_per_region(cfg):
     assert region_settings(cfg, "anomalies", "lebanon")["baseline_years"] == [2012, 2025]
     assert region_settings(cfg, "anomalies", "greece")["baseline_years"] == [2001, 2025]
     assert region_settings(cfg, "anomalies", "eastmed")["baseline_years"] == [2001, 2025]
+
+
+def test_override_replace_marker():
+    cfg = load_config(overrides={"donors!": {}, "regions!": {"x": {"bbox": [0, 0, 1, 1], "countries": ["Lebanon"]}}})
+    assert cfg["donors"] == {} and list(cfg["regions"]) == ["x"]
