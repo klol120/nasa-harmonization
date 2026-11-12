@@ -417,3 +417,15 @@ download: {...}                     # Phase 0 section, unchanged
 - **Shared exports** are whitelisted in .gitignore: everything for Lebanon, all region_monthly.json,
   and cells.geojson files under 5 MB.
 - **`tools/preview/`** is the static export preview (sanity check only).
+
+## Contract 0.4 and pool shape (2026-11-12)
+- **Lebanon default:** `affine_shape_single_level_pool` (shape from `affine_blend:eastmed_pool`). See
+  docs/reports/lebanon_robustness.md.
+- **Export 0.4:**
+  - per-cell values only in the calendar;
+  - region-wide flags only in region_monthly;
+  - `ym` on every table;
+  - `cells_series/{year}.json` for maps;
+  - `cells.json` dropped.
+
+  The contract is docs/data_contract.md; the preview in tools/preview uses it.

@@ -30,11 +30,19 @@ def exported(tmp_path_factory):
     return cfg, spec, d, pd.read_parquet(d / "calendar.parquet")
 
 
+def regional(d, cal):
+    """Calendar rows joined to the region-month flags (contract 0.4 keeps flags in region_monthly)."""
+    r = pd.read_csv(d / "region_monthly.csv")
+    return cal.merge(r[["ym", "is_estimate", "has_gap", "data_available", "partial_month", "display_only",
+                        "low_confidence"]], on="ym", how="left")
+
+
 def test_files_exist(exported):
     _, _, d, _ = exported
-    for f in ("calendar.parquet", "calendar.csv.gz", "region_monthly.csv", "region_monthly.json", "cells.json",
-              "cells.geojson", "meta.json"):
+    for f in ("calendar.parquet", "calendar.csv.gz", "region_monthly.csv", "region_monthly.json",
+              "cells.geojson", "meta.json", "cells_series/2005.json"):
         assert (d / f).stat().st_size > 0, f
+    assert not (d / "cells.json").exists()        # dropped in 0.4
 
 
 def test_calendar_columns_and_types(exported):
@@ -43,6 +51,9 @@ def test_calendar_columns_and_types(exported):
     for c, t in CALENDAR_COLUMNS.items():
         assert str(cal[c].dtype) == str(pd.Series(dtype=t).dtype), c
     assert not cal.duplicated(["cell_id", "year", "month"]).any()
+    assert (cal.ym == cal.year.astype(str) + "-" + cal.month.astype(int).astype(str).str.zfill(2)).all()
+    for flag in ("is_estimate", "low_confidence", "data_available", "is_persistent"):
+        assert flag not in cal.columns
 
 
 def test_every_cell_has_every_month(exported):
@@ -52,7 +63,9 @@ def test_every_cell_has_every_month(exported):
 
 
 def test_invariants(exported):
-    _, _, _, cal = exported
+    _, _, d, cal = exported
+    cal = regional(d, cal)
+    assert cal.data_available.notna().all()                                        # every month has flags
     v = cal.harmonized.notna()
     assert (cal.harmonized.isna() == ~cal.data_available).all()
     assert ((cal.harmonized_low <= cal.harmonized + 1e-4) & (cal.harmonized <= cal.harmonized_high + 1e-4))[v].all()
@@ -64,15 +77,36 @@ def test_invariants(exported):
 
 
 def test_no_data_months_are_null_not_zero(exported):
-    _, _, _, cal = exported
+    _, _, d, cal = exported
+    cal = regional(d, cal)
     late = cal[cal.year == 2021]
     assert not late.data_available.any()
     assert late.harmonized.isna().all() and late.modis_raw.isna().all() and late.viirs_raw.isna().all()
     assert cal[cal.year < 2012].viirs_raw.isna().all()
 
 
+def test_cells_series_matches_calendar(exported):
+    _, _, d, cal = exported
+    reg = pd.read_csv(d / "region_monthly.csv")
+    for year in (2005, 2016, 2021):
+        doc = json.loads((d / "cells_series" / f"{year}.json").read_text())
+        months = reg[reg.year == year].sort_values("month")
+        assert doc["ym"] == months.ym.tolist()
+        c = cal[cal.year == year]
+        for cid, g in c.groupby("cell_id", observed=True):
+            g = g.sort_values("month")
+            if cid not in doc["cells"]:                       # omitted: no fire-days this year
+                assert (g.harmonized.fillna(0) == 0).all() and (g.modis_raw.fillna(0) == 0).all()
+                continue
+            got = doc["cells"][cid]
+            exp_h = [None if pd.isna(x) else round(float(x), 2) for x in g.harmonized]
+            assert got["h"] == exp_h
+            assert got["m"] == [None if pd.isna(x) else int(x) for x in g.modis_raw]
+
+
 def test_estimates_before_splice_only(exported):
-    _, _, _, cal = exported
+    _, _, d, cal = exported
+    cal = regional(d, cal)
     assert cal[cal.year <= 2011].is_estimate.all()
     assert cal[(cal.year == 2012) & (cal.month == 1)].is_estimate.all()            # mixed month
     assert not cal[(cal.year > 2012) | ((cal.year == 2012) & (cal.month > 1))].is_estimate.any()
@@ -124,18 +158,17 @@ def test_area_anomaly_recomputed_from_sums(exported):
     assert not np.allclose(summed_cell_z.anomaly_z.to_numpy()[: ok.sum()], r.anomaly_z[ok].to_numpy())
 
 
-def test_cells_json_and_geojson(exported):
+def test_cells_geojson(exported):
     _, _, d, cal = exported
-    cj = json.loads((d / "cells.json").read_text())
     gj = json.loads((d / "cells.geojson").read_text())
-    ids = {c["cell_id"] for c in cj["cells"]}
+    ids = {f["properties"]["cell_id"] for f in gj["features"]}
     assert ids == set(cal.cell_id.unique())
-    assert len(gj["features"]) == len(cj["cells"])
-    ring = gj["features"][0]["geometry"]["coordinates"][0]
+    f = gj["features"][0]
+    ring = f["geometry"]["coordinates"][0]
     assert ring[0] == ring[-1] and len(ring) == 5
-    c = cj["cells"][0]
-    w, s, e, n = c["bounds"]
-    assert w < c["lon_center"] < e and s < c["lat_center"] < n
+    xs, ys = [p[0] for p in ring], [p[1] for p in ring]
+    assert min(xs) < f["properties"]["lon_center"] < max(xs) and min(ys) < f["properties"]["lat_center"] < max(ys)
+    assert isinstance(f["properties"]["is_persistent"], bool)
 
 
 def test_meta(exported):
@@ -147,3 +180,4 @@ def test_meta(exported):
     assert m["time"]["first_month"] == "2000-11" and m["time"]["last_month"] == "2021-03"
     assert m["time"]["display_only_years"] == [2020, 2021]
     assert len(m["calibration"]["factors"]) == 12
+    assert m["contract_version"] == "0.4" and "cells_series/2005.json" in m["files"]

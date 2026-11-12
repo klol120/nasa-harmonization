@@ -25,8 +25,8 @@ WAPE = Σ|N_V − Ñ_V| / Σ N_V, bias = Σ(Ñ_V − N_V) / Σ N_V. Reverse fold
 | pdf_rules | blend:southern_turkey | 5 | 0.188 | +0.1% | 0.142 | -0.5% |
 | pdf_rules | local |  | 0.189 | +0.7% | 0.149 | +0.3% |
 | pdf_rules | blend:cyprus | 0 | 0.189 | +0.7% | 0.149 | +0.3% |
-| pdf_rules | blend:israel_palestine | 0 | 0.189 | +0.7% | 0.149 | +0.3% |
 | pdf_rules | blend:syria | 0 | 0.189 | +0.7% | 0.149 | +0.3% |
+| pdf_rules | blend:israel_palestine | 0 | 0.189 | +0.7% | 0.149 | +0.3% |
 | pdf_rules | pooled:cyprus |  | 0.196 | +2.2% | 0.157 | +2.1% |
 | pdf_rules | pooled:israel_palestine |  | 0.211 | +7.9% | 0.190 | +14.0% |
 | pdf_rules | pooled:eastmed_pool |  | 0.227 | -2.1% | 0.243 | +12.4% |
@@ -35,6 +35,7 @@ WAPE = Σ|N_V − Ñ_V| / Σ N_V, bias = Σ(Ñ_V − N_V) / Σ N_V. Reverse fold
 | pdf_rules | single |  | 0.261 | -7.0% | 0.230 | +7.5% |
 | pdf_rules | pooled:syria |  | 0.262 | +16.1% | 0.338 | +31.2% |
 | pdf_rules | donor:southern_turkey |  | 0.279 | -18.3% | 0.213 | -4.8% |
+| pdf_rules | affine_shape_single_level_pool | 0 | 0.303 | -7.0% | 0.171 | +7.5% |
 | pdf_rules | affine_shape_single_level | 0 | 0.303 | -7.0% | 0.171 | +7.5% |
 | pdf_rules | donor:syria |  | 0.539 | +48.1% | 0.514 | +50.5% |
 | pdf_rules | donor:cyprus |  | 0.721 | +62.7% | 1.569 | +141.7% |
@@ -43,8 +44,8 @@ WAPE = Σ|N_V − Ñ_V| / Σ N_V, bias = Σ(Ñ_V − N_V) / Σ N_V. Reverse fold
 | persistence_excluded | blend:southern_turkey | 5 | 0.187 | +1.1% | 0.146 | -2.2% |
 | persistence_excluded | blend:israel_palestine | 0 | 0.188 | +1.8% | 0.152 | -1.5% |
 | persistence_excluded | blend:syria | 0 | 0.188 | +1.8% | 0.150 | -0.9% |
-| persistence_excluded | local |  | 0.188 | +1.8% | 0.152 | -1.5% |
 | persistence_excluded | blend:cyprus | 0 | 0.188 | +1.8% | 0.152 | -1.5% |
+| persistence_excluded | local |  | 0.188 | +1.8% | 0.152 | -1.5% |
 | persistence_excluded | pooled:cyprus |  | 0.194 | +3.2% | 0.159 | +0.3% |
 | persistence_excluded | pooled:israel_palestine |  | 0.206 | +7.9% | 0.172 | +11.6% |
 | persistence_excluded | pooled:eastmed_pool |  | 0.226 | -3.2% | 0.220 | +8.9% |
@@ -54,6 +55,7 @@ WAPE = Σ|N_V − Ñ_V| / Σ N_V, bias = Σ(Ñ_V − N_V) / Σ N_V. Reverse fold
 | persistence_excluded | single |  | 0.265 | -6.2% | 0.221 | +6.6% |
 | persistence_excluded | donor:southern_turkey |  | 0.282 | -18.3% | 0.216 | -4.9% |
 | persistence_excluded | affine_shape_single_level | 0 | 0.315 | -6.2% | 0.166 | +6.6% |
+| persistence_excluded | affine_shape_single_level_pool | 0 | 0.315 | -6.2% | 0.158 | +6.6% |
 | persistence_excluded | donor:syria |  | 0.466 | +38.6% | 0.386 | +36.3% |
 | persistence_excluded | donor:cyprus |  | 0.698 | +60.6% | 1.467 | +131.0% |
 | persistence_excluded | donor:israel_palestine |  | 0.849 | +83.0% | 1.018 | +100.0% |

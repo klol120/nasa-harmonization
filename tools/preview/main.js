@@ -1,27 +1,19 @@
 // Export preview: heatmap of region_monthly.json + MapLibre map of cells.geojson.
-import { MONTHS, VARIABLES, colour, heatmapGrid, monthValues, parseCalendarCSV, tooltip } from "./lib.js";
+import { MONTHS, VARIABLES, colour, heatmapGrid, monthLabel, seriesMonthValues, tooltip } from "./lib.js";
 
 const params = new URLSearchParams(location.search);
-const state = { region: params.get("region") || "lebanon", field: "harmonized", rows: [], calendar: null,
-  selected: null, meta: null };
+const state = { region: params.get("region") || "lebanon", field: "harmonized", rows: [], series: new Map(),
+  cellIds: [], selected: null, meta: null };
 const base = (r) => `../../data/export/${r}/`;
-const MAX_CALENDAR_MB = 2;   // per-cell map colouring only for small regions (gzip CSV fetched whole)
-
 async function getJSON(url) {
   const r = await fetch(url);
   if (!r.ok) throw new Error(`${url}: ${r.status}`);
   return r.json();
 }
 
-async function loadCalendar(region) {
-  const url = base(region) + "calendar.csv.gz";
-  const head = await fetch(url, { method: "HEAD" });
-  const size = Number(head.headers.get("content-length") || 0);
-  if (!head.ok || size > MAX_CALENDAR_MB * 1e6) return null;
-  const res = await fetch(url);
-  // http.server sends .gz without Content-Encoding, so decompress here
-  const stream = res.body.pipeThrough(new DecompressionStream("gzip"));
-  return parseCalendarCSV(await new Response(stream).text());
+async function loadSeries(year) {
+  if (!state.series.has(year)) state.series.set(year, getJSON(base(state.region) + `cells_series/${year}.json`));
+  return state.series.get(year);
 }
 
 function drawHeatmap() {
@@ -55,13 +47,13 @@ function drawHeatmap() {
     if (c.row.low_confidence) {
       const h = r.cloneNode(); h.setAttribute("fill", "url(#hatch)"); g.appendChild(h);
     }
-    if (state.selected && state.selected.year === c.year && state.selected.month === c.month) {
+    if (state.selected === c.row.ym) {
       r.setAttribute("stroke", "#1565c0"); r.setAttribute("stroke-width", 2);
     }
     const title = document.createElementNS(ns, "title");
     title.textContent = tooltip(c.row, VARIABLES[state.field].field);
     g.appendChild(title);
-    g.addEventListener("click", () => { state.selected = { year: c.year, month: c.month }; drawHeatmap(); colourMap(); });
+    g.addEventListener("click", () => { state.selected = c.row.ym; drawHeatmap(); colourMap(); });
     svg.appendChild(g);
   }
   document.getElementById("scale").textContent =
@@ -89,20 +81,22 @@ function initMap(geojson) {
   });
 }
 
-function colourMap() {
+async function colourMap() {
   if (!map || !map.getSource("cells")) return;
   const note = document.getElementById("mapnote");
-  if (!state.calendar) {
-    note.textContent = "Per-cell colours need calendar.csv.gz (only loaded for regions under " +
-      `${MAX_CALENDAR_MB} MB). Red outline = is_persistent.`;
-    return;
-  }
-  const sel = state.selected || state.rows.reduce((a, r) => (r.data_available ? r : a), null);
-  const vals = monthValues(state.calendar, sel.year, sel.month, VARIABLES[state.field].field);
-  const max = Math.max(1, ...[...vals.values()].filter((v) => v !== null));
-  for (const [id, v] of vals) map.setFeatureState({ source: "cells", id }, { colour: colour(v, max) });
-  note.textContent = `${sel.year}-${String(sel.month).padStart(2, "0")}: ${VARIABLES[state.field].label} per cell, ` +
-    `max ${max.toFixed(0)}. Click a heatmap month to change. Red outline = is_persistent.`;
+  const banner = document.getElementById("banner");
+  const row = state.selected ? state.rows.find((r) => r.ym === state.selected)
+    : state.rows.reduce((a, r) => (r.data_available ? r : a), null);
+  const doc = await loadSeries(row.year);
+  const v = VARIABLES[state.field];
+  const vals = seriesMonthValues(doc, row.ym, v.key, row.data_available, state.cellIds);
+  const nums = [...vals.values()].filter((x) => x !== null);
+  const max = Math.max(1, ...nums);
+  for (const [id, x] of vals) map.setFeatureState({ source: "cells", id }, { colour: colour(x, max) });
+  banner.textContent = monthLabel(row);
+  banner.className = row.is_estimate ? "banner estimate" : "banner";
+  note.textContent = `${v.label} per cell, max ${max.toFixed(1)} (own scale per variable and month). ` +
+    "Click a heatmap month to change. Red outline = is_persistent.";
 }
 
 async function main() {
@@ -124,8 +118,11 @@ async function main() {
     `${m.region}: ${m.n_cells} cells, ${m.time.first_month} – ${m.time.last_month}, strategy ${m.calibration.strategy}, ` +
     `contract ${m.contract_version}, low_confidence months ${JSON.stringify(m.low_confidence_rule.months)}`;
   drawHeatmap();
-  state.calendar = await loadCalendar(state.region).catch(() => null);
-  try { initMap(await getJSON(b + "cells.geojson")); } catch (err) {
+  try {
+    const geo = await getJSON(b + "cells.geojson");
+    state.cellIds = geo.features.map((f) => f.properties.cell_id);
+    initMap(geo);
+  } catch (err) {
     document.getElementById("mapnote").textContent = `cells.geojson not available: ${err.message}`;
   }
 }
