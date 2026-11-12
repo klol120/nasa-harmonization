@@ -12,7 +12,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from ..config import path
+from ..config import path, region_settings
 from ..io import read_stage, write_stage
 
 log = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def compare(z_main: pd.Series, z_alt: pd.Series, mask: pd.Series) -> dict:
 
 
 def run(cfg: dict, region_name: str) -> pd.DataFrame:
-    a = cfg["anomalies"]
+    a = region_settings(cfg, "anomalies", region_name)
     h = read_stage(cfg, region_name, "harmonized")
     h["anomaly_z"], base = zscore(h, ["cell_id"], a["baseline_years"], a["min_sd"])
     r = region_monthly(h)

@@ -126,7 +126,9 @@ def meta(cfg, region, cal: pd.DataFrame, cells) -> dict:
             "continuity_2012": {k: hrep["continuity"][variant][k] for k in
                                 ("step_index", "band", "step_flagged", "band_factor_only", "step_flagged_factor_only")},
         },
-        "anomalies": {"baseline_years": cfg["anomalies"]["baseline_years"], "method": "z-score per cell and calendar month",
+        "anomalies": {"baseline_years": region_settings(cfg, "anomalies", region)["baseline_years"],
+                      "baseline_source": "anomalies.by_region" if region in (cfg["anomalies"].get("by_region") or {}) else "anomalies",
+                      "method": "z-score per cell and calendar month",
                       "sensitivity": [{"baseline_years": s["baseline_years"], "region_corr_z": s["region"]["corr_z"],
                                        "region_mean_abs_dz": s["region"]["mean_abs_dz"],
                                        "cells_corr_z": s["cells_all_months"]["corr_z"],

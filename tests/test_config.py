@@ -38,3 +38,10 @@ def test_region_settings_override():
     assert region_settings(cfg, "low_confidence", "lebanon")["max_zero_modis_share"] == 0.8
     assert region_settings(cfg, "low_confidence", "greece")["max_zero_modis_share"] == 0.95
     assert "by_region" not in region_settings(cfg, "low_confidence", "greece")
+
+
+def test_anomaly_baseline_per_region(cfg):
+    from firecal.config import region_settings
+    assert region_settings(cfg, "anomalies", "lebanon")["baseline_years"] == [2012, 2025]
+    assert region_settings(cfg, "anomalies", "greece")["baseline_years"] == [2001, 2025]
+    assert region_settings(cfg, "anomalies", "eastmed")["baseline_years"] == [2001, 2025]
