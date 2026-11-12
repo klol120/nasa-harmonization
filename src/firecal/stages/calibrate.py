@@ -15,7 +15,7 @@ def run(cfg: dict, region_name: str):
     strategies = expand_strategies(cfg, region_name, cfg["calibration"]["strategies"])
     pick = chosen(cfg, "calibration", region_name)
     if pick not in strategies:
-        raise ValueError(f"calibration.strategy for {region_name} is {pick!r}; available: {strategies}")
+        strategies.append(pick)   # e.g. an affine strategy chosen in config but not in the comparison list
     f, d, kt = fit_all(cfg, region_name, spec, strategies)
     report = {"strategy": pick, "overlap_years": [y0, y1], "exclude_persistent": spec.exclude_persistent,
               "strategies": strategies, "a": f[f.strategy == pick].set_index("month").a.round(3).to_dict(),

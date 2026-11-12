@@ -35,10 +35,10 @@ WAPE = Σ|N_V − Ñ_V| / Σ N_V, bias = Σ(Ñ_V − N_V) / Σ N_V. Reverse fold
 
 Step index = (H after / H before) / (MODIS after / MODIS before), before 2009-2011, after 2012-2014. About 1 means no artificial step. The 90% band combines the a_m bootstrap with year-to-year variation.
 
-| variant | step index | 90% band | harmonized step | MODIS step | result |
-|---|---|---|---|---|---|
-| pdf_rules | 1.029 | [0.922, 1.126] | 0.798 | 0.776 | no step |
-| persistence_excluded | 1.034 | [0.939, 1.124] | 0.802 | 0.776 | no step |
+| variant | step index | 90% band (with year spread) | result | old band (factor bootstrap only) | old result | harmonized step | MODIS step |
+|---|---|---|---|---|---|---|---|
+| pdf_rules | 1.029 | [0.922, 1.126] | no step | [0.966, 1.086] | no step | 0.798 | 0.776 |
+| persistence_excluded | 1.034 | [0.939, 1.124] | no step | [0.973, 1.087] | no step | 0.802 | 0.776 |
 
 In-sample Σ Ñ_V / Σ N_V per overlap year (pdf_rules): 2012: 0.92, 2013: 1.06, 2014: 0.94, 2015: 1.18, 2016: 1.05, 2017: 1.02, 2018: 0.89, 2019: 0.92, 2020: 0.92
 

@@ -60,3 +60,26 @@ def tag_country(lat, lon, boundaries: str | Path, max_sea_km: float = 12.0) -> p
         near = n.dist <= max_sea_km * 1000
         country.loc[n.index[near]] = n.ADMIN[near].values
     return country
+
+
+def footprint_cells(boundaries: str | Path, countries, bbox, size: float) -> pd.DataFrame:
+    """Grid cells whose centre lies in one of `countries` (Natural Earth) and inside bbox.
+
+    Returns cell_id and the country of the centre point."""
+    import geopandas as gpd
+
+    w, s, e, n = bbox
+    r0, c0 = cell_index([s], [w], size)
+    r1, c1 = cell_index([n], [e], size)
+    rows, cols = np.arange(r0[0], r1[0] + 1), np.arange(c0[0], c1[0] + 1)
+    R, C = (x.ravel() for x in np.meshgrid(rows, cols, indexing="ij"))
+    lat, lon = (R + 0.5) * size - 90, (C + 0.5) * size - 180
+    keep = in_bbox(lat, lon, bbox)
+    R, C, lat, lon = R[keep], C[keep], lat[keep], lon[keep]
+    ne = _boundaries(str(boundaries))
+    poly = ne[ne.ADMIN.isin(list(countries))]
+    pts = gpd.GeoDataFrame({"cell_id": [f"{r}_{c}" for r, c in zip(R, C)]},
+                           geometry=gpd.points_from_xy(lon, lat), crs=4326)
+    j = gpd.sjoin(pts, poly, predicate="within")
+    j = j[~j.index.duplicated()]
+    return pd.DataFrame({"cell_id": j.cell_id.values, "centre_country": j.ADMIN.values})

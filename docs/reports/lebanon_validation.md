@@ -1,6 +1,6 @@
 # lebanon: validation
 
-Strategy used downstream: `blend:eastmed_pool`. Overlap [2012, 2020].
+Strategy used downstream: `single`. Overlap [2012, 2020].
 
 ## Ratio by counting unit (PDF Table 1)
 
@@ -77,14 +77,14 @@ WAPE = Σ|N_V − Ñ_V| / Σ N_V, bias = Σ(Ñ_V − N_V) / Σ N_V. Reverse fold
 
 Step index = (H after / H before) / (MODIS after / MODIS before), before 2009-2011, after 2012-2014. About 1 means no artificial step. The 90% band combines the a_m bootstrap with year-to-year variation.
 
-| variant | step index | 90% band | harmonized step | MODIS step | result |
-|---|---|---|---|---|---|
-| pdf_rules | 1.214 | [0.945, 1.473] | 1.011 | 0.833 | no step |
-| persistence_excluded | 1.284 | [1.008, 1.559] | 1.070 | 0.833 | **step flagged** |
+| variant | step index | 90% band (with year spread) | result | old band (factor bootstrap only) | old result | harmonized step | MODIS step |
+|---|---|---|---|---|---|---|---|
+| pdf_rules | 1.010 | [0.734, 1.319] | no step | [0.844, 1.156] | no step | 0.841 | 0.833 |
+| persistence_excluded | 1.025 | [0.771, 1.293] | no step | [0.873, 1.156] | no step | 0.854 | 0.833 |
 
-In-sample Σ Ñ_V / Σ N_V per overlap year (pdf_rules): 2012: 0.78, 2013: 1.11, 2014: 0.54, 2015: 0.82, 2016: 0.87, 2017: 0.66, 2018: 0.78, 2019: 0.60, 2020: 1.00
+In-sample Σ Ñ_V / Σ N_V per overlap year (pdf_rules): 2012: 0.84, 2013: 1.35, 2014: 0.56, 2015: 0.91, 2016: 1.18, 2017: 0.81, 2018: 0.72, 2019: 0.79, 2020: 1.39
 
-In-sample Σ Ñ_V / Σ N_V per overlap year (persistence_excluded): 2012: 0.75, 2013: 1.02, 2014: 0.54, 2015: 0.88, 2016: 0.84, 2017: 0.62, 2018: 0.82, 2019: 0.60, 2020: 0.97
+In-sample Σ Ñ_V / Σ N_V per overlap year (persistence_excluded): 2012: 0.82, 2013: 1.26, 2014: 0.61, 2015: 0.94, 2016: 1.18, 2017: 0.79, 2018: 0.84, 2019: 0.77, 2020: 1.33
 
 ## Breaks at MODIS processing changes (report only)
 

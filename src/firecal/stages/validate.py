@@ -108,30 +108,37 @@ def continuity(cfg: dict, region: str, exclude_persistent: bool) -> dict:
     pick = chosen(cfg, "calibration", region)
     y0, y1 = cfg["calibration"]["overlap_years"]
     fac, draws_long, _ = fit_all(cfg, region, FitSpec("a", list(range(y0, y1 + 1)), exclude_persistent), [pick])
-    a = fac.set_index("month").a
+    a, b = fac.set_index("month").a, fac.set_index("month").b
     boot = draws_long.pivot(index="draw", columns="month", values="a")
+    boot_b = draws_long.pivot(index="draw", columns="month", values="b")
     sfx = "_np" if exclude_persistent else ""
     rs = region_segments(cfg, region).rename(columns={f"n_modis{sfx}": "M", f"n_viirs{sfx}": "V"})
     before, after = [2009, 2010, 2011], [2012, 2013, 2014]
 
-    def h_total(years, a_by_month):
+    def h_total(years, a_by_month, b_by_month=None):
         s = rs[rs.year.isin(years)]
-        return np.where(s.viirs_era, s.V, s.M * s.month.map(a_by_month).to_numpy()).sum() / len(years)
+        est = s.M * s.month.map(a_by_month).to_numpy()
+        if b_by_month is not None:   # affine intercept, prorated for partial segments
+            est = est + s.month.map(b_by_month).to_numpy() * s.ndays / s.month_days
+        return np.where(s.viirs_era, s.V, est).sum() / len(years)
 
     m_b = rs[rs.year.isin(before)].M.sum() / 3
     m_a = rs[rs.year.isin(after)].M.sum() / 3
-    idx = (h_total(after, a) / h_total(before, a)) / (m_a / m_b)
+    idx = (h_total(after, a, b) / h_total(before, a, b)) / (m_a / m_b)
     ov = rs[rs.year.between(y0, y1) & rs.viirs_era]
-    per_year = ov.assign(pred=ov.M * ov.month.map(a)).groupby("year")[["pred", "V"]].sum()
+    per_year = ov.assign(pred=ov.M * ov.month.map(a) + ov.month.map(b) * ov.ndays / ov.month_days) \
+        .groupby("year")[["pred", "V"]].sum()
     obs_over_pred = (per_year.V / per_year.pred).to_numpy()
     rng = np.random.default_rng(cfg["calibration"]["bootstrap"]["seed"])
-    draws = np.array([(h_total(after, boot.loc[d]) / h_total(before, boot.loc[d])) / (m_a / m_b)
-                      for d in boot.index])
+    draws = np.array([(h_total(after, boot.loc[d], boot_b.loc[d]) / h_total(before, boot.loc[d], boot_b.loc[d]))
+                      / (m_a / m_b) for d in boot.index])
     noise = rng.choice(obs_over_pred, (len(draws), 3)).mean(1) / obs_over_pred.mean()
     lo, hi = np.nanquantile(draws * noise, [0.05, 0.95])
+    olo, ohi = np.nanquantile(draws, [0.05, 0.95])     # old band: factor bootstrap only
     return {"strategy": pick, "exclude_persistent": exclude_persistent, "before": before, "after": after,
             "step_index": float(idx), "band": [float(lo), float(hi)], "step_flagged": bool(not lo <= 1 <= hi),
-            "modis_step": float(m_a / m_b), "harmonized_step": float(h_total(after, a) / h_total(before, a)),
+            "band_factor_only": [float(olo), float(ohi)], "step_flagged_factor_only": bool(not olo <= 1 <= ohi),
+            "modis_step": float(m_a / m_b), "harmonized_step": float(h_total(after, a, b) / h_total(before, a, b)),
             "overlap_pred_over_obs": (per_year.pred / per_year.V).round(3).to_dict()}
 
 
@@ -152,6 +159,8 @@ def breaks(cfg: dict, region: str) -> tuple[pd.DataFrame, list[dict]]:
     base = ann[ann.year.between(*periods[0])].ratio
     for p0, p1 in periods:
         r = ann[ann.year.between(p0, p1)].ratio
+        if len(r) < 2 or len(base) < 2:      # period outside the data (e.g. stats_last_year < 2023)
+            continue
         t = (r.mean() - base.mean()) / np.sqrt(r.var(ddof=1) / len(r) + base.var(ddof=1) / len(base)) if p0 != 2012 else 0.0
         out.append({"period": f"{p0}-{p1}", "mean_ratio": float(r.mean()), "change_vs_2012_2017": float(r.mean() / base.mean() - 1),
                     "welch_t": float(t), "flagged": bool(abs(t) > 2)})
@@ -186,10 +195,14 @@ def write_report(cfg, region, ho, cu, rlog, cont, ann, per, k_sel) -> None:
     L += ["", "## Continuity at 2012", "",
           "Step index = (H after / H before) / (MODIS after / MODIS before), before 2009-2011, after 2012-2014. "
           "About 1 means no artificial step. The 90% band combines the a_m bootstrap with year-to-year variation.", "",
-          "| variant | step index | 90% band | harmonized step | MODIS step | result |", "|---|---|---|---|---|---|"]
+          "| variant | step index | 90% band (with year spread) | result | old band (factor bootstrap only) | old result | harmonized step | MODIS step |",
+          "|---|---|---|---|---|---|---|---|"]
     for v, c in cont.items():
-        L.append(f"| {v} | {c['step_index']:.3f} | [{c['band'][0]:.3f}, {c['band'][1]:.3f}] | {c['harmonized_step']:.3f} | "
-                 f"{c['modis_step']:.3f} | {'**step flagged**' if c['step_flagged'] else 'no step'} |")
+        fo = c["band_factor_only"]
+        L.append(f"| {v} | {c['step_index']:.3f} | [{c['band'][0]:.3f}, {c['band'][1]:.3f}] | "
+                 f"{'**step flagged**' if c['step_flagged'] else 'no step'} | [{fo[0]:.3f}, {fo[1]:.3f}] | "
+                 f"{'**step flagged**' if c['step_flagged_factor_only'] else 'no step'} | {c['harmonized_step']:.3f} | "
+                 f"{c['modis_step']:.3f} |")
     for v, c in cont.items():
         L.append("")
         L.append(f"In-sample Σ Ñ_V / Σ N_V per overlap year ({v}): " +

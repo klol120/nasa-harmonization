@@ -1,6 +1,6 @@
 # CLAUDE.md — MODIS/VIIRS burning-activity calendar (NASA Space Apps 2026)
 
-Status: **Phase 3 (grid, terra, calibrate, validate; 60 tests) done 2026-11-12, waiting for review.** Phases 0–2 approved.
+Status: **Phases 4–5 done autonomously 2026-11-12 on branch `autonomous-phase4-5` (74 tests). See docs/reports/WHILE_YOU_WERE_AWAY.md.** Phases 0–3 approved.
 
 ## Working rules
 - Work in phases and stop after each one for review. Phase 4 must not continue until every difference from the
@@ -387,3 +387,19 @@ download: {...}                     # Phase 0 section, unchanged
   - The band multiplies each a_m bootstrap draw by the year-to-year spread of observed/predicted VIIRS
     on the overlap. The factor bootstrap alone was too narrow and flagged Greece.
   - It is computed per variant with matching columns.
+
+## Phases 4–5 (done while the user was away; see docs/reports/WHILE_YOU_WERE_AWAY.md)
+- **Pipeline:** ingest → clean → grid → terra → calibrate → validate → splice → anomalies → export
+  (`python -m firecal all --region R`).
+- **Strategies:**
+  - Calibration: Lebanon uses `single`, the top-ranked in `tools/lebanon_experiment.py`. Greece and
+    EastMed use `local`.
+  - kT: Lebanon uses `single`; the others use `local`.
+  - All alternatives, including affine `affine_local`, `affine_blend:G` and `affine_blend_a:G`, can be
+    selected in config.
+- **Affine intercept:** b is spread over cells by each cell's share of overlap VIIRS fire-days in that
+  calendar month. The donor b is scaled by footprint cell counts.
+- **low_confidence:** `config.low_confidence`, applied per calendar month to estimated months.
+- **Export contract:** 0.2 (`docs/data_contract.md`).
+- **Git:** `main` holds Phases 0–3. The Phase 4–5 work is on `autonomous-phase4-5`. data/ is not
+  tracked, except the manifest.

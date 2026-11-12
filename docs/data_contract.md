@@ -1,6 +1,12 @@
 # Data contract: burning-activity calendar export
 
-Version 0.1 (draft). Producer: `firecal export`. Consumer: the frontend team (browser app).
+Version 0.2 (draft, 2026-11-12). Producer: `firecal export`. Consumer: the frontend team (browser app).
+
+Changes from 0.1:
+- Added `low_confidence` and `is_persistent` to the calendar.
+- Added `n_persistent_cells` to region_monthly.
+- Added `is_persistent` to cells.
+- Added `low_confidence_rule`, `formats_status`, the affine intercept `b` and both continuity bands to meta.
 
 > **The formats are pending confirmation from the frontend team.** Parquet, CSV.gz and JSON are all
 > produced. Tell us which ones you'll use.
@@ -48,6 +54,8 @@ Rows cover every cell in `cells.json` and every month from `meta.time.first_mont
 | `data_available` | bool | no | false when the feeding sensor has no data for the month (e.g. 2026 months after the last standard-processing date). All value columns are then null: show "no data", not 0. |
 | `display_only` | bool | no | true for rows excluded from calibration, baselines and anomaly statistics (all of 2026, a partial year). |
 | `partial_month` | bool | no | true when `data_available` is true but the feeding sensor covers only part of the month (e.g. the current month in near-real-time data). The value is not comparable to full months; show it as partial. |
+| `low_confidence` | bool | no | true for estimated months (`is_estimate`) whose calendar month fails the low-confidence rule in `meta.low_confidence_rule`. On the overlap years, the local region either has fewer than `min_modis_fire_days` MODIS fire-days in that calendar month, or at least `max_zero_modis_share` of its VIIRS fire-days fall in cell-days without any MODIS detection. Show these with extra caution. Always false for observed months. |
+| `is_persistent` | bool | no | the cell contains a persistent source (industrial site or open waste burning: detected in most years, mostly at night). Constant per cell, also in cells.json. These cells are excluded when fitting the calibration but kept in the data; the UI may show or hide them. |
 | `anomaly_z` | float32 | yes | (harmonized − baseline mean) / baseline sd for this cell and calendar month (baseline years in `meta.anomalies`). Null when the baseline sd is 0 or `data_available` is false. Computed for 2026 too, against the same baseline, for display only. |
 
 **Invariants** (checked by `tests/test_export_contract.py`)
@@ -67,11 +75,14 @@ Rows cover every cell in `cells.json` and every month from `meta.time.first_mont
   2. For each calendar month, take the mean and sd of that sum over the baseline years
      (`meta.anomalies.baseline_years`, rows with `display_only = false`).
   3. z = (sum − mean) / sd. It is null when sd = 0 or the month has `data_available = false`.
-- **Flags** propagate with OR (`is_estimate`, `has_gap`, `partial_month`, `display_only`) and with AND
-  (`data_available`).
+- **Flags** propagate with OR (`is_estimate`, `has_gap`, `partial_month`, `display_only`, `low_confidence`)
+  and with AND (`data_available`).
+- **Hiding persistent cells.** Drop cells with `is_persistent` before summing. Then recompute
+  `anomaly_z` from the new sum; region_monthly includes all cells.
 
 ## region_monthly.csv / region_monthly.json
-- These are the same columns without `cell_id`, plus `n_cells`.
+- These are the same columns without `cell_id` and `is_persistent`, plus `n_cells` and `n_persistent_cells`.
+- `region_monthly.json` holds the same rows as an array of objects; null is JSON `null`.
 - **Counts** are sums over cells.
 - **Bands** are the factor band applied to the region sum. That is the same calibration draw for every
   cell, so the band sums exactly.
@@ -82,14 +93,14 @@ Rows cover every cell in `cells.json` and every month from `meta.time.first_mont
 
 ```json
 {
-  "contract_version": "0.1",
+  "contract_version": "0.2",
   "grid_size_deg": 0.05,
   "cell_id_rule": "row = floor((lat + 90) / 0.05), col = floor((lon + 180) / 0.05), cell_id = f'{row}_{col}'",
   "cells": [
     {"cell_id": "2470_4300", "row": 2470, "col": 4300,
      "lat_center": 33.525, "lon_center": 35.025,
      "bounds": [35.00, 33.50, 35.05, 33.55],
-     "countries": ["Lebanon"], "primary_country": "Lebanon"}
+     "countries": ["Lebanon"], "primary_country": "Lebanon", "is_persistent": false}
   ]
 }
 ```
@@ -107,7 +118,7 @@ Rows cover every cell in `cells.json` and every month from `meta.time.first_mont
 
 ```json
 {
-  "contract_version": "0.1",
+  "contract_version": "0.2",
   "region": "lebanon",
   "bbox": [35.00, 33.00, 36.70, 34.75],
   "countries": ["Lebanon"],
@@ -145,3 +156,29 @@ Rows cover every cell in `cells.json` and every month from `meta.time.first_mont
 ```
 
 The numbers above are placeholders. The keys are the contract.
+
+### meta.json additions in 0.2
+- `formats_status`: "pending confirmation from the frontend team".
+- `n_cells`, `n_persistent_cells`.
+- `calibration.factors[]`: `a, a_low, a_high, b, b_low, b_high, w_local` per month. `b` is the affine
+  intercept, 0 for ratio strategies. `calibration.terra_strategy` gives the strategy used for kT.
+- `low_confidence_rule`:
+  - `min_modis_fire_days` and `max_zero_modis_share`;
+  - `months`, the flagged calendar months;
+  - `by_month`, the statistics behind the flags.
+- `validation.continuity_2012`:
+  - `band` includes year-to-year variation;
+  - `band_factor_only` is the narrower factor-bootstrap band;
+  - each has a `step_flagged` flag.
+
+### Sizes (2026-11-12 run)
+
+| region | cells | calendar rows | calendar.parquet | calendar.csv.gz | cells.geojson |
+|---|---|---|---|---|---|
+| lebanon | 429 | 134,706 | 0.1 MB | 0.4 MB | 0.15 MB |
+| greece | 5,910 | 1,855,740 | 1.1 MB | 5.6 MB | 2.0 MB |
+| eastmed | 15,872 | 4,983,808 | 3.4 MB | 15 MB | 5.3 MB |
+
+For the browser, region_monthly.json (about 110 kB) and cells.geojson are the natural starting point.
+Per-cell series can come from calendar.parquet (read with parquet-wasm or DuckDB-wasm) or
+calendar.csv.gz.

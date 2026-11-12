@@ -14,7 +14,8 @@ LAYERS = {
     "detections": "interim", "detections_clean": "interim", "persistent_sources": "interim",
     "outages": "interim", "fire_days": "interim", "fire_segments": "interim", "segments": "interim", "kT": "interim", "kT_boot": "interim",
     "factors": "processed", "factors_boot": "processed", "holdout": "processed", "breaks": "processed",
-    "harmonized": "processed", "anomalies": "processed", "baseline": "processed",
+    "harmonized": "processed", "anomalies": "processed", "baseline": "processed", "cells": "processed",
+    "region_monthly": "processed",
 }
 
 
