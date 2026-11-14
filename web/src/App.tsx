@@ -31,7 +31,8 @@ import {
   ymMonth,
   ymYear,
 } from "./data/contract";
-import { type RegionSummary, apiSource, listRegions } from "./data/api";
+import { type RegionSummary, type RegionWeather, apiSource, getWeather, listRegions } from "./data/api";
+import { WeatherCard } from "./components/WeatherCard";
 import type { CellValues, DataSource } from "./data/sources";
 import { WorldPicker } from "./components/WorldPicker";
 import { AccountMenu } from "./account/AccountMenu";
@@ -191,6 +192,19 @@ export default function App() {
       .catch((e) => !ctl.signal.aborted && (e as Error).name !== "AbortError" && setSeriesError(e instanceof Error ? e.message : String(e)));
     return () => ctl.abort();
   }, [source, meta, dsSource, area, isWhole, metric, excludePersistent, reloadKey]);
+
+  // ---- past weather at the region's hotspots (API regions only; the card hides on failure) ----
+  const [weather, setWeather] = useState<RegionWeather | null>(null);
+  const weatherRegion = source?.kind === "api" && meta && dsSource === source.id ? meta.id : null;
+  useEffect(() => {
+    setWeather(null);
+    if (!weatherRegion) return;
+    const ctl = new AbortController();
+    getWeather(weatherRegion, ctl.signal)
+      .then((w) => !ctl.signal.aborted && setWeather(w))
+      .catch(() => {});
+    return () => ctl.abort();
+  }, [weatherRegion, reloadKey]);
 
   // ---- derived analytics ----------------------------------------------
   const bounds = useMemo(() => (meta ? metaBounds(meta) : ([0, 0] as [number, number])), [meta]);
@@ -813,6 +827,18 @@ export default function App() {
               <AnnualChart totals={a.totalsBy} sensor={sensor} compare={compare} unit={unit} selectedYear={ymYear(sel)} viirsStartYear={viirsStart} events={eventMarks} onSelectYear={selectYear} />
             </section>
           </div>
+
+          {weather && (
+            <WeatherCard
+              weather={weather}
+              selected={sel}
+              onSelect={(i) => {
+                setSelected(Math.max(r[0], Math.min(r[1], i)));
+                setWindowMode("month");
+              }}
+              subArea={!isWhole}
+            />
+          )}
 
           <section className="card">
             <CardHead title="Fire season by year" subtitle="When each year's season started, peaked and ended · click a year to select it" />

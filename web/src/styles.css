@@ -849,3 +849,29 @@ html[data-motion="off"] .pulse-ring { display: none; }
 .area-alert { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .alert-z { padding: 3px 6px; border-radius: var(--radius-sm); border: 1px solid var(--border-2); background: var(--surface); color: var(--text); font-size: 11px; }
 
+
+/* ---- weather at the fire hotspots ---- */
+.weather-headline { margin: 2px 0 12px; font-size: 14px; color: var(--text); }
+.weather-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.weather-tile { padding: 10px 12px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--border); display: flex; flex-direction: column; min-width: 0; }
+.weather-value { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.25; margin-top: 2px; }
+.weather-value small { font-size: 13px; font-weight: 400; color: var(--muted); }
+.weather-diff { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.weather-normal { font-size: 11px; color: var(--faint); }
+.weather-charts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.weather-mini { margin: 0; min-width: 0; }
+.weather-mini figcaption { font-size: 11px; color: var(--muted); }
+.weather-mini figcaption span { color: var(--faint); }
+.weather-lg-line { height: 2px; background: var(--text); }
+.weather-lg-normal { height: 0; border-top: 2px dashed var(--muted); border-radius: 0; }
+.weather-lg-sel { width: 1px; height: 12px; background: rgba(255, 255, 255, 0.5); border-radius: 0; }
+.weather-attrib { margin-left: auto; color: var(--faint); font-size: 11px; }
+@media (max-width: 1180px) {
+  .weather-tiles, .weather-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .weather-attrib { margin-left: 0; flex-basis: 100%; }
+}
+.weather-diff.tone-warm { color: var(--warm); }
+.weather-diff.tone-cool { color: var(--cool); }
+.weather-lg-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
