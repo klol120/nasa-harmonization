@@ -235,6 +235,25 @@ def write_reports(cfg: dict, s: dict) -> None:
     (d / f"{s['region']}.md").write_text("\n".join(L) + "\n")
 
 
+def write_index(cfg: dict) -> None:
+    """docs/reports/countries/README.md: one row per added country, from the per-country JSON reports."""
+    d = path(cfg, "reports") / "countries"
+    rows = [json.loads(f.read_text()) for f in sorted(d.glob("*.json"))]
+    L = ["# Countries added with `python -m firecal add-country`", "",
+         "Generated from the per-country reports in this folder. Grades: config `add_country.grades` "
+         "(judgement thresholds; the v1.0 regions grade Greece A, EastMed B, Lebanon B).", "",
+         "| country | detections (raw / clean) | strategy (outcome) | VIIRS/MODIS | hold-out WAPE fwd / rev | bias fwd / rev | "
+         "step at 2012 [band] | grade | runtime | in the app |", "|---|---|---|---|---|---|---|---|---|---|"]
+    for s in rows:
+        h, c = s["holdout"], s["continuity_2012"]
+        L.append(f"| [{s['countries'][0]}]({s['region']}.md) | {s['detections']['raw']:,} / {s['detections']['clean']:,} | "
+                 f"`{s['strategy']}` ({s['auto']['outcome']}) | {s['ratio']['viirs_over_modis_2012_2020']} | "
+                 f"{h['forward']['wape']:.3f} / {h['reverse']['wape']:.3f} | {h['forward']['bias']:+.1%} / {h['reverse']['bias']:+.1%} | "
+                 f"{c['step_index']} [{c['band'][0]}, {c['band'][1]}]{' **flagged**' if c['flagged'] else ''} | **{s['grade']}** | "
+                 f"{s['timings_s'].get('total', 0) / 60:.1f} min | {'yes' if s['backend'].get('listed_by_api') else 'no'} |")
+    (d / "README.md").write_text("\n".join(L) + "\n")
+
+
 def run(country: str, region: str | None = None, skip_download: bool = False, backend: bool = True) -> dict:
     t0 = time.time()
     cfg = load_config()
@@ -274,5 +293,6 @@ def run(country: str, region: str | None = None, skip_download: bool = False, ba
     s["backend"] = load_backend(cfg, region, timings) if backend else {"loaded": False, "error": "skipped (--no-backend)"}
     timings["total"] = round(time.time() - t0, 1)
     write_reports(cfg, s)
+    write_index(cfg)
     log.info("add-country %s: grade %s, strategy %s, %.0fs", region, s["grade"], s["strategy"], timings["total"])
     return s

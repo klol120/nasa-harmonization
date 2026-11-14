@@ -1,0 +1,261 @@
+{
+ "region": "cyprus",
+ "countries": [
+  "Cyprus"
+ ],
+ "bbox": [
+  32.22,
+  34.58,
+  34.15,
+  35.24
+ ],
+ "detections": {
+  "raw": 10604,
+  "clean": 6474,
+  "by_source": {
+   "MODIS_SP": 1376,
+   "VIIRS_NOAA20_NRT": 42,
+   "VIIRS_NOAA20_SP": 3481,
+   "VIIRS_SNPP_NRT": 23,
+   "VIIRS_SNPP_SP": 5682
+  }
+ },
+ "strategy": "affine_shape_single_level_pool_ex_cyprus",
+ "auto": {
+  "outcome": "thin",
+  "reason": "12/12 months thin (n < n_month 149): share 1.00 >= n_country 0.72",
+  "inputs": {
+   "overlap_years": [
+    2012,
+    2020
+   ],
+   "exclude_persistent": true,
+   "annual": 27.89,
+   "thin_share": 1.0
+  },
+  "thresholds": {
+   "n_month": 149,
+   "n_country": 0.72,
+   "n_country_annual": 132,
+   "n_min_annual": 3.6
+  }
+ },
+ "auto_months": [
+  {
+   "name": "Jan",
+   "n": 3,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Feb",
+   "n": 4,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Mar",
+   "n": 6,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Apr",
+   "n": 6,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "May",
+   "n": 10,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Jun",
+   "n": 35,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Jul",
+   "n": 26,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Aug",
+   "n": 34,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Sep",
+   "n": 25,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Oct",
+   "n": 35,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Nov",
+   "n": 42,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Dec",
+   "n": 25,
+   "thin": true,
+   "rule": "thin_month"
+  }
+ ],
+ "terra_strategy": "single",
+ "continuation_strategy": "single",
+ "continuation_ranking": [
+  {
+   "strategy": "single",
+   "mean_wape": 0.3883
+  },
+  {
+   "strategy": "blend:southern_turkey",
+   "mean_wape": 0.4034
+  },
+  {
+   "strategy": "blend:israel_palestine",
+   "mean_wape": 0.4127
+  },
+  {
+   "strategy": "blend:eastmed_pool_ex_cyprus",
+   "mean_wape": 0.4315
+  },
+  {
+   "strategy": "local",
+   "mean_wape": 0.4388
+  },
+  {
+   "strategy": "blend:syria",
+   "mean_wape": 0.4753
+  }
+ ],
+ "ratio": {
+  "viirs_over_modis_2012_2020": 3.98,
+  "a_by_month": [
+   3.98,
+   3.98,
+   3.98,
+   3.98,
+   3.98,
+   3.98,
+   3.98,
+   3.98,
+   3.98,
+   3.98,
+   3.98,
+   3.98
+  ],
+  "a_band_by_month": [
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ],
+   [
+    3.633,
+    4.48
+   ]
+  ]
+ },
+ "holdout": {
+  "forward": {
+   "wape": 0.559,
+   "bias": -0.14
+  },
+  "reverse": {
+   "wape": 0.648,
+   "bias": 0.163
+  }
+ },
+ "continuity_2012": {
+  "step_index": 0.971,
+  "band": [
+   0.74,
+   1.277
+  ],
+  "flagged": false
+ },
+ "continuation": {
+  "step_index": 1.222018746536228,
+  "band": [
+   0.9379017944810522,
+   1.5767061558173945
+  ],
+  "step_flagged": false
+ },
+ "n_cells": 247,
+ "timings_s": {
+  "download": 405.0,
+  "ingest_clean_grid": 1.5,
+  "terra_calibrate_continuation": 1.7,
+  "continuation_final": 0.7,
+  "validate_splice_anomalies_export": 16.9,
+  "backend": 3.4,
+  "total": 430.3
+ },
+ "grade": "D",
+ "grade_reason": "mean hold-out WAPE 0.604, worst |bias| 16.3%: beyond every grade",
+ "backend": {
+  "loaded": true,
+  "listed_by_api": true,
+  "log_tail": [
+   "[cyprus] copying the calendar...",
+   "[cyprus] 77,558 cell-months loaded; checking invariants...",
+   "[cyprus] release 5 ready and current (3.1s)"
+  ],
+  "release_id": 5,
+  "contract_version": "0.5"
+ }
+}
