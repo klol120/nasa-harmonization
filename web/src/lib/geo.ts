@@ -57,4 +57,3 @@ export function ringAreaKm2(ring: Ring) {
   return Math.abs((sum * R * R) / 2);
 }
 
-export const fmtCoord = (v: number, pos: string, neg: string) => `${Math.abs(v).toFixed(2)}°${v >= 0 ? pos : neg}`;

@@ -136,7 +136,6 @@ select option { background: var(--surface); }
 .chip.is-on { color: var(--text); border-color: var(--accent); background: rgba(61, 123, 255, 0.14); }
 
 .badge { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; background: var(--surface-3); }
-.badge-mock { background: rgba(252, 165, 10, 0.14); color: var(--fire-2); border: 1px dashed rgba(252, 165, 10, 0.5); text-transform: uppercase; }
 .badge.tone-hot { background: rgba(255, 107, 74, 0.15); }
 .badge.tone-warm { background: rgba(252, 165, 10, 0.15); }
 .badge.tone-cool { background: rgba(111, 179, 255, 0.15); }
