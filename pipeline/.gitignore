@@ -1,0 +1,26 @@
+.env
+__pycache__/
+*.pyc
+.idea/
+.pytest_cache/
+.venv/
+*.egg-info/
+# data: regenerate with tools/download_firms.py and `python -m firecal all`; only the manifest is tracked
+data/**
+!data/raw/
+!data/raw/MANIFEST.md
+!data/raw/MANIFEST_NOTES.md
+# shared exports (2026-11-12): Lebanon's full export, every region_monthly.json, cells_series and cells.geojson,
+# except files over 5 MB (listed in docs/data_contract.md, shared separately)
+!data/export/
+!data/export/*/
+!data/export/lebanon/**
+!data/export/*/cells_series/
+!data/export/*/cells_series/*.json
+!data/export/*/region_monthly.json
+!data/export/*/cells.geojson
+# 2026-11-14 (monorepo with the backend/frontend): every region's meta.json and calendar.parquet, so the
+# backend can load any region from the repo (calendar.csv.gz stays local: same data, larger)
+!data/export/*/meta.json
+!data/export/*/calendar.parquet
+data/export/eastmed/cells.geojson

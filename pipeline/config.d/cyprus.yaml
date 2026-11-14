@@ -1,0 +1,33 @@
+# Written by `python -m firecal add-country` on 2026-11-14. Merged over config.yaml (paths.config_d).
+# Cyprus: auto_strategy thin -> affine_shape_single_level_pool_ex_cyprus (12/12 months thin (n < n_month 149): share 1.00 >= n_country 0.72); NOAA-20 transfer single (lowest mean hold-out WAPE).
+regions:
+  cyprus:
+    bbox: [32.22, 34.58, 34.15, 35.24]
+    countries: [Cyprus]
+donors:
+  eastmed_pool_ex_cyprus:
+    region: eastmed
+    countries: [Turkey, Syria, Israel, Palestine]
+    for_regions: [cyprus]
+calibration:
+  composites:
+    affine_shape_single_level_pool_ex_cyprus: {shape: 'affine_blend:eastmed_pool_ex_cyprus', level: single}
+  strategy: {cyprus: affine_shape_single_level_pool_ex_cyprus}
+auto_strategy:
+  by_region:
+    cyprus:
+      outcomes: {donor_only: 'donor:eastmed_pool_ex_cyprus', thin: affine_shape_single_level_pool_ex_cyprus, rich: local}
+terra:
+  strategy: {cyprus: single}
+anomalies:
+  by_region:
+    cyprus:
+      baseline_years: [2012, 2025]
+      sensitivity_baselines:
+      - [2001, 2025]
+add_country:
+  regions:
+    cyprus: {added: '2026-11-14', outcome: thin, reason: '12/12 months thin (n < n_month 149): share 1.00 >= n_country
+        0.72'}
+continuation:
+  strategy: {cyprus: single}

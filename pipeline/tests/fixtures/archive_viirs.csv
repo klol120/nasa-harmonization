@@ -1,0 +1,6 @@
+latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight,type,country
+34.34436,36.49772,344.25,0.64,0.72,2020-01-25,0932,N,VIIRS,n,2,282.24,7.29,D,0,Lebanon
+34.22921,36.33913,328.0,0.44,0.38,2020-02-02,1022,N,VIIRS,n,2,288.5,2.05,D,0,Lebanon
+34.4661,35.8945,297.44,0.39,0.36,2020-02-05,2328,N,VIIRS,n,2,283.74,0.81,N,0,Lebanon
+34.49098,36.30302,330.54,0.44,0.38,2020-02-06,1047,N,VIIRS,n,2,288.42,3.12,D,0,Lebanon
+34.46431,35.89343,302.28,0.41,0.37,2020-02-10,2334,N,VIIRS,n,2,275.7,1.42,N,0,Lebanon

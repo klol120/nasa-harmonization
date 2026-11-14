@@ -1,0 +1,265 @@
+{
+ "region": "jordan",
+ "countries": [
+  "Jordan"
+ ],
+ "bbox": [
+  34.9,
+  29.14,
+  39.34,
+  33.42
+ ],
+ "detections": {
+  "raw": 17611,
+  "clean": 9920,
+  "by_source": {
+   "MODIS_SP": 896,
+   "VIIRS_NOAA20_NRT": 292,
+   "VIIRS_NOAA20_SP": 6497,
+   "VIIRS_SNPP_NRT": 256,
+   "VIIRS_SNPP_SP": 9670
+  }
+ },
+ "strategy": "affine_shape_single_level_pool",
+ "auto": {
+  "outcome": "thin",
+  "reason": "12/12 months thin (n < n_month 149): share 1.00 >= n_country 0.72",
+  "inputs": {
+   "overlap_years": [
+    2012,
+    2020
+   ],
+   "exclude_persistent": true,
+   "annual": 32.22,
+   "thin_share": 1.0
+  },
+  "thresholds": {
+   "n_month": 149,
+   "n_country": 0.72,
+   "n_country_annual": 132,
+   "n_min_annual": 3.6
+  }
+ },
+ "auto_months": [
+  {
+   "name": "Jan",
+   "n": 33,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Feb",
+   "n": 29,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Mar",
+   "n": 2,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Apr",
+   "n": 15,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "May",
+   "n": 27,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Jun",
+   "n": 31,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Jul",
+   "n": 21,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Aug",
+   "n": 19,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Sep",
+   "n": 15,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Oct",
+   "n": 17,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Nov",
+   "n": 29,
+   "thin": true,
+   "rule": "thin_month"
+  },
+  {
+   "name": "Dec",
+   "n": 52,
+   "thin": true,
+   "rule": "thin_month"
+  }
+ ],
+ "terra_strategy": "single",
+ "continuation_strategy": "blend:southern_turkey",
+ "continuation_ranking": [
+  {
+   "strategy": "blend:southern_turkey",
+   "mean_wape": 0.2917
+  },
+  {
+   "strategy": "blend:eastmed_pool",
+   "mean_wape": 0.2981
+  },
+  {
+   "strategy": "blend:israel_palestine",
+   "mean_wape": 0.3046
+  },
+  {
+   "strategy": "single",
+   "mean_wape": 0.3142
+  },
+  {
+   "strategy": "blend:syria",
+   "mean_wape": 0.3395
+  },
+  {
+   "strategy": "blend:cyprus",
+   "mean_wape": 0.3447
+  },
+  {
+   "strategy": "local",
+   "mean_wape": 0.3548
+  }
+ ],
+ "ratio": {
+  "viirs_over_modis_2012_2020": 6.138,
+  "a_by_month": [
+   6.138,
+   6.138,
+   6.138,
+   6.138,
+   6.138,
+   6.138,
+   6.138,
+   6.138,
+   6.138,
+   6.138,
+   6.138,
+   6.138
+  ],
+  "a_band_by_month": [
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ],
+   [
+    4.994,
+    7.882
+   ]
+  ]
+ },
+ "holdout": {
+  "forward": {
+   "wape": 0.466,
+   "bias": 0.189
+  },
+  "reverse": {
+   "wape": 0.518,
+   "bias": -0.159
+  }
+ },
+ "continuity_2012": {
+  "step_index": 1.733,
+  "band": [
+   0.977,
+   2.879
+  ],
+  "flagged": false
+ },
+ "continuation": {
+  "step_index": 0.9979661347141567,
+  "band": [
+   0.7360052184574747,
+   1.3344956893586806
+  ],
+  "step_flagged": false
+ },
+ "n_cells": 3399,
+ "timings_s": {
+  "download": 521.8,
+  "ingest_clean_grid": 1.7,
+  "terra_calibrate_continuation": 2.0,
+  "continuation_final": 0.9,
+  "validate_splice_anomalies_export": 54.8,
+  "backend": 18.5,
+  "total": 600.8
+ },
+ "grade": "C",
+ "grade_reason": "mean hold-out WAPE 0.492 <= 0.6, worst |bias| 18.9% <= 35%, no step at 2012",
+ "backend": {
+  "loaded": true,
+  "listed_by_api": true,
+  "log_tail": [
+   "[jordan] copying the calendar...",
+   "[jordan] 1,067,286 cell-months loaded; checking invariants...",
+   "[jordan] release 4 ready and current (18.1s)"
+  ],
+  "release_id": 4,
+  "contract_version": "0.5"
+ }
+}

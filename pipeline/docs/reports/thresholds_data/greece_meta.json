@@ -1,0 +1,46 @@
+{
+ "region": "greece",
+ "donor": "eastmed_pool",
+ "cells_sampled_from": 4657,
+ "footprint_cells": 5467,
+ "donor_footprint_cells": 15298,
+ "fractions": [
+  1.0,
+  0.5,
+  0.2,
+  0.1,
+  0.05,
+  0.02,
+  0.01,
+  0.005
+ ],
+ "reps": 200,
+ "seed": 20261114,
+ "seed_rule": "numpy default_rng([seed, region_index, round(frac*1000), rep])",
+ "region_index": 0,
+ "n_boot_continuity": 200,
+ "exclude_persistent": true,
+ "holdout": {
+  "fit": [
+   2012,
+   2016
+  ],
+  "test": [
+   2017,
+   2020
+  ]
+ },
+ "overlap_years": [
+  2012,
+  2020
+ ],
+ "k_grid": [
+  0,
+  5,
+  10,
+  20,
+  50,
+  100,
+  1000000000
+ ]
+}

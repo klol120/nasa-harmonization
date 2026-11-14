@@ -1,0 +1,1 @@
+{"contract_version":"0.5","year":2000,"ym":["2000-11","2000-12"],"fields":{"h":"harmonized","m":"modis_raw","v":"viirs_raw"},"omitted_cells":"no fire-days this year: 0 where data_available, else null","cells":{"2553_3444":{"h":[4.74,0.0],"m":[1,0],"v":[null,null]},"2554_3444":{"h":[4.74,0.0],"m":[1,0],"v":[null,null]},"2589_3428":{"h":[4.74,0.0],"m":[1,0],"v":[null,null]}}}

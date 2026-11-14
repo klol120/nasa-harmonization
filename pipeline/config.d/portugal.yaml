@@ -1,0 +1,16 @@
+# Written by `python -m firecal add-country` on 2026-11-14. Merged over config.yaml (paths.config_d).
+# Portugal: auto_strategy rich -> local (0/12 months thin (n < n_month 149): share 0.00 < n_country 0.72); NOAA-20 transfer single (lowest mean hold-out WAPE).
+regions:
+  portugal:
+    bbox: [-9.55, 36.94, -6.16, 42.2]
+    countries: [Portugal]
+calibration:
+  strategy: {portugal: local}
+terra:
+  strategy: {portugal: local}
+add_country:
+  regions:
+    portugal: {added: '2026-11-14', outcome: rich, reason: '0/12 months thin (n < n_month 149): share 0.00 < n_country
+        0.72'}
+continuation:
+  strategy: {portugal: single}
