@@ -1,0 +1,16 @@
+# OS / archive junk
+.DS_Store
+__MACOSX/
+
+# local secrets & tooling
+.env
+.claude/settings.local.json
+
+# python
+__pycache__/
+.pytest_cache/
+.venv/
+
+# node
+node_modules/
+dist/
