@@ -103,6 +103,85 @@ async def cmd_delete_release(args) -> int:
     return 0
 
 
+def _weather_fields(args) -> list[str]:
+    from . import weather as W
+
+    fields = args.fields.split(",") if args.fields else list(W.FIELDS)
+    bad = [f for f in fields if f not in W.FIELDS]
+    if bad:
+        raise SystemExit(f"unknown --fields {bad}; choose from {','.join(W.FIELDS)}")
+    return fields
+
+
+def _need_credentials():
+    from . import weather as W
+
+    creds = W.credentials()
+    if not creds:
+        raise SystemExit("METEOMATICS_USER / METEOMATICS_PASSWORD are not set (backend/.env, or the root .env for Docker)")
+    return creds
+
+
+async def cmd_weather_check(args) -> int:
+    from . import weather as W
+
+    creds = _need_credentials()
+    fields = _weather_fields(args)
+    try:
+        conn = await connect(settings().database_url)
+        try:
+            await migrate(conn)
+            await W.take_quota(conn, W.daily_cap())
+        finally:
+            await conn.close()
+    except W.QuotaReached as e:
+        print(e)
+        return 1
+    try:
+        res = await asyncio.to_thread(W.check, creds, args.lat, args.lon, fields)
+    except W.MeteomaticsError as e:
+        print(f"Meteomatics refused the request: {e}{W.hint(e.status)}")
+        return 1
+    print(f"OK: {args.lat},{args.lon} on {res['day']} ({res['seconds']} s)")
+    for f in fields:
+        print(f"  {W.FIELDS[f][0]:<36} {res[f]}")
+    return 0
+
+
+async def cmd_weather_fetch(args) -> int:
+    from . import weather as W
+
+    creds = None if args.dry_run else _need_credentials()
+    fields = _weather_fields(args)
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        return await W.fetch_all(conn, args.regions, creds, fields, chunk_months=args.chunk_months, dry_run=args.dry_run)
+    finally:
+        await conn.close()
+
+
+async def cmd_weather_export(args) -> int:
+    from . import weather as W
+
+    conn = await connect(settings().database_url)
+    try:
+        return await W.export_dir(conn, Path(args.folder))
+    finally:
+        await conn.close()
+
+
+async def cmd_weather_import(args) -> int:
+    from . import weather as W
+
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        return await W.import_dir(conn, Path(args.folder))
+    finally:
+        await conn.close()
+
+
 def main() -> None:
     p = argparse.ArgumentParser(prog="firecal-db", description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -118,6 +197,20 @@ def main() -> None:
     d = sub.add_parser("delete-release", help="delete a release, its data and its model runs")
     d.add_argument("release_id", type=int)
     d.add_argument("--yes", action="store_true")
+    fields_help = "comma-separated subset of t_mean_c,t_max_c,precip_mm,wind_ms,rh_pct (default: all)"
+    wc = sub.add_parser("weather-check", help="one small Meteomatics request, to test the credentials and parameters")
+    wc.add_argument("--lat", type=float, default=33.89)
+    wc.add_argument("--lon", type=float, default=35.50)
+    wc.add_argument("--fields", help=fields_help)
+    wf = sub.add_parser("weather-fetch", help="fetch the months of weather not stored yet (stops at the daily cap)")
+    wf.add_argument("regions", nargs="*", help="default: every region with a current release")
+    wf.add_argument("--fields", help=fields_help)
+    wf.add_argument("--chunk-months", type=int, default=12, help="months per request (split automatically if too large)")
+    wf.add_argument("--dry-run", action="store_true", help="show what would be fetched, without sending requests")
+    we = sub.add_parser("weather-export", help="write stored weather to <folder>/<region>.json")
+    we.add_argument("folder")
+    wi = sub.add_parser("weather-import", help="load <region>.json files written by weather-export")
+    wi.add_argument("folder")
     sv = sub.add_parser("serve", help="run the API")
     sv.add_argument("--host", default="127.0.0.1")
     sv.add_argument("--port", type=int, default=8000)
@@ -130,7 +223,9 @@ def main() -> None:
         uvicorn.run("firecal_api.api:app", host=args.host, port=args.port, reload=args.reload)
         return
     fn = {"init": cmd_init, "ingest": cmd_ingest, "releases": cmd_releases,
-          "set-current": cmd_set_current, "delete-release": cmd_delete_release}[args.cmd]
+          "set-current": cmd_set_current, "delete-release": cmd_delete_release,
+          "weather-check": cmd_weather_check, "weather-fetch": cmd_weather_fetch,
+          "weather-export": cmd_weather_export, "weather-import": cmd_weather_import}[args.cmd]
     sys.exit(asyncio.run(fn(args)))
 
 

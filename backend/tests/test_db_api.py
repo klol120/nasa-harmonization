@@ -217,3 +217,68 @@ def test_csv_only_export_loads(tmp_path, loaded):
 
     rep = run(go())
     assert rep.n_cell_months == loaded.n_cell_months
+
+
+def test_weather_fetch_store_serve_export(client, loaded, tmp_path):
+    """Fetch (against a fake Meteomatics) -> stored once -> served with normals -> exported and re-imported."""
+    from datetime import date
+
+    from firecal_api import weather as W
+    from firecal_api.db import connect
+
+    from .test_weather import fake_meteomatics
+
+    sent = []
+
+    def get(url, creds):
+        sent.append(url)
+        return fake_meteomatics(url)
+
+    async def fetch(cap=1000, today=date(2026, 11, 14)):
+        conn = await connect(TEST_DB_URL)
+        try:
+            rel = await conn.fetchrow("select * from release where region_id = 'lebanon' and is_current")
+            return await W.fetch_region(conn, rel, None, list(W.FIELDS), cap=cap, today=today,
+                                        get=get, log=lambda *_: None)
+        finally:
+            await conn.close()
+
+    assert client.get("/regions/lebanon/weather").json()["available"] is False
+    n = run(fetch())
+    assert n == len(sent) == 27  # 2000-11 .. 2026-11 in 12-month runs
+    assert run(fetch()) == 0  # same day: nothing new
+    assert run(fetch(today=date(2026, 11, 15))) == 1  # next day: only November again
+    assert sent[-1].split("/")[3] == "2026-11-02T00:00:00Z--2026-11-15T00:00:00Z:P1D"
+
+    body = client.get("/regions/lebanon/weather", params={"from": "2019-07", "to": "2019-08"}).json()
+    assert body["available"] and 1 <= len(body["points"]) <= 9
+    assert abs(sum(p["weight"] for p in body["points"]) - 1) < 1e-3
+    jul = body["months"][0]
+    assert [m["ym"] for m in body["months"]] == ["2019-07", "2019-08"]
+    assert jul["complete"] and jul["precip_mm"] == 31.0 and jul["t_max_c"] == 17.0
+    assert jul["t_max_c_anom"] == 0.0 and jul["precip_pct_of_normal"] == 100
+
+    async def export_import():
+        conn = await connect(TEST_DB_URL)
+        try:
+            await W.export_dir(conn, tmp_path, log=lambda *_: None)
+            await conn.execute("delete from weather_region")
+            assert await conn.fetchval("select count(*) from weather_month") == 0
+            await W.import_dir(conn, tmp_path, log=lambda *_: None)
+            return await conn.fetchval("select count(*) from weather_month")
+        finally:
+            await conn.close()
+
+    assert run(export_import()) == len(C.month_range(date(2000, 11, 1), date(2026, 11, 1)))
+
+    async def quota():
+        conn = await connect(TEST_DB_URL)
+        try:
+            await conn.execute("delete from weather_month where ym >= '2026-01-01'")
+            used = await W.usage_today(conn)
+            with pytest.raises(W.QuotaReached):
+                await W.take_quota(conn, used)
+        finally:
+            await conn.close()
+
+    run(quota())
