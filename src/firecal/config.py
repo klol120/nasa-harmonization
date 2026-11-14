@@ -22,10 +22,22 @@ class ConfigError(ValueError):
 def load_config(path: str | Path | None = None, overrides: dict | None = None) -> dict:
     path = Path(path) if path else DEFAULT_CONFIG
     cfg = yaml.safe_load(path.read_text())
+    cfg = merge_overlays(cfg, path.parent)
     if overrides:
         cfg = deep_merge(cfg, overrides)
     cfg["_root"] = str(path.resolve().parent)
     validate(cfg)
+    return cfg
+
+
+def merge_overlays(cfg: dict, root: Path) -> dict:
+    """Merge paths.config_d/*.yaml (one file per country added by `firecal add-country`), in name order."""
+    d = (cfg.get("paths") or {}).get("config_d")
+    if not d:
+        return cfg
+    d = Path(d) if Path(d).is_absolute() else root / d
+    for f in sorted(d.glob("*.yaml")) if d.is_dir() else []:
+        cfg = deep_merge(cfg, yaml.safe_load(f.read_text()) or {})
     return cfg
 
 

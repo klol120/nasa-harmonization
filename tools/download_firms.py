@@ -20,13 +20,15 @@ from pathlib import Path
 
 import pandas as pd
 import requests
-import yaml
 from dotenv import dotenv_values
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).parent))
 BASE = "https://firms.modaps.eosdis.nasa.gov"
-CFG = yaml.safe_load((ROOT / "config.yaml").read_text())
+sys.path.insert(0, str(ROOT / "src"))
+from firecal.config import load_config  # noqa: E402
+
+CFG = load_config()                       # config.yaml + config.d/ (countries added by add-country)
 DL = CFG["download"]
 RAW = ROOT / DL["raw_dir"]
 
@@ -115,8 +117,9 @@ def archive_path(source: str, country: str, year: int) -> Path:
     return RAW / "archive" / source / f"{country}_{year}.csv"
 
 
-def download_archives():
-    countries = sorted({c for r in CFG["regions"].values() for c in r["countries"]})
+def download_archives(regions: list[str] | None = None):
+    regions = regions or list(CFG["regions"])
+    countries = sorted({c for r in regions for c in CFG["regions"][r]["countries"]})
     for source, s in archive_sources().items():
         p = s["archive_prefix"]
         for year in range(s["first_year"], DL["archive_last_year"] + 1):
@@ -131,11 +134,12 @@ def download_archives():
                     write_atomic(missing, f"404 {url}\n")
                 else:
                     write_atomic(path, body)
-    build_region_files()
+    build_region_files(regions)
 
 
-def build_region_files():
-    for region, r in CFG["regions"].items():
+def build_region_files(regions: list[str] | None = None):
+    for region in regions or list(CFG["regions"]):
+        r = CFG["regions"][region]
         for source, s in archive_sources().items():
             for year in range(s["first_year"], DL["archive_last_year"] + 1):
                 out = RAW / region / f"{source}_{year}.csv"
@@ -205,13 +209,14 @@ def pull_api(key: str, start: dt.date, end: dt.date, regions: list[str]):
     log.info(f"api: {n} new requests")
 
 
-def assemble_api_year(year: int):
+def assemble_api_year(year: int, regions: list[str] | None = None):
     """Build data/raw/{region}/{source}_{year}_api.csv from API chunks, clipped to the
     archive footprint: country-tagged (tools/footprint.py) and limited to the region's
     countries, so every year covers the same area."""
     from footprint import tag_country
 
-    for region, r in CFG["regions"].items():
+    for region in regions or list(CFG["regions"]):
+        r = CFG["regions"][region]
         for source in DL["sources"]:
             chunks = sorted((RAW / "api" / region / source).glob(f"{year}-*.csv"))
             dfs = [pd.read_csv(c, dtype={"acq_time": str}) for c in chunks if c.stat().st_size > 0]
@@ -305,7 +310,8 @@ def write_manifest():
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("archives")
+    ar = sub.add_parser("archives")
+    ar.add_argument("--regions", nargs="+", default=None)
     a = sub.add_parser("api")
     a.add_argument("--start", type=dt.date.fromisoformat, required=True)
     a.add_argument("--end", type=dt.date.fromisoformat, required=True)
@@ -324,11 +330,11 @@ def main():
 
 def run(args, key):
     if args.cmd == "archives":
-        download_archives()
+        download_archives(args.regions)
     elif args.cmd == "api":
         pull_api(key, args.start, args.end, args.regions)
         if args.assemble:
-            assemble_api_year(args.start.year)
+            assemble_api_year(args.start.year, args.regions)
     else:
         write_manifest()
 

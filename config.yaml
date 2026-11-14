@@ -8,6 +8,9 @@ paths:
   export: data/export
   reports: docs/reports
   boundaries: data/ext/ne_10m_admin_0_countries.zip
+  # One file per country added by `python -m firecal add-country` (region, donors, strategies), merged
+  # over this file in name order. Edit those files to change an added country's choices.
+  config_d: config.d
 
 regions:
   lebanon:

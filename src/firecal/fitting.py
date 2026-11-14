@@ -71,10 +71,12 @@ def table(cfg: dict, region: str, spec: FitSpec, countries: list[str] | None = N
 
 
 def donor_groups(cfg: dict, region: str) -> dict:
-    """Donor groups usable for `region`: their region is configured and shares no country with it."""
+    """Donor groups usable for `region`: their region is configured, shares no country with it, and (when
+    the group lists `for_regions`, e.g. a pool built by add-country) is meant for it."""
     local = set(cfg["regions"][region]["countries"])
     return {g: d for g, d in (cfg.get("donors") or {}).items()
-            if d["region"] in cfg["regions"] and not local & set(d["countries"])}
+            if d["region"] in cfg["regions"] and not local & set(d["countries"])
+            and region in d.get("for_regions", [region])}
 
 
 def expand_strategies(cfg: dict, region: str, patterns: list[str]) -> list[str]:
