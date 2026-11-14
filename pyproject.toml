@@ -14,6 +14,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
+tools = ["matplotlib>=3.8"]   # charts in tools/ (thresholds report)
 
 [project.scripts]
 firecal = "firecal.cli:main"
