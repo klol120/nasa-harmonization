@@ -349,7 +349,12 @@ export default function App() {
     main.classList.add("reveal");
     const io = new IntersectionObserver((entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("in")), { rootMargin: "0px 0px -8% 0px" });
     [...main.children].forEach((c) => io.observe(c));
+    // Sections that mount later (the weather card arrives after its own request) must be watched too,
+    // or they stay invisible while still taking up space.
+    const mo = new MutationObserver((records) => records.forEach((rec) => rec.addedNodes.forEach((n) => n instanceof Element && io.observe(n))));
+    mo.observe(main, { childList: true });
     return () => {
+      mo.disconnect();
       io.disconnect();
       main.classList.remove("reveal");
     };
