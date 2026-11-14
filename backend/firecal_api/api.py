@@ -20,6 +20,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel, Field, model_validator
 
+from . import accounts
 from . import aggregate as A
 from . import contract as C
 from . import weather as W
@@ -39,8 +40,12 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Wel3a burning-calendar API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=2048)
 app.add_middleware(
-    CORSMiddleware, allow_origins=settings().cors_origins, allow_methods=["GET", "POST"], allow_headers=["*"]
+    CORSMiddleware, allow_origins=settings().cors_origins,
+    allow_methods=["GET", "POST", "PATCH", "DELETE"], allow_headers=["*"],
 )
+
+# Accounts, email list, saved areas, plans: optional extras; no data endpoint depends on them.
+app.include_router(accounts.router)
 
 RegionId = Annotated[str, Path(pattern=r"^[a-z0-9_-]{1,64}$")]
 ReleaseQ = Annotated[int | None, Query(description="Release id; defaults to the region's current release")]
@@ -74,16 +79,20 @@ async def release_row(c: asyncpg.Connection, region: str, release: int | None) -
     return row
 
 
+async def fetch_cells(c: asyncpg.Connection, release_id: int) -> list[dict]:
+    rows = await c.fetch(
+        """select c.cell_key, c.cell_id, c.row, c.col, c.lat_center, c.lon_center, c.countries, c.primary_country,
+                  rc.is_persistent
+           from release_cell rc join cell c using (cell_key) where rc.release_id = $1 order by c.cell_key""",
+        release_id,
+    )
+    return [dict(r) for r in rows]
+
+
 async def region_cells(request: Request, c: asyncpg.Connection, release_id: int) -> list[dict]:
     cache = request.app.state.cells
     if release_id not in cache:
-        rows = await c.fetch(
-            """select c.cell_key, c.cell_id, c.row, c.col, c.lat_center, c.lon_center, c.countries, c.primary_country,
-                      rc.is_persistent
-               from release_cell rc join cell c using (cell_key) where rc.release_id = $1 order by c.cell_key""",
-            release_id,
-        )
-        cache[release_id] = [dict(r) for r in rows]
+        cache[release_id] = await fetch_cells(c, release_id)
     return cache[release_id]
 
 
@@ -334,16 +343,17 @@ class AreaQuery(BaseModel):
         return self
 
 
-@app.post("/regions/{region}/aggregate")
-async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, release: ReleaseQ = None):
-    """Monthly sums over an area, with bands, recomputed anomaly z and the region-wide flags."""
-    r = await release_row(c, region, release)
+async def area_months(
+    c: asyncpg.Connection, r: asyncpg.Record, cells: list[dict], *,
+    cell_ids: set[str] | None = None, bbox=None, polygon=None, exclude_persistent: bool = False,
+) -> tuple[list[int], list[dict]]:
+    """Every month of the release summed over an area: (cell keys, rows in the aggregate endpoint's shape).
+
+    Raises 404 when no cell of the region falls in the area. Shared by /aggregate and the saved-area
+    features (status badges, alerts).
+    """
     rid = r["release_id"]
-    keys = A.select_cells(
-        await region_cells(request, c, rid),
-        cell_ids=set(q.cell_ids) if q.cell_ids is not None else None,
-        bbox=q.bbox, polygon=q.polygon, exclude_persistent=q.exclude_persistent,
-    )
+    keys = A.select_cells(cells, cell_ids=cell_ids, bbox=bbox, polygon=polygon, exclude_persistent=exclude_persistent)
     if not keys:
         raise HTTPException(404, "no cells of this region fall in the requested area")
     months = [dict(m) for m in await c.fetch(REGION_MONTH_SQL, rid)]
@@ -358,11 +368,8 @@ async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, r
     }
     # z uses the full record (the baseline), whatever window is returned.
     z = A.anomaly_z(months, {ym: s["harmonized"] for ym, s in sums.items()}, (r["baseline_first_year"], r["baseline_last_year"]))
-    a, b = month_bounds(q.frm, q.to, r)
     out = []
     for m in months:
-        if not a <= m["ym"] <= b:
-            continue
         s = sums.get(m["ym"])
         out.append({
             "ym": C.ym_str(m["ym"]), "year": m["ym"].year, "month": m["ym"].month,
@@ -370,6 +377,21 @@ async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, r
             "anomaly_z": r4(z.get(m["ym"])),
             **{f: m[f] for f in C.REGION_MONTH_FLAGS},
         })
+    return keys, out
+
+
+@app.post("/regions/{region}/aggregate")
+async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, release: ReleaseQ = None):
+    """Monthly sums over an area, with bands, recomputed anomaly z and the region-wide flags."""
+    r = await release_row(c, region, release)
+    rid = r["release_id"]
+    keys, months = await area_months(
+        c, r, await region_cells(request, c, rid),
+        cell_ids=set(q.cell_ids) if q.cell_ids is not None else None,
+        bbox=q.bbox, polygon=q.polygon, exclude_persistent=q.exclude_persistent,
+    )
+    a, b = month_bounds(q.frm, q.to, r)
+    out = [m for m in months if C.ym_str(a) <= m["ym"] <= C.ym_str(b)]
     return jsonr({
         "region": region,
         "release_id": rid,

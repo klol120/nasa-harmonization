@@ -34,6 +34,11 @@ import {
 import { type RegionSummary, apiSource, listRegions } from "./data/api";
 import type { CellValues, DataSource } from "./data/sources";
 import { WorldPicker } from "./components/WorldPicker";
+import { AccountMenu } from "./account/AccountMenu";
+import { MyAreasPanel } from "./account/MyAreasPanel";
+import { NewsletterForm } from "./account/NewsletterForm";
+import { PlansDrawer } from "./account/PlansDrawer";
+import { SignInDialog } from "./account/SignInDialog";
 import {
   anomalies,
   annualTotals,
@@ -94,6 +99,7 @@ export default function App() {
   const [drawMode, setDrawMode] = useState<DrawMode>("none");
   const [methodsOpen, setMethodsOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [plansOpen, setPlansOpen] = useState(false);
   const [hotspots, setHotspots] = useState<HotspotRow[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -416,6 +422,27 @@ export default function App() {
         onRetry={() => setRegionsKey((k) => k + 1)}
         onEnter={enterRegion}
         current={sourceId?.startsWith("api:") ? sourceId.slice(4) : undefined}
+        extras={
+          <div className="world-newsletter">
+            <span className="eyebrow">Stay informed</span>
+            <NewsletterForm source="landing" />
+          </div>
+        }
+        corner={
+          <>
+            <button className="btn btn-ghost" onClick={() => setPlansOpen(true)}>
+              Plans
+            </button>
+            <AccountMenu onPlans={() => setPlansOpen(true)} onFlash={flash} />
+            <SignInDialog />
+            <PlansDrawer open={plansOpen} onClose={() => setPlansOpen(false)} />
+            {toast && (
+              <div className="toast" role="status">
+                {toast}
+              </div>
+            )}
+          </>
+        }
       />
     );
 
@@ -477,6 +504,8 @@ export default function App() {
         exports={exportsList}
         onMethods={() => setMethodsOpen(true)}
         onWorld={() => setView("world")}
+        onPlans={() => setPlansOpen(true)}
+        account={<AccountMenu onPlans={() => setPlansOpen(true)} onFlash={flash} />}
       />
 
       <div className="layout">
@@ -491,6 +520,7 @@ export default function App() {
         </button>
         <aside id="filters" className={`sidebar${filtersOpen ? " is-open" : ""}`} aria-label="Filters">
           <PerformancePanel animations={animations} onAnimations={setAnimationsState} showData={showData} onShowData={setShowData} />
+          <MyAreasPanel region={meta.id} area={area} isWhole={isWhole} excludePersistent={excludePersistent} onOpen={onArea} onFlash={flash} />
           <AreaPanel
             meta={meta}
             whole={whole!}
@@ -517,6 +547,13 @@ export default function App() {
             }}
           />
           <LayersPanel layers={layers} setLayers={setLayers} detections={hasDetections} />
+          <section className="panel">
+            <header className="panel-head">
+              <h2>Monthly digest</h2>
+            </header>
+            <p className="small muted">One short email a month with each region's newest month. No account needed.</p>
+            <NewsletterForm source="dashboard" compact />
+          </section>
         </aside>
 
         <main className="main">
@@ -771,6 +808,8 @@ export default function App() {
         </main>
       </div>
 
+      <PlansDrawer open={plansOpen} onClose={() => setPlansOpen(false)} />
+      <SignInDialog />
       <MethodsDrawer open={methodsOpen} onClose={() => setMethodsOpen(false)} meta={meta} sourceLabel={source?.label ?? ""} />
       <ImportDialog
         open={importOpen}
