@@ -45,6 +45,34 @@ export interface RegionSummary {
 
 export const listRegions = () => getJson<RegionSummary[]>("/regions");
 
+/** Weather fields served by /regions/{r}/weather. */
+export type WeatherField = "t_mean_c" | "t_max_c" | "precip_mm" | "wind_ms" | "rh_pct";
+
+/** One month of past weather at the region's fire hotspots, with its baseline normal, difference and z. */
+export type WeatherMonth = {
+  ym: string;
+  year: number;
+  month: number;
+  n_days: number;
+  complete: boolean;
+  precip_pct_of_normal: number | null;
+} & { [F in WeatherField]: number | null } & { [F in WeatherField as `${F}_normal` | `${F}_anom` | `${F}_z`]: number | null };
+
+export interface RegionWeather {
+  region: string;
+  provider: string;
+  attribution: string;
+  note: string;
+  baseline_years: [number, number];
+  fields: Record<WeatherField, { label: string; unit: string }>;
+  available: boolean;
+  points: { lat: number; lon: number; weight: number }[];
+  fetched_at?: string;
+  months: WeatherMonth[];
+}
+
+export const getWeather = (region: string, signal?: AbortSignal) => getJson<RegionWeather>(`/regions/${encodeURIComponent(region)}/weather`, { signal });
+
 /** A region_monthly / aggregate row (contract field names). */
 interface MonthRow {
   ym: string;

@@ -31,9 +31,14 @@ import {
   ymMonth,
   ymYear,
 } from "./data/contract";
-import { type RegionSummary, apiSource, listRegions } from "./data/api";
+import { type RegionSummary, type RegionWeather, apiSource, getWeather, listRegions } from "./data/api";
+import { WeatherCard } from "./components/WeatherCard";
 import type { CellValues, DataSource } from "./data/sources";
 import { WorldPicker } from "./components/WorldPicker";
+import { AccountMenu } from "./account/AccountMenu";
+import { MyAreasPanel } from "./account/MyAreasPanel";
+import { NewsletterForm } from "./account/NewsletterForm";
+import { SignInDialog } from "./account/SignInDialog";
 import {
   anomalies,
   annualTotals,
@@ -44,6 +49,7 @@ import {
   fmtPct,
   keyEvents,
   linearTrend,
+  robustMax,
   seasonMetrics,
   toMonthPoints,
   typicalSeason,
@@ -187,6 +193,19 @@ export default function App() {
     return () => ctl.abort();
   }, [source, meta, dsSource, area, isWhole, metric, excludePersistent, reloadKey]);
 
+  // ---- past weather at the region's hotspots (API regions only; the card hides on failure) ----
+  const [weather, setWeather] = useState<RegionWeather | null>(null);
+  const weatherRegion = source?.kind === "api" && meta && dsSource === source.id ? meta.id : null;
+  useEffect(() => {
+    setWeather(null);
+    if (!weatherRegion) return;
+    const ctl = new AbortController();
+    getWeather(weatherRegion, ctl.signal)
+      .then((w) => !ctl.signal.aborted && setWeather(w))
+      .catch(() => {});
+    return () => ctl.abort();
+  }, [weatherRegion, reloadKey]);
+
   // ---- derived analytics ----------------------------------------------
   const bounds = useMemo(() => (meta ? metaBounds(meta) : ([0, 0] as [number, number])), [meta]);
   const r: [number, number] = range ?? bounds;
@@ -253,6 +272,34 @@ export default function App() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, meta, dsSource, sensor, metric, win[0], win[1], excludePersistent]);
+
+  // One colour/height scale for every month (or year) of the range, so the map can be compared
+  // through time: the largest per-window 98th-percentile cell value. Without it each window would
+  // be rescaled to its own max and a quiet December would look like an August peak.
+  const [cellScale, setCellScale] = useState<number | undefined>();
+  useEffect(() => {
+    if (!source || !meta || dsSource !== source.id || windowMode === "range") {
+      setCellScale(undefined);
+      return;
+    }
+    let alive = true;
+    const windows: [number, number][] = [];
+    if (windowMode === "month") for (let i = r[0]; i <= r[1]; i++) windows.push([i, i]);
+    else for (let y = ymYear(r[0]); y <= ymYear(r[1]); y++) windows.push([Math.max(r[0], ym(y, 1)), Math.min(r[1], ym(y, 12))]);
+    (async () => {
+      let s = 0;
+      for (const [from, to] of windows) {
+        const c = await source.cellWindow({ sensor, metric, from, to, excludePersistent });
+        if (!alive) return;
+        s = Math.max(s, robustMax([...c.values()].map((v) => v.value)));
+      }
+      setCellScale(s > 0 ? s : undefined);
+    })().catch(() => alive && setCellScale(undefined));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source, meta, dsSource, sensor, metric, r[0], r[1], windowMode, excludePersistent]);
 
   // What the map is showing, in words: estimates must never pass for detections (data contract).
   const mapNote = useMemo(() => {
@@ -416,6 +463,23 @@ export default function App() {
         onRetry={() => setRegionsKey((k) => k + 1)}
         onEnter={enterRegion}
         current={sourceId?.startsWith("api:") ? sourceId.slice(4) : undefined}
+        extras={
+          <div className="world-newsletter">
+            <span className="eyebrow">Stay informed</span>
+            <NewsletterForm source="landing" />
+          </div>
+        }
+        corner={
+          <>
+            <AccountMenu onFlash={flash} />
+            <SignInDialog />
+            {toast && (
+              <div className="toast" role="status">
+                {toast}
+              </div>
+            )}
+          </>
+        }
       />
     );
 
@@ -477,6 +541,7 @@ export default function App() {
         exports={exportsList}
         onMethods={() => setMethodsOpen(true)}
         onWorld={() => setView("world")}
+        account={<AccountMenu onFlash={flash} />}
       />
 
       <div className="layout">
@@ -491,6 +556,7 @@ export default function App() {
         </button>
         <aside id="filters" className={`sidebar${filtersOpen ? " is-open" : ""}`} aria-label="Filters">
           <PerformancePanel animations={animations} onAnimations={setAnimationsState} showData={showData} onShowData={setShowData} />
+          <MyAreasPanel region={meta.id} area={area} isWhole={isWhole} excludePersistent={excludePersistent} onOpen={onArea} onFlash={flash} />
           <AreaPanel
             meta={meta}
             whole={whole!}
@@ -517,6 +583,13 @@ export default function App() {
             }}
           />
           <LayersPanel layers={layers} setLayers={setLayers} detections={hasDetections} />
+          <section className="panel">
+            <header className="panel-head">
+              <h2>Monthly digest</h2>
+            </header>
+            <p className="small muted">One short email a month with each region's newest month. No account needed.</p>
+            <NewsletterForm source="dashboard" compact />
+          </section>
         </aside>
 
         <main className="main">
@@ -545,6 +618,7 @@ export default function App() {
                 extent={meta.bbox}
                 gridDeg={fineCells ? FINE_GRID : meta.grid_deg}
                 cells={fineCells ?? cells}
+                scaleMax={fineCells ? undefined : cellScale}
                 resolution={resolution}
                 onResolution={setResolution}
                 detections={hasDetections}
@@ -754,6 +828,18 @@ export default function App() {
             </section>
           </div>
 
+          {weather && (
+            <WeatherCard
+              weather={weather}
+              selected={sel}
+              onSelect={(i) => {
+                setSelected(Math.max(r[0], Math.min(r[1], i)));
+                setWindowMode("month");
+              }}
+              subArea={!isWhole}
+            />
+          )}
+
           <section className="card">
             <CardHead title="Fire season by year" subtitle="When each year's season started, peaked and ended · click a year to select it" />
             <SeasonStrip peakMonth={peakMonth && Number.isFinite(peakMonth.median) ? peakMonth.month : undefined} seasons={a.seasons} selectedYear={ymYear(sel)} unit={unit} onSelectYear={selectYear} />
@@ -771,6 +857,7 @@ export default function App() {
         </main>
       </div>
 
+      <SignInDialog />
       <MethodsDrawer open={methodsOpen} onClose={() => setMethodsOpen(false)} meta={meta} sourceLabel={source?.label ?? ""} />
       <ImportDialog
         open={importOpen}

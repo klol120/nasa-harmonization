@@ -1,6 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
+    { "name": "api", "runtimeExecutable": "uv", "runtimeArgs": ["--directory", "backend", "run", "python", "-m", "firecal_api.cli", "serve", "--port", "8000", "--reload"], "port": 8000 },
     { "name": "web", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "web", "run", "dev"], "port": 5173 },
     { "name": "web-build", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "web", "run", "preview", "--", "--port", "4173"], "port": 4173 }
   ]
