@@ -14,6 +14,7 @@ The thresholds in config `auto_strategy` come from a cell-subsampling experiment
 """
 from __future__ import annotations
 
+from .config import region_settings
 from .fitting import FitSpec, chosen, components, donor_groups, table
 
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -25,7 +26,7 @@ def _available(cfg: dict, region: str, strategy: str) -> bool:
 
 
 def decide(cfg: dict, region: str) -> dict:
-    a = cfg["auto_strategy"]
+    a = region_settings(cfg, "auto_strategy", region)     # by_region: e.g. outcomes with a pool that excludes the region
     y0, y1 = cfg["calibration"]["overlap_years"]
     years = list(range(y0, y1 + 1))
     excl = cfg["persistence"]["exclude_from_calibration"]

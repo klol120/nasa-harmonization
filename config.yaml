@@ -146,6 +146,21 @@ auto_strategy:
   outcomes: {donor_only: "donor:eastmed_pool", thin: affine_shape_single_level_pool, rich: local}
   report: docs/reports/thresholds.md
 
+# `python -m firecal add-country <Country>` (src/firecal/add_country.py).
+add_country:
+  bbox_min_part_share: 0.01   # polygon parts smaller than 1% of the largest (remote islands) don't widen the bbox
+  bbox_pad_deg: 0.05
+  thin_anomalies: {baseline_years: [2012, 2025], sensitivity_baselines: [[2001, 2025]]}   # as Lebanon
+  # Quality grade on the chosen strategy's hold-out (mean WAPE of both folds, worst |bias|) and the 2012
+  # continuity check (a flagged step, or donor_only, is D). JUDGEMENT thresholds, not derived;
+  # with them the v1.0 regions grade Greece A, EastMed B (reverse-fold bias 11.5%), Lebanon B.
+  grades:
+    A: {max_wape: 0.25, max_abs_bias: 0.10}
+    B: {max_wape: 0.40, max_abs_bias: 0.20}
+    C: {max_wape: 0.60, max_abs_bias: 0.35}
+  # teammate backend (local branch only, never pushed); the API must be running to confirm the region shows
+  backend: {repo: ../nasa-harmonization, branch: contract-0.5, python: backend/.venv/bin/python, api: "http://127.0.0.1:8000"}
+
 donors:
   cyprus:           {region: eastmed, countries: [Cyprus]}
   southern_turkey:  {region: eastmed, countries: [Turkey]}
