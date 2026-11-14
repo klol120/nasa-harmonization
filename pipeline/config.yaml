@@ -159,7 +159,7 @@ add_country:
     B: {max_wape: 0.40, max_abs_bias: 0.20}
     C: {max_wape: 0.60, max_abs_bias: 0.35}
   # teammate backend (local branch only, never pushed); the API must be running to confirm the region shows
-  backend: {repo: ../nasa-harmonization, branch: contract-0.5, python: backend/.venv/bin/python, api: "http://127.0.0.1:8000"}
+  backend: {repo: .., branch: null, python: backend/.venv/bin/python, api: "http://127.0.0.1:8000"}
 
 donors:
   cyprus:           {region: eastmed, countries: [Cyprus]}

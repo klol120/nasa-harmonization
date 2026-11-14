@@ -108,7 +108,7 @@ def main() -> None:
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("init", help="create the database (if missing) and apply the schema")
     i = sub.add_parser("ingest", help="load export folders (default: every region under EXPORT_DIR)")
-    i.add_argument("paths", nargs="*", help="region folders, e.g. ../export/export/lebanon")
+    i.add_argument("paths", nargs="*", help="region folders, e.g. ../pipeline/data/export/lebanon")
     i.add_argument("--no-series", action="store_true", help="skip checking cells_series files against the calendar")
     i.add_argument("--no-current", action="store_true", help="load without making it the current release")
     i.add_argument("--force", action="store_true", help="load even if this exact export is already loaded")

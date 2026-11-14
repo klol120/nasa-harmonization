@@ -1,8 +1,8 @@
 # Burning-calendar backend
 
 PostgreSQL database and FastAPI service for the `firecal export` output described in
-[`../data_contract.md`](../data_contract.md) (contract **v0.4**). Any region folder shaped like
-`export/export/{region}/` can be loaded; nothing is specific to Lebanon, Greece or EastMed.
+[`../data_contract.md`](../data_contract.md) (contracts **v0.4** and **v0.5**). Any region folder shaped like
+`pipeline/data/export/{region}/` (the pipeline's exports) can be loaded; nothing is specific to Lebanon, Greece or EastMed.
 
 ## Setup
 
