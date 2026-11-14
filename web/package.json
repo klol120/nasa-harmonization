@@ -1,0 +1,33 @@
+{
+  "name": "wel3a-burning-calendar",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview",
+    "app": "npm run build && electron .",
+    "app:start": "electron ."
+  },
+  "dependencies": {
+    "echarts": "^5.5.1",
+    "maplibre-gl": "^5.21.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/topojson-client": "^3.1.5",
+    "@vitejs/plugin-react": "^4.3.3",
+    "electron": "^41.10.7",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "main": "electron/main.cjs",
+  "description": "Wel3a Burning Calendar: MODIS + VIIRS fire record (desktop app and website)"
+}
