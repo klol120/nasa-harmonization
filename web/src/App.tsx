@@ -48,6 +48,7 @@ import {
   fmtPct,
   keyEvents,
   linearTrend,
+  robustMax,
   seasonMetrics,
   toMonthPoints,
   typicalSeason,
@@ -257,6 +258,34 @@ export default function App() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, meta, dsSource, sensor, metric, win[0], win[1], excludePersistent]);
+
+  // One colour/height scale for every month (or year) of the range, so the map can be compared
+  // through time: the largest per-window 98th-percentile cell value. Without it each window would
+  // be rescaled to its own max and a quiet December would look like an August peak.
+  const [cellScale, setCellScale] = useState<number | undefined>();
+  useEffect(() => {
+    if (!source || !meta || dsSource !== source.id || windowMode === "range") {
+      setCellScale(undefined);
+      return;
+    }
+    let alive = true;
+    const windows: [number, number][] = [];
+    if (windowMode === "month") for (let i = r[0]; i <= r[1]; i++) windows.push([i, i]);
+    else for (let y = ymYear(r[0]); y <= ymYear(r[1]); y++) windows.push([Math.max(r[0], ym(y, 1)), Math.min(r[1], ym(y, 12))]);
+    (async () => {
+      let s = 0;
+      for (const [from, to] of windows) {
+        const c = await source.cellWindow({ sensor, metric, from, to, excludePersistent });
+        if (!alive) return;
+        s = Math.max(s, robustMax([...c.values()].map((v) => v.value)));
+      }
+      setCellScale(s > 0 ? s : undefined);
+    })().catch(() => alive && setCellScale(undefined));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source, meta, dsSource, sensor, metric, r[0], r[1], windowMode, excludePersistent]);
 
   // What the map is showing, in words: estimates must never pass for detections (data contract).
   const mapNote = useMemo(() => {
@@ -575,6 +604,7 @@ export default function App() {
                 extent={meta.bbox}
                 gridDeg={fineCells ? FINE_GRID : meta.grid_deg}
                 cells={fineCells ?? cells}
+                scaleMax={fineCells ? undefined : cellScale}
                 resolution={resolution}
                 onResolution={setResolution}
                 detections={hasDetections}

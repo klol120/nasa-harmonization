@@ -292,6 +292,17 @@ export function fmt(v: number | null | undefined, digits?: number) {
   return v.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
+/**
+ * Upper quantile of the positive values (default 98th percentile): a "max" that one outlier
+ * cell cannot set. Falls back to the true max when there are too few values for a quantile.
+ */
+export function robustMax(values: Iterable<number>, q = 0.98) {
+  const v = [...values].filter((x) => x > 0).sort((a, b) => a - b);
+  if (!v.length) return 0;
+  if (v.length < 20) return v[v.length - 1];
+  return v[Math.min(v.length - 1, Math.floor(q * (v.length - 1)))];
+}
+
 export const fmtPct = (v: number) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(Math.round(v))}%`;
 
 /** Median start / peak / end month across complete years: "the typical fire season". */

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { GeoJSONSource } from "maplibre-gl";
 import { FALLBACK_STYLE, SATELLITE_SOURCE, TERRAIN_SOURCE, loadStyle, maplibregl } from "../lib/maplibre";
 import type { BBox, HotspotRow } from "../data/contract";
-import { fmt } from "../lib/analytics";
+import { fmt, robustMax } from "../lib/analytics";
 import { INFERNO } from "../lib/colors";
 import { type Area, type Ring, areaFromBBox, areaFromRing, bboxRing } from "../lib/geo";
 import { reducedMotion } from "../lib/motion";
@@ -24,6 +24,8 @@ interface Props {
   extent: BBox;
   gridDeg: number;
   cells: Map<string, { lat: number; lon: number; value: number }>;
+  /** Fixed value that maps to the top of the scale (shared by every window of the range). Omitted: scale to the current window. */
+  scaleMax?: number;
   hotspots: HotspotRow[];
   /** Region border (outer rings), drawn with a soft glow. */
   outline?: Ring[];
@@ -76,6 +78,46 @@ function cellRadius(gridDeg: number, factor: unknown): any {
 /** Tallest pillar, in grid-cell widths. */
 const PILLAR_HEIGHT = 1.7;
 
+/** Cells below this share of the scale keep their ground tile but get no column (stubs only add clutter). */
+const PILLAR_MIN_T = 0.1;
+
+/** Glowing cap on each column, as a share of the tallest column's height (thinner on short columns). */
+const CAP_FRAC = 0.05;
+
+/** Sides of the column polygon: enough to read as round, few enough to stay cheap while tweening. */
+const COLUMN_SIDES = 16;
+
+/** Mixes a hex colour towards warm white by k (0..1). */
+function lighten(hex: string, k: number) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const to = [255, 243, 196];
+  return `rgb(${[r, g, b].map((c, i) => Math.round(c + (to[i] - c) * k)).join(",")})`;
+}
+
+/**
+ * The colour ramp brightened towards white-hot, for the column caps and the hovered column.
+ * k0 at the cool end, k1 at the hot end: quiet cells get a subtle lid, the hottest a white-hot tip.
+ */
+const hotRampExpr = (k0: number, k1 = k0): any[] => {
+  const stops: (number | string)[] = [];
+  INFERNO.forEach((c, i) => {
+    const x = i / (INFERNO.length - 1);
+    stops.push(x, lighten(c, k0 + (k1 - k0) * x));
+  });
+  return ["interpolate", ["linear"], ["get", "t"], ...stops];
+};
+
+/** A round column footprint, corrected for latitude so it looks circular on the Mercator map. */
+function column(lon: number, lat: number, r: number, maxLon: number, props: Record<string, unknown>): GeoJSON.Feature {
+  const rLon = Math.min(r / Math.cos((lat * Math.PI) / 180), maxLon);
+  const ring: Ring = [];
+  for (let i = 0; i < COLUMN_SIDES; i++) {
+    const a = (i / COLUMN_SIDES) * 2 * Math.PI;
+    ring.push([lon + Math.cos(a) * rLon, lat + Math.sin(a) * r]);
+  }
+  return poly(ring, props);
+}
+
 interface LiveCell {
   lat: number;
   lon: number;
@@ -122,13 +164,14 @@ function footprint(h: HotspotRow): GeoJSON.Feature {
 }
 
 export function MapView(props: Props) {
-  const { area, extent, gridDeg, cells, hotspots, outline, areaIsRegion, focus, layers, showData, animate, resolution, onResolution, detections, gridLabel, note, unit, windowLabel, drawMode, setDrawMode, onArea, fitKey, mapRef } = props;
+  const { area, extent, gridDeg, cells, scaleMax, hotspots, outline, areaIsRegion, focus, layers, showData, animate, resolution, onResolution, detections, gridLabel, note, unit, windowLabel, drawMode, setDrawMode, onArea, fitKey, mapRef } = props;
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
   const [basemap, setBasemap] = useState(true);
   const [cursor, setCursor] = useState<[number, number] | null>(null);
-  const [max, setMax] = useState(0);
+  /** Legend scale: the value at the top of the ramp, whether some cells exceed it, and whether it is shared across the range. */
+  const [scale, setScale] = useState({ max: 0, clipped: false, fixed: false });
   const [zoom, setZoom] = useState(0);
   const [mode3d, setMode3d] = useState(true);
   const [orbit, setOrbit] = useState(true);
@@ -153,7 +196,17 @@ export function MapView(props: Props) {
   }, [panelsHidden]);
   const fx = useRef<HTMLCanvasElement>(null);
   /** What the map shows right now (tweened), plus derived values the ember loop reads. */
-  const live = useRef({ shown: new Map<string, LiveCell>(), rise: 0, emitters: [] as LiveCell[], mode3d: true, gridDeg, embers: true, first3d: true });
+  const live = useRef({
+    shown: new Map<string, LiveCell>(),
+    rise: 0,
+    emitters: [] as LiveCell[],
+    mode3d: true,
+    gridDeg,
+    embers: true,
+    first3d: true,
+    /** Rank of each cell by value in the current window (1 = most active), for the hover readout. */
+    rank: new Map<string, number>(),
+  });
   live.current.mode3d = mode3d;
   live.current.gridDeg = gridDeg;
   live.current.embers = layers.glow.on && showData && animate;
@@ -197,7 +250,9 @@ export function MapView(props: Props) {
       m.on("load", () => {
         const firstSymbol = m.getStyle().layers.find((l) => l.type === "symbol")?.id;
         const empty = fc([]);
-        for (const id of ["cells", "heat", "hotspots", "aoi", "mask", "extent", "draft", "outline", "footprints", "pillars"]) m.addSource(id, { type: "geojson", data: empty });
+        for (const id of ["cells", "heat", "hotspots", "aoi", "mask", "extent", "draft", "outline", "footprints"]) m.addSource(id, { type: "geojson", data: empty });
+        // Columns are keyed by cell id so the hovered one can be lit through feature state.
+        m.addSource("pillars", { type: "geojson", data: empty, promoteId: "id" });
         m.addSource("sat", SATELLITE_SOURCE);
         // Elevation: one source lifts the ground in 3D, a second one shades the slopes.
         m.addSource("dem", TERRAIN_SOURCE);
@@ -233,18 +288,34 @@ export function MapView(props: Props) {
           },
           "heat",
         );
-        // 3D mode: every cell becomes a column whose height and colour follow its activity.
+        // 3D mode: every active cell becomes a round column whose height and colour follow the same
+        // scale as the legend. The body stops where a thin white-hot cap takes over (no overlap, so
+        // no z-fighting); heights are set with the grid in the data effect.
+        const hovered = ["boolean", ["feature-state", "hover"], false];
         m.addLayer({
           id: "cells-3d",
           type: "fill-extrusion",
           source: "pillars",
           layout: { visibility: "none" },
           paint: {
-            "fill-extrusion-color": rampExpr() as any,
+            "fill-extrusion-color": ["case", hovered, hotRampExpr(0.45), rampExpr()] as any,
             "fill-extrusion-height": 0,
             "fill-extrusion-base": 0,
-            "fill-extrusion-opacity": 0.94,
+            "fill-extrusion-opacity": 0.95,
             "fill-extrusion-vertical-gradient": true,
+          },
+        });
+        m.addLayer({
+          id: "cells-3d-cap",
+          type: "fill-extrusion",
+          source: "pillars",
+          layout: { visibility: "none" },
+          paint: {
+            "fill-extrusion-color": ["case", hovered, "#ffffff", hotRampExpr(0.2, 0.75)] as any,
+            "fill-extrusion-height": 0,
+            "fill-extrusion-base": 0,
+            "fill-extrusion-opacity": 0.95,
+            "fill-extrusion-vertical-gradient": false,
           },
         });
         m.setLight({ anchor: "viewport", color: "#fff1dd", intensity: 0.45, position: [1.4, 215, 35] });
@@ -327,9 +398,31 @@ export function MapView(props: Props) {
 
       // Hover readout on cells.
       const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, className: "cell-pop", offset: 10 });
+      let hoverCol: string | null = null;
+      const lightColumn = (id: string | null) => {
+        if (id === hoverCol) return;
+        if (hoverCol !== null) m.setFeatureState({ source: "pillars", id: hoverCol }, { hover: false });
+        if (id !== null) m.setFeatureState({ source: "pillars", id }, { hover: true });
+        hoverCol = id;
+      };
+      const cellHtml = (id: string, value: number, unit: string) => {
+        const rank = live.current.rank.get(id);
+        const of = live.current.rank.size;
+        return `<b>${fmt(value)}</b> ${unit}${rank ? `<br/>#${rank} of ${of.toLocaleString()} active cells` : ""}<br/><span>cell ${id}</span>`;
+      };
       m.on("mousemove", (e) => {
         setCursor([e.lngLat.lng, e.lngLat.lat]);
         if (drawRef.current.mode !== "none" || !m.getLayer("cells")) return;
+        // In 3D the pointer is usually on a column, not over its ground cell: test the columns first.
+        const col = m.getLayoutProperty("cells-3d", "visibility") !== "none" ? m.queryRenderedFeatures(e.point, { layers: ["cells-3d-cap", "cells-3d"] })[0] : undefined;
+        if (col) {
+          const p = col.properties as any;
+          lightColumn(p.id);
+          m.setFilter("cells-hover", ["==", ["get", "id"], ""]);
+          popup.setLngLat(e.lngLat).setHTML(cellHtml(p.id, p.value, p.unit)).addTo(m);
+          return;
+        }
+        lightColumn(null);
         const fp = m.getLayoutProperty("footprints", "visibility") !== "none" ? m.queryRenderedFeatures(e.point, { layers: ["footprints"] })[0] : undefined;
         if (fp) {
           const q = fp.properties as any;
@@ -350,12 +443,10 @@ export function MapView(props: Props) {
         }
         const p = f.properties as any;
         m.setFilter("cells-hover", ["==", ["get", "id"], p.id]);
-        popup
-          .setLngLat(e.lngLat)
-          .setHTML(`<b>${fmt(p.value)}</b> ${p.unit}<br/><span>cell ${p.id}</span>`)
-          .addTo(m);
+        popup.setLngLat(e.lngLat).setHTML(cellHtml(p.id, p.value, p.unit)).addTo(m);
       });
       m.on("mouseout", () => {
+        lightColumn(null);
         popup.remove();
         setCursor(null);
       });
@@ -456,17 +547,25 @@ export function MapView(props: Props) {
   useEffect(() => {
     const m = map.current;
     if (!m || !ready) return;
+    // One scale for colour and height: t = sqrt(value / top), clamped. The top is the range-wide
+    // value from App when there is one, else this window's 98th percentile (never one outlier).
     let mx = 0;
     cells.forEach((c) => (mx = Math.max(mx, c.value)));
-    setMax(mx);
+    const top = scaleMax && scaleMax > 0 ? scaleMax : robustMax([...cells.values()].map((c) => c.value));
+    setScale({ max: top, clipped: mx > top * 1.0001, fixed: !!scaleMax });
     const target = new Map<string, LiveCell>();
     cells.forEach((c, id) => {
-      if (c.value > 0) target.set(id, { lat: c.lat, lon: c.lon, value: c.value, t: mx > 0 ? Math.sqrt(c.value / mx) : 0 });
+      if (c.value > 0) target.set(id, { lat: c.lat, lon: c.lon, value: c.value, t: top > 0 ? Math.sqrt(Math.min(1, c.value / top)) : 0 });
     });
+    live.current.rank = new Map(
+      [...target.entries()]
+        .sort((a, b) => b[1].value - a[1].value)
+        .map(([id], k) => [id, k + 1]),
+    );
 
     const h = gridDeg / 2;
-    // Pillars are slimmer than their cell so the terrain stays visible between them.
-    const ph = h * (gridDeg >= 0.05 ? 0.4 : 0.8);
+    // Columns are slimmer than their cell so the terrain stays visible between them.
+    const pr = h * (gridDeg >= 0.05 ? 0.44 : 0.85);
     const paint = (state: Map<string, LiveCell>, rise: number) => {
       const feats: GeoJSON.Feature[] = [];
       const pts: GeoJSON.Feature[] = [];
@@ -475,7 +574,7 @@ export function MapView(props: Props) {
         if (c.t <= 0.004) return;
         feats.push(poly(bboxRing([c.lon - h, c.lat - h, c.lon + h, c.lat + h]), { id, value: c.value, t: c.t, unit }));
         pts.push({ type: "Feature", properties: { t: c.t }, geometry: { type: "Point", coordinates: [c.lon, c.lat] } });
-        if (rise > 0.001) pillars.push(poly(bboxRing([c.lon - ph, c.lat - ph, c.lon + ph, c.lat + ph]), { t: c.t, h: Math.pow(c.t, 1.6) * rise }));
+        if (rise > 0.001 && c.t >= PILLAR_MIN_T) pillars.push(column(c.lon, c.lat, pr, h * 0.95, { id, value: c.value, unit, t: c.t, h: c.t * rise }));
       });
       (m.getSource("cells") as GeoJSONSource).setData(fc(feats));
       (m.getSource("heat") as GeoJSONSource).setData(fc(pts));
@@ -518,13 +617,20 @@ export function MapView(props: Props) {
     // Glow sized to the grid cell at every zoom, so 11 km and 1 km grids both read correctly.
     m.setPaintProperty("glow", "circle-radius", cellRadius(gridDeg, ["+", 0.45, ["*", 0.55, ["get", "t"]]]));
     m.setPaintProperty("glow-core", "circle-radius", cellRadius(gridDeg, ["*", 0.16, ["get", "t"]]));
-    m.setPaintProperty("cells-3d", "fill-extrusion-height", ["*", ["get", "h"], gridDeg * 111_000 * PILLAR_HEIGHT]);
+    // Heights in metres: the tallest column is PILLAR_HEIGHT cell widths. The cap is the top slice
+    // (CAP_FRAC of the tallest, at most 30% of a short column) and the body stops beneath it.
+    const K = gridDeg * 111_000 * PILLAR_HEIGHT;
+    const H = ["*", ["get", "h"], K];
+    const capBase = ["-", H, ["min", K * CAP_FRAC, ["*", ["get", "h"], K * 0.3]]];
+    m.setPaintProperty("cells-3d", "fill-extrusion-height", capBase);
+    m.setPaintProperty("cells-3d-cap", "fill-extrusion-base", capBase);
+    m.setPaintProperty("cells-3d-cap", "fill-extrusion-height", H);
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, gridDeg, unit, ready, mode3d]);
+  }, [cells, scaleMax, gridDeg, unit, ready, mode3d]);
 
   // Embers: sparks drifting up from the hottest cells (from the pillar tops in 3D).
   useEffect(() => {
@@ -563,7 +669,7 @@ export function MapView(props: Props) {
           if (p.x < -20 || p.x > w + 20 || p.y < -20 || p.y > hgt + 20) continue;
           const mpp = (40075016.686 * Math.cos((e.lat * Math.PI) / 180)) / (512 * 2 ** zoom);
           const cellPx = (L.gridDeg * 111_000) / mpp;
-          const top = L.mode3d ? ((Math.pow(e.t, 1.6) * L.rise * L.gridDeg * 111_000 * PILLAR_HEIGHT) / mpp) * Math.sin(pitch) : 0;
+          const top = L.mode3d && e.t >= PILLAR_MIN_T ? ((e.t * L.rise * L.gridDeg * 111_000 * PILLAR_HEIGHT) / mpp) * Math.sin(pitch) : 0;
           parts.push({
             x: p.x + (Math.random() - 0.5) * cellPx * 0.4,
             y: p.y - top,
@@ -684,6 +790,7 @@ export function MapView(props: Props) {
     vis("glow", layers.glow.on && showData);
     vis("glow-core", layers.glow.on && !mode3d && showData);
     vis("cells-3d", mode3d && showData);
+    vis("cells-3d-cap", mode3d && showData);
     vis("hillshade", mode3d);
     m.setPaintProperty("glow", "circle-opacity", 0.75 * layers.glow.opacity);
     vis("cells", layers.cells.on && showData);
@@ -820,8 +927,16 @@ export function MapView(props: Props) {
         <div className="ramp" style={{ background: `linear-gradient(90deg, ${INFERNO.join(",")})` }} />
         <div className="ramp-labels">
           <span>0</span>
-          <span>{fmt(max / 4)}</span>
-          <span>{fmt(max)}</span>
+          <span>{fmt(scale.max / 4)}</span>
+          <span>
+            {scale.clipped ? "≥ " : ""}
+            {fmt(scale.max)}
+          </span>
+        </div>
+        <div className="map-legend-hint">
+          {mode3d ? "Colour and column height: square-root scale" : "Square-root scale"}
+          {scale.fixed ? ", fixed across the selected years" : ", scaled to this window"}
+          {scale.clipped ? `. Cells above ${fmt(scale.max)} are drawn at the top` : ""}
         </div>
         {detections && layers.hotspots.on && (
           <div className="ramp-labels dots">
