@@ -12,9 +12,11 @@ import { type DrawMode, type LayerState, MapView } from "./components/MapView";
 import { MethodsPage } from "./components/MethodsPage";
 import { SeasonStrip } from "./components/SeasonStrip";
 import { AreaPanel, DatePanel, EventsPanel, LayersPanel, PerformancePanel } from "./components/SidePanels";
-import { AppSidebar, type ExportAction, RegionCard, SidebarGroup, TopBar } from "./components/Shell";
+import { AppSidebar, type ExportAction, PAGE_LABEL, RegionCard, SidebarGroup, TopBar } from "./components/Shell";
+import { type Command, CommandPalette, MOD_KEY } from "./components/CommandPalette";
+import { YearCompare } from "./charts/YearCompare";
 import { Timeline } from "./components/Timeline";
-import { DEFAULT_METRIC, DEFAULT_SENSOR, DEFAULT_YEARS_BACK, HOTSPOT_EXPORT_LIMIT } from "./config";
+import { DEFAULT_METRIC, DEFAULT_SENSOR, DEFAULT_YEARS_BACK, HOTSPOT_EXPORT_LIMIT, REGION_INFO } from "./config";
 import {
   type AreaSeries,
   type DatasetMeta,
@@ -58,7 +60,7 @@ import {
 import { toCsv } from "./lib/csv";
 import { analyticsCsv, calendarCsv, chartPng, downloadDataUrl, downloadText, slug } from "./lib/exporters";
 import { type Area, areaFromBBox, pointInArea } from "./lib/geo";
-import { type Page, pageHref, pushPage, readHash, watchHash, writeHash } from "./lib/urlState";
+import { PAGES, type Page, pageHref, pushPage, readHash, watchHash, writeHash } from "./lib/urlState";
 import { animationsEnabled, fireCellsEnabled, setAnimations, setFireCells } from "./lib/motion";
 import { useTheme } from "./lib/theme";
 
@@ -112,13 +114,34 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readPref("wel3a.sidebar") === "collapsed");
   const [mobileNav, setMobileNav] = useState(false);
   useEffect(() => savePref("wel3a.sidebar", sidebarCollapsed ? "collapsed" : "open"), [sidebarCollapsed]);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  // What the global shortcuts act on; refreshed every render so the listener never goes stale.
+  const keys = useRef<{ step?: (months: number) => void }>({});
   useEffect(() => {
+    const typing = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName));
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+      const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "b") {
         e.preventDefault();
         setSidebarCollapsed((c) => !c);
+        return;
       }
       if (e.key === "Escape") setMobileNav(false);
+      // Arrows step through time, unless something else already used the key (rings, map, inputs).
+      if (e.defaultPrevented || mod || e.altKey || typing(e.target)) return;
+      if (e.target instanceof Element && e.target.closest(".maplibregl-map, [role=dialog]")) return;
+      if (e.key === "/" && !e.shiftKey) {
+        e.preventDefault();
+        setPaletteOpen(true);
+      } else if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && keys.current.step) {
+        e.preventDefault();
+        keys.current.step((e.key === "ArrowLeft" ? -1 : 1) * (e.shiftKey ? 12 : 1));
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -130,7 +153,7 @@ export default function App() {
   useEffect(() => setFireCells(showData), [showData]);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const firstLoad = useRef(true);
-  const [theme] = useTheme();
+  const [theme, setTheme, themeChoice] = useTheme();
 
   // Which page is showing. Without a shared link the site opens on the world map.
   const [page, setPage] = useState<Page>(() => (initial.source ? (initial.page ?? "overview") : "explore"));
@@ -429,6 +452,26 @@ export default function App() {
     setSelected(Math.max(r[0], Math.min(r[1], i)));
     setWindowMode("month");
   };
+  const stepMonths = (d: number) => setSelected(Math.max(r[0], Math.min(r[1], sel + d)));
+
+  // Two years side by side on the Trends page; until picked, the selected year and the one before it.
+  const [compareYears, setCompareYears] = useState<[number, number] | null>(null);
+
+  /** Shares a link to exactly this view: the system share sheet on phones, the clipboard elsewhere. */
+  const share = async () => {
+    if (source?.kind !== "api") return flash("Files loaded in this browser can't be shared as a link");
+    const url = window.location.href;
+    const title = `${meta?.name ?? "Wel3a"} · burning calendar`;
+    try {
+      if (navigator.share && window.matchMedia("(pointer: coarse)").matches) await navigator.share({ title, url });
+      else {
+        await navigator.clipboard.writeText(url);
+        flash("Link copied");
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") flash("Couldn't copy the link: copy it from the address bar");
+    }
+  };
 
   const header = () => ({
     dataset: meta?.name ?? "",
@@ -506,9 +549,46 @@ export default function App() {
   const failure = error ?? (meta && dsSource === sourceId ? seriesError : null) ?? (!source && regionsError ? regionsError : null);
   const regionPage = page !== "explore" && !!sourceId;
   const shownPage: Page = regionPage ? page : "explore";
+  const dataPage = regionPage && ready && page !== "methods";
+  keys.current.step = dataPage ? stepMonths : undefined;
+
+  // ---- command palette -------------------------------------------------
+  const commands: Command[] = [];
+  const cmd = (group: string, id: string, label: string, run: () => void, extra: Partial<Command> = {}) => commands.push({ group, id: `${group}:${id}`, label, run, ...extra });
+  for (const p of PAGES)
+    if (p === "explore" || sourceId) cmd("Pages", p, p === "explore" ? "World map" : PAGE_LABEL[p], () => navigate(p), { hint: p === shownPage ? "Current page" : undefined, keywords: `go open ${p}` });
+  for (const s of sources)
+    cmd("Regions", s.id, s.label, () => {
+      setSourceId(s.id);
+      navigate("overview");
+    }, { hint: s.id === sourceId ? "Open" : s.kind === "upload" ? "Your file" : undefined, keywords: `region dataset country ${s.description ?? ""}` });
+  if (ready) {
+    const m = meta!;
+    for (const pr of [defaultArea(m), ...(REGION_INFO[m.id]?.presets ?? []).map((p) => areaFromBBox(p.name, p.bbox))])
+      cmd("Areas", pr.name, pr.name, () => onArea(pr), { hint: pr.name === area!.name ? "Showing" : undefined, keywords: "area zone district place" });
+    for (let y = ymYear(r[1]); y >= ymYear(r[0]); y--)
+      cmd("Years", String(y), `Jump to ${y}`, () => {
+        selectYear(y);
+        if (page === "methods") navigate("overview");
+      }, { searchOnly: true, keywords: "year" });
+    cmd("Years", "latest", "Jump to the latest month", () => setSelected(Math.min(r[1], parseYm(m.last_month))), { keywords: "now newest recent current" });
+    for (const s of SENSORS.filter((s) => m.sensor_start[s]))
+      cmd("Sensor", s, `Show ${SENSOR_LABEL[s]}`, () => setSensor(s), { hint: s === sensor ? "On" : undefined, keywords: "sensor satellite modis viirs harmonized" });
+    if (source?.kind === "api") cmd("Actions", "share", "Copy a link to this view", share, { keywords: "share url link" });
+    for (const x of exportsList.filter((x) => !x.disabled)) cmd("Export", x.id, `Export ${x.label}`, () => void x.run(), { hint: x.hint, keywords: "download save csv png" });
+  }
+  cmd("Actions", "import", "Load your own file…", () => setImportOpen(true), { keywords: "upload firms csv import" });
+  cmd("Actions", "sidebar", sidebarCollapsed ? "Expand the sidebar" : "Collapse the sidebar", () => setSidebarCollapsed(!sidebarCollapsed), { hint: `${MOD_KEY} B` });
+  for (const t of ["light", "dark", "auto"] as const)
+    cmd("Appearance", t, t === "auto" ? "Match the system appearance" : `${t === "light" ? "Light" : "Dark"} appearance`, () => setTheme(t), {
+      hint: themeChoice === t ? "On" : undefined,
+      keywords: "theme mode colour color dark light",
+    });
 
   const overlays = (
     <>
+      {/* Mounted fresh on every open, so it always starts with an empty search. */}
+      {paletteOpen && <CommandPalette open onClose={() => setPaletteOpen(false)} commands={commands} />}
       <SignInDialog />
       <ImportDialog
         open={importOpen}
@@ -564,8 +644,10 @@ export default function App() {
           onMenu={() => setMobileNav(true)}
           onPage={navigate}
           exports={regionPage && ready ? exportsList : null}
+          onSearch={() => setPaletteOpen(true)}
+          onShare={regionPage && ready && source?.kind === "api" ? share : undefined}
           data={
-            regionPage && ready && page !== "methods"
+            dataPage
               ? {
                   sensor,
                   onSensor: setSensor,
@@ -575,7 +657,7 @@ export default function App() {
                   onMetric: setMetric,
                   selected: sel,
                   canStep: [sel > r[0], sel < r[1]],
-                  onStep: (d) => setSelected(Math.max(r[0], Math.min(r[1], sel + d))),
+                  onStep: stepMonths,
                 }
               : undefined
           }
@@ -603,38 +685,62 @@ export default function App() {
       />,
     );
 
-  if (!ready || failure)
+  if (failure)
     return shell(
       <div className="boot">
         <div className="boot-orb" aria-hidden>
           <img src="./emblem.png" alt="" width={64} height={64} />
         </div>
-        {failure ? (
-          <>
-            <p className="warn">Could not load data: {failure}</p>
-            <div className="boot-actions">
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setError(null);
-                  setSeriesError(null);
-                  if (!source) setRegionsKey((k) => k + 1);
-                  else setReloadKey((k) => k + 1);
-                }}
-              >
-                Try again
-              </button>
-              <button className="btn" onClick={() => navigate("explore")}>
-                Back to the world map
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="boot-title">Loading the fire record{source ? ` for ${source.label}` : ""}</p>
-            <p className="muted small">Reading the harmonized calendar from the data server</p>
-          </>
-        )}
+        <p className="boot-title">The fire record didn't load</p>
+        <p className="warn">{failure}</p>
+        <div className="boot-actions">
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setError(null);
+              setSeriesError(null);
+              if (!source) setRegionsKey((k) => k + 1);
+              else setReloadKey((k) => k + 1);
+            }}
+          >
+            Try again
+          </button>
+          <button className="btn" onClick={() => navigate("explore")}>
+            Back to the world map
+          </button>
+        </div>
+      </div>,
+    );
+
+  // While loading, the page's own layout in placeholder glass, so nothing jumps when the data lands.
+  if (!ready)
+    return shell(
+      <div className="page-wrap" aria-busy="true" aria-label={`Loading the fire record${source ? ` for ${source.label}` : ""}`}>
+        <div className={`skeleton-page is-${page}`}>
+          <div className="skeleton-head">
+            <i className="sk sk-line" style={{ width: 180 }} />
+            <i className="sk sk-title" />
+            <i className="sk sk-line" style={{ width: "46%" }} />
+          </div>
+          {page === "overview" ? (
+            <>
+              <i className="sk sk-card sk-stage" />
+              <div className="sk-row">
+                {[0, 1, 2, 3, 4].map((k) => (
+                  <i key={k} className="sk sk-card sk-kpi" />
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <i className="sk sk-card sk-tall" />
+              <div className="sk-row">
+                <i className="sk sk-card sk-mid" />
+                <i className="sk sk-card sk-mid" />
+              </div>
+            </>
+          )}
+        </div>
       </div>,
     );
 
@@ -652,6 +758,10 @@ export default function App() {
   const years = `${coveredFrom ?? ymYear(r[0])}–${ymYear(r[1])}`;
   const eyebrow = `${m.name}${isWhole ? "" : ` / ${ar.name}`} · ${SENSOR_LABEL[sensor]} · ${years}`;
   const withSidebar = SIDEBAR_PAGES.includes(page);
+  // Years for the comparison: those with any data, newest default first.
+  const dataYears = [...new Set(an.series.filter((p) => p.value !== null).map((p) => p.year))];
+  const fallbackB = dataYears.includes(ymYear(sel) - 1) ? ymYear(sel) - 1 : (record?.year ?? dataYears[0]);
+  const [cmpA, cmpB] = compareYears && compareYears.every((y) => dataYears.includes(y)) ? compareYears : [ymYear(sel), fallbackB];
 
   const banners = (
     <>
@@ -944,6 +1054,16 @@ export default function App() {
             <AnnualChart totals={an.totalsBy} sensor={sensor} compare={compare} unit={unit} selectedYear={ymYear(sel)} viirsStartYear={viirsStart} events={eventMarks} onSelectYear={selectYear} />
           </section>
         </div>
+        <YearCompare
+          series={an.series}
+          clim={an.clim}
+          years={dataYears}
+          a={cmpA}
+          b={cmpB}
+          onChange={(x, y) => setCompareYears([x, y])}
+          unit={unit}
+          onSelectMonth={(y, mo) => selectMonth(ym(y, mo))}
+        />
         <section className="card">
           <CardHead title="Fire season by year" subtitle="When each year's season started, peaked and ended · click a year to select it" />
           <SeasonStrip peakMonth={hasPeak ? peakMonth.month : undefined} seasons={an.seasons} selectedYear={ymYear(sel)} unit={unit} onSelectYear={selectYear} />

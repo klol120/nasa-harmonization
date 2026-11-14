@@ -1,10 +1,36 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ExpressionSpecification, GeoJSONSource, MapLayerMouseEvent } from "maplibre-gl";
+import type { ExpressionSpecification, GeoJSONSource, MapLayerMouseEvent, SkySpecification } from "maplibre-gl";
 import { REGION_INFO, regionInfo } from "../config";
 import type { RegionSummary } from "../data/api";
 import { type Country, type Ring, loadCountries } from "../data/regions";
-import { NIGHT_LIGHTS_SOURCE, loadStyle, maplibregl } from "../lib/maplibre";
+import { DAY_EARTH_SOURCE, NIGHT_LIGHTS_SOURCE, loadStyle, maplibregl } from "../lib/maplibre";
 import { reducedMotion } from "../lib/motion";
+import { type Theme, useTheme } from "../lib/theme";
+
+/**
+ * How the globe looks in each theme: Earth at night in deep space (dark), Earth by day under a
+ * pale sky (light). land/water tint the basemap that shows while imagery loads or when offline.
+ */
+const GLOBE: Record<Theme, { land: string; water: string; sky: string; horizon: string; fog: string; border: string; borderServed: string; borderHover: string; borderOpacity: number }> = {
+  dark: { land: "#04060c", water: "#060a17", sky: "#0d1f4a", horizon: "#3d7bff", fog: "#0a1430", border: "#9fb4e0", borderServed: "#fcb43a", borderHover: "#e6eeff", borderOpacity: 0.28 },
+  light: { land: "#c9d8c0", water: "#7fa9d6", sky: "#9cc7f2", horizon: "#ffffff", fog: "#e4effa", border: "#ffffff", borderServed: "#ff7a00", borderHover: "#ffffff", borderOpacity: 0.5 },
+};
+
+const skyFor = (t: Theme): SkySpecification => ({
+  "sky-color": GLOBE[t].sky,
+  "horizon-color": GLOBE[t].horizon,
+  "fog-color": GLOBE[t].fog,
+  "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 4.5, 1, 6.5, 0],
+});
+
+const borderColor = (t: Theme): ExpressionSpecification => [
+  "case",
+  ["all", ["boolean", ["feature-state", "hover"], false], ["!=", ["get", "region"], ""]],
+  GLOBE[t].borderHover,
+  ["!=", ["get", "region"], ""],
+  GLOBE[t].borderServed,
+  GLOBE[t].border,
+];
 
 interface Props {
   /** Regions on the data server; null while loading. */
@@ -75,6 +101,12 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current, extras,
   const pauseRef = useRef(false);
   const resumeRef = useRef<() => void>(() => {});
   const stars = useRef<HTMLCanvasElement>(null);
+  const [theme] = useTheme();
+  // Read by the one-off globe setup, which must not rebuild when the theme changes.
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
+  /** Basemap layers recoloured per theme (background and water fills). */
+  const tintLayers = useRef<{ id: string; prop: "background-color" | "fill-color"; key: "land" | "water" }[]>([]);
 
   // Starfield behind the globe (seeded, so it is the same every visit).
   useEffect(() => {
@@ -124,16 +156,22 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current, extras,
   const goRef = useRef(go);
   goRef.current = go;
 
-  // ---- the globe (built once) ----------------------------------------------
+  // ---- the globe (built once; the theme is applied in place below) ------------
   useEffect(() => {
     let disposed = false;
     Promise.all([loadStyle("darkNoLabels"), loadCountries()]).then(([style, cs]) => {
       if (disposed) return;
       setCountries(cs);
-      // Deep-navy ocean and near-black land, so the globe never shows Carto's flat grey while night-light tiles load.
+      // Basemap land and water take the theme's colours, so the globe never shows Carto's flat grey while imagery loads.
+      const look = GLOBE[themeRef.current];
       for (const l of style.layers) {
-        if (l.type === "background") l.paint = { ...l.paint, "background-color": "#04060c" };
-        else if (l.type === "fill" && /water|ocean/.test(l.id)) l.paint = { ...l.paint, "fill-color": "#060a17" };
+        if (l.type === "background") {
+          l.paint = { ...l.paint, "background-color": look.land };
+          tintLayers.current.push({ id: l.id, prop: "background-color", key: "land" });
+        } else if (l.type === "fill" && /water|ocean/.test(l.id)) {
+          l.paint = { ...l.paint, "fill-color": look.water };
+          tintLayers.current.push({ id: l.id, prop: "fill-color", key: "water" });
+        }
       }
       const wide = el.current!.clientWidth > 760;
       const h = el.current!.clientHeight;
@@ -155,12 +193,7 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current, extras,
       // A globe with a thin atmosphere; MapLibre eases into a flat map as the camera flies in.
       m.on("style.load", () => {
         m.setProjection({ type: "globe" });
-        m.setSky({
-          "sky-color": "#0d1f4a",
-          "horizon-color": "#3d7bff",
-          "fog-color": "#0a1430",
-          "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 4.5, 1, 6.5, 0],
-        });
+        m.setSky(skyFor(themeRef.current));
       });
 
       // Slow spin until the user takes over (or picks a place).
@@ -181,13 +214,24 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current, extras,
 
       m.on("load", () => {
         spin();
-        // Earth at night (VIIRS Black Marble) as the globe surface; falls back to the recolored basemap if offline.
+        // The globe surface: Earth at night (VIIRS Black Marble) in dark mode, Earth by day (Blue Marble)
+        // in light mode. Both stay loaded so switching is instant; offline, the tinted basemap shows through.
+        const dark = themeRef.current === "dark";
         m.addSource("night", NIGHT_LIGHTS_SOURCE);
         m.addLayer({
           id: "night",
           type: "raster",
           source: "night",
+          layout: { visibility: dark ? "visible" : "none" },
           paint: { "raster-contrast": 0.15, "raster-saturation": -0.15, "raster-brightness-min": 0.02, "raster-fade-duration": 400 },
+        });
+        m.addSource("day", DAY_EARTH_SOURCE);
+        m.addLayer({
+          id: "day",
+          type: "raster",
+          source: "day",
+          layout: { visibility: dark ? "none" : "visible" },
+          paint: { "raster-saturation": 0.05, "raster-contrast": 0.05, "raster-fade-duration": 400 },
         });
         m.addSource("countries", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         const hovered_: ExpressionSpecification = ["boolean", ["feature-state", "hover"], false];
@@ -216,9 +260,9 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current, extras,
           source: "countries",
           layout: { "line-join": "round" },
           paint: {
-            "line-color": ["case", ["all", hovered_, served_], "#e6eeff", served_, "#fcb43a", "#9fb4e0"],
+            "line-color": borderColor(themeRef.current),
             "line-width": ["case", ["all", hovered_, served_], 1.6, served_, 1.1, 0.5],
-            "line-opacity": ["case", hovered_, 1, served_, 0.95, 0.28],
+            "line-opacity": ["case", hovered_, 1, served_, 0.95, GLOBE[themeRef.current].borderOpacity],
           },
         });
 
@@ -258,6 +302,19 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current, extras,
       map.current = null;
     };
   }, []);
+
+  // ---- theme: swap day/night imagery, sky and border colours in place ------------
+  useEffect(() => {
+    const m = map.current;
+    if (!ready || !m) return;
+    const look = GLOBE[theme];
+    m.setLayoutProperty("night", "visibility", theme === "dark" ? "visible" : "none");
+    m.setLayoutProperty("day", "visibility", theme === "dark" ? "none" : "visible");
+    for (const t of tintLayers.current) if (m.getLayer(t.id)) m.setPaintProperty(t.id, t.prop, look[t.key]);
+    m.setSky(skyFor(theme));
+    m.setPaintProperty("country-line", "line-color", borderColor(theme));
+    m.setPaintProperty("country-line", "line-opacity", ["case", ["boolean", ["feature-state", "hover"], false], 1, ["!=", ["get", "region"], ""], 0.95, look.borderOpacity]);
+  }, [theme, ready]);
 
   // ---- served regions: country colouring and pulsing markers -----------------
   useEffect(() => {

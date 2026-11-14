@@ -37,6 +37,15 @@ export const NIGHT_LIGHTS_SOURCE = {
   attribution: "Black Marble: NASA Earth Observatory / GIBS",
 };
 
+/** NASA Blue Marble (daytime Earth with shaded relief and ocean depth) from GIBS: the globe in light mode. */
+export const DAY_EARTH_SOURCE = {
+  type: "raster" as const,
+  tiles: ["https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg"],
+  tileSize: 256,
+  maxzoom: 8,
+  attribution: "Blue Marble: NASA Earth Observatory / GIBS",
+};
+
 /** Free, token-less elevation tiles (Mapzen Terrarium on AWS Open Data) for 3D terrain and hillshading. */
 export const TERRAIN_SOURCE = {
   type: "raster-dem" as const,

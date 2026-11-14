@@ -5,6 +5,7 @@ import { fmt } from "../lib/analytics";
 import { SENSOR_COLOR } from "../lib/colors";
 import { type ThemeChoice, useTheme } from "../lib/theme";
 import { type Page, pageHref } from "../lib/urlState";
+import { MOD_KEY, isMac } from "./CommandPalette";
 
 export interface ExportAction {
   id: string;
@@ -242,6 +243,10 @@ interface TopBarProps {
   onMenu: () => void;
   onPage: (p: Page) => void;
   exports: ExportAction[] | null;
+  /** Opens the command palette. */
+  onSearch: () => void;
+  /** Shares a link to the current view; absent where there is nothing to link to. */
+  onShare?: () => void;
   /** Sensor, metric and month controls; hidden where they change nothing. */
   data?: {
     sensor: Sensor;
@@ -285,6 +290,15 @@ export function TopBar(p: TopBarProps) {
         <b aria-current="page">{p.page === "explore" ? "World map" : PAGE_LABEL[p.page]}</b>
       </nav>
 
+      <button className="search-pill" onClick={p.onSearch} aria-label="Search pages, places, years and actions" aria-keyshortcuts={isMac ? "Meta+K" : "Control+K"}>
+        <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden>
+          <circle cx="9" cy="9" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+          <path d="M13.2 13.2 17 17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        </svg>
+        <span>Search</span>
+        <kbd>{MOD_KEY} K</kbd>
+      </button>
+
       {d && (
         <div className="topbar-controls">
           <div className="seg sensor-seg" role="radiogroup" aria-label="Sensor">
@@ -325,6 +339,13 @@ export function TopBar(p: TopBarProps) {
         </div>
       )}
 
+      {p.onShare && (
+        <button className="icon-btn glass-btn" onClick={p.onShare} aria-label="Share a link to this view" title="Share a link to this view">
+          <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden>
+            <path d="M10 12.5V3m0 0L6.5 6.5M10 3l3.5 3.5M5.5 9.5H5A1.5 1.5 0 0 0 3.5 11v4.5A1.5 1.5 0 0 0 5 17h10a1.5 1.5 0 0 0 1.5-1.5V11A1.5 1.5 0 0 0 15 9.5h-.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
       {p.exports && <ExportMenu actions={p.exports} />}
     </header>
   );
