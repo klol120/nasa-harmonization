@@ -156,7 +156,9 @@ async def cmd_weather_fetch(args) -> int:
     conn = await connect(settings().database_url)
     try:
         await migrate(conn)
-        return await W.fetch_all(conn, args.regions, creds, fields, chunk_months=args.chunk_months, dry_run=args.dry_run)
+        return await W.fetch_all(
+            conn, args.regions, creds, fields, wait_lock=args.wait_lock, chunk_months=args.chunk_months, dry_run=args.dry_run
+        )
     finally:
         await conn.close()
 
@@ -251,6 +253,8 @@ def main() -> None:
     wf.add_argument("--fields", help=fields_help)
     wf.add_argument("--chunk-months", type=int, default=12, help="months per request (split automatically if too large)")
     wf.add_argument("--dry-run", action="store_true", help="show what would be fetched, without sending requests")
+    wf.add_argument("--wait-lock", type=float, default=0, metavar="SECONDS",
+                    help="if another fetch is running, keep retrying this long instead of skipping (default: skip)")
     we = sub.add_parser("weather-export", help="write stored weather to <folder>/<region>.json")
     we.add_argument("folder")
     wi = sub.add_parser("weather-import", help="load <region>.json files written by weather-export")

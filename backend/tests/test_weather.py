@@ -98,3 +98,52 @@ def test_anomalies():
     assert m["precip_pct_of_normal"] == 20 and m["precip_mm_z"] is None  # no spread in the baseline
     assert m["t_max_c"] is None and m["t_max_c_normal"] is None
     assert out[4]["t_mean_c_anom"] is None and out[4]["precip_pct_of_normal"] is None  # incomplete month
+
+
+class _LockConn:
+    """Stands in for a connection whose weather lock is held by another fetch for the first `busy` tries."""
+
+    def __init__(self, busy: int):
+        self.busy, self.tries, self.unlocked = busy, 0, False
+
+    async def fetchval(self, sql, *args):
+        if "pg_try_advisory_lock" in sql:
+            self.tries += 1
+            return self.tries > self.busy
+        return 0
+
+    async def fetch(self, sql, *args):
+        return []
+
+    async def execute(self, sql, *args):
+        if "pg_advisory_unlock" in sql:
+            self.unlocked = True
+
+
+def test_fetch_skips_when_locked_and_not_waiting():
+    import asyncio
+
+    conn, logs = _LockConn(busy=10**6), []
+    assert asyncio.run(W.fetch_all(conn, None, None, [], log=logs.append)) == 0
+    assert conn.tries == 1 and not conn.unlocked
+    assert "skipping" in logs[-1]
+
+
+def test_fetch_waits_for_the_lock(monkeypatch):
+    import asyncio
+
+    monkeypatch.setattr(W, "LOCK_RETRY_S", 0.01)
+    conn, logs = _LockConn(busy=3), []
+    assert asyncio.run(W.fetch_all(conn, None, None, [], log=logs.append, wait_lock=5)) == 0
+    assert conn.tries == 4 and conn.unlocked
+    assert "waiting" in logs[0] and not any("skipping" in m for m in logs)
+
+
+def test_fetch_gives_up_after_waiting(monkeypatch):
+    import asyncio
+
+    monkeypatch.setattr(W, "LOCK_RETRY_S", 0.01)
+    conn, logs = _LockConn(busy=10**6), []
+    assert asyncio.run(W.fetch_all(conn, None, None, [], log=logs.append, wait_lock=0.05)) == 0
+    assert conn.tries > 1 and not conn.unlocked
+    assert "skipping" in logs[-1]
