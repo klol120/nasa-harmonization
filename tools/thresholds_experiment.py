@@ -37,7 +37,7 @@ from firecal.io import read_stage
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs/reports/thresholds_data"
-FRACTIONS = [1.0, 0.5, 0.2, 0.1, 0.05, 0.02]
+FRACTIONS = [1.0, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005]   # 1 and 0.5 % added to locate N_min
 STRATEGIES = ["local", "single", "blend", "donor", "lebanon"]
 DONORS = {"greece": ("eastmed", ["Cyprus", "Turkey", "Syria", "Israel", "Palestine"], "eastmed_pool"),
           "eastmed": ("greece", ["Greece"], "greece")}
