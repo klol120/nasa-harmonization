@@ -25,6 +25,8 @@ interface Props {
   exports: ExportAction[];
   onMethods: () => void;
   onWorld: () => void;
+  /** Account control (sign in / avatar menu). */
+  account: React.ReactNode;
 }
 
 export function TopBar(p: Props) {
@@ -91,6 +93,7 @@ export function TopBar(p: Props) {
         <button className="btn btn-ghost" onClick={p.onMethods}>
           Methods
         </button>
+        {p.account}
       </div>
     </header>
   );

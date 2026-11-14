@@ -182,6 +182,50 @@ async def cmd_weather_import(args) -> int:
         await conn.close()
 
 
+async def cmd_send_alerts(args) -> int:
+    from .alerts import run_alerts
+
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        results = await run_alerts(conn, dry_run=args.dry_run)
+    finally:
+        await conn.close()
+    for r in results:
+        z = "-" if r.z is None else f"{r.z:+.2f}"
+        print(f"[area {r.area_id}] {r.area} ({r.email}) {r.ym or '-'} z={z}: {r.reason}")
+    print(f"{sum(r.sent for r in results)} alert(s) queued, {len(results)} area(s) checked")
+    return 0
+
+
+async def cmd_send_digest(args) -> int:
+    from .alerts import run_digest
+
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        n = await run_digest(conn, dry_run=args.dry_run)
+    finally:
+        await conn.close()
+    print(f"digest {'would go' if args.dry_run else 'queued'} to {n} subscriber(s)")
+    return 0
+
+
+async def cmd_send_outbox(args) -> int:
+    from . import mailer
+
+    if mailer.smtp_settings() is None:
+        print("SMTP_HOST is not set: emails stay in the outbox (see /dev/outbox locally)")
+        return 1
+    conn = await connect(settings().database_url)
+    try:
+        sent, failed = await mailer.deliver(conn, limit=args.limit)
+    finally:
+        await conn.close()
+    print(f"sent {sent}, failed {failed}")
+    return 1 if failed else 0
+
+
 def main() -> None:
     p = argparse.ArgumentParser(prog="firecal-db", description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -211,6 +255,12 @@ def main() -> None:
     we.add_argument("folder")
     wi = sub.add_parser("weather-import", help="load <region>.json files written by weather-export")
     wi.add_argument("folder")
+    sa = sub.add_parser("send-alerts", help="email users whose saved areas had an unusually high month")
+    sa.add_argument("--dry-run", action="store_true", help="show what would be sent, without queueing emails")
+    sd = sub.add_parser("send-digest", help="queue the monthly digest for confirmed email-list subscribers")
+    sd.add_argument("--dry-run", action="store_true", help="print the digest and the number of recipients only")
+    so = sub.add_parser("send-outbox", help="send queued emails over SMTP (needs SMTP_HOST)")
+    so.add_argument("--limit", type=int, default=200)
     sv = sub.add_parser("serve", help="run the API")
     sv.add_argument("--host", default="127.0.0.1")
     sv.add_argument("--port", type=int, default=8000)
@@ -225,7 +275,8 @@ def main() -> None:
     fn = {"init": cmd_init, "ingest": cmd_ingest, "releases": cmd_releases,
           "set-current": cmd_set_current, "delete-release": cmd_delete_release,
           "weather-check": cmd_weather_check, "weather-fetch": cmd_weather_fetch,
-          "weather-export": cmd_weather_export, "weather-import": cmd_weather_import}[args.cmd]
+          "weather-export": cmd_weather_export, "weather-import": cmd_weather_import,
+          "send-alerts": cmd_send_alerts, "send-digest": cmd_send_digest, "send-outbox": cmd_send_outbox}[args.cmd]
     sys.exit(asyncio.run(fn(args)))
 
 

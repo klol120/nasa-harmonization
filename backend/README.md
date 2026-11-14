@@ -131,3 +131,26 @@ uv run python -m pytest -q
   run) and checks that the API reproduces `region_monthly.json`, `cells.geojson` and the
   `cells_series` files. It also checks that whole-region aggregation reproduces the exported z, and
   that a broken export is rejected without writing anything.
+
+## Accounts, email list and alerts (optional)
+
+None of this gates the data: every region endpoint stays public. Settings are in `.env.example`.
+
+| endpoint | does |
+|---|---|
+| `GET /auth/config` | which sign-in methods exist (Google client id, local test sign-in) |
+| `POST /auth/google` | exchange a Google ID token for a session token (`Authorization: Bearer …`) |
+| `POST /auth/dev-login` | local test sign-in, only with `AUTH_DEV_LOGIN=1` |
+| `GET /auth/me`, `POST /auth/logout`, `DELETE /me` | session, sign out, delete account |
+| `POST /newsletter/subscribe`, `GET /newsletter/confirm`, `GET /newsletter/unsubscribe` | email list with double opt-in |
+| `GET/POST /me/areas`, `PATCH/DELETE /me/areas/{id}` | saved areas with their latest month and alert settings |
+| `GET /admin/stats` | counts for `ADMIN_EMAILS` |
+| `GET /dev/outbox` | the emails that would have been sent (only with `AUTH_DEV_LOGIN=1`) |
+
+Scheduled jobs (cron, or a Container Apps job):
+
+```sh
+uv run python -m firecal_api.cli send-alerts    # daily: email saved areas whose newest month is unusual (once per month)
+uv run python -m firecal_api.cli send-digest    # monthly: digest for confirmed subscribers
+uv run python -m firecal_api.cli send-outbox    # send queued emails over SMTP (also done right after each job)
+```

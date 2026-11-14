@@ -15,6 +15,9 @@ interface Props {
   onEnter: (regionId: string) => void;
   /** Region the dashboard last showed, highlighted when coming back. */
   current?: string;
+  /** Optional extras shown in the panel (email list) and the top-right corner (account). */
+  extras?: React.ReactNode;
+  corner?: React.ReactNode;
 }
 
 /**
@@ -55,7 +58,7 @@ const markerAt = (r: RegionSummary): [number, number] => regionInfo(r.region).ma
  * Landing view: a world map where the user picks a region the data server has.
  * Served regions pulse; the countries they cover can be clicked or searched.
  */
-export function WorldPicker({ regions, error, onRetry, onEnter, current }: Props) {
+export function WorldPicker({ regions, error, onRetry, onEnter, current, extras, corner }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
@@ -419,8 +422,11 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current }: Props
           </>
         )}
 
+        {extras}
+
         <p className="world-foot">Or click a highlighted country on the map. Data: NASA FIRMS, harmonized by the Wel3a pipeline.</p>
       </aside>
+      {corner && <div className="world-corner">{corner}</div>}
 
       {hover && !flying && (
         <div className="world-tip" style={{ left: hover.x + 14, top: hover.y + 14 }}>
