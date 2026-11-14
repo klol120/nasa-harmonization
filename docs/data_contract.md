@@ -1,7 +1,18 @@
 # Data contract: burning-activity calendar export
 
-Version **0.4** (draft, 2026-11-12). Producer: `firecal export`. Consumer: the frontend team (browser app).
+Version **0.5** (draft, 2026-11-13). Producer: `firecal export`. Consumer: the frontend team (browser app).
 The formats are still pending confirmation from the frontend team.
+
+**Changes from 0.4** (additive, nothing removed or renamed):
+- **New `source` field in `region_monthly`:** which satellite product feeds the month's `harmonized` value
+  (see below). Months from the VIIRS switch date (2026-11-03) are **`NOAA20`**: S-NPP stopped delivering
+  data on 2026-11-02, so the series continues with NOAA-20 calibrated to S-NPP units.
+- **New `noaa20_raw`** in the calendar and `region_monthly`: uncalibrated NOAA-20 fire-days (from 2018-04).
+- **`meta.calibration.continuation`** (NOAA-20 → S-NPP factors, hold-out, continuity at the switch),
+  **`meta.time.viirs_switch_date`**, **`meta.source_values`**; `meta.sources` lists every product
+  (SP and NRT).
+- S-NPP months August–October 2026 now come from S-NPP NRT (the SP product ends 2026-07-31), so
+  2026-08 to 2026-11 have data.
 
 **Changes from 0.3** (breaking):
 - **New compact per-cell file:** `cells_series/{year}.json`.
@@ -28,9 +39,12 @@ change bumps the version (`contract_version` in meta.json and the series files).
 ## Units and what the numbers are
 - **Fire-day:** one 0.05° cell with at least one active-fire detection on one UTC day. A cell-month value
   lies between 0 and the number of days in the month. Fire-days measure burning activity, not burned area.
-- **`harmonized`** is in **VIIRS-equivalent fire-days**. It is observed VIIRS from 2012-01-20 onward;
-  before that it is a model estimate converted from MODIS.
-- **`viirs_raw`** is in VIIRS fire-days (null before 2012-01).
+- **`harmonized`** is in **VIIRS-equivalent fire-days** (S-NPP units). It is observed VIIRS S-NPP from
+  2012-01-20 to 2026-11-02, NOAA-20 calibrated to S-NPP from 2026-11-03, and before 2012-01-20 a model
+  estimate converted from MODIS. `region_monthly.source` says which.
+- **`viirs_raw`** is in VIIRS S-NPP fire-days (null before 2012-01 and after S-NPP's end).
+- **`noaa20_raw`** is in NOAA-20 fire-days (null before 2018-04). Close to S-NPP units but not identical;
+  use `harmonized` for anything continuous across the switch.
 - **`modis_raw` is in MODIS fire-days, a different and much smaller unit.** MODIS sees roughly 3–6× fewer
   fire-days than VIIRS for the same activity (about 3× in Greece, about 6× in Lebanon). It is not
   comparable with `harmonized` or `viirs_raw`. **Give MODIS its own colour scale** and never share a
@@ -54,9 +68,10 @@ One row per month from `meta.time.first_month` to `meta.time.last_month`; every 
 |---|---|---|---|
 | `ym` | string | no | "YYYY-MM" |
 | `year`, `month` | int | no | |
-| `modis_raw`, `viirs_raw` | int | yes | region sums (MODIS units / VIIRS units); null when that sensor has no data |
+| `modis_raw`, `viirs_raw`, `noaa20_raw` | int | yes | region sums (MODIS / S-NPP / NOAA-20 units); null when that satellite has no data |
 | `harmonized`, `harmonized_low`, `harmonized_high` | float | yes | region sum and 90% band. Null iff `data_available` is false |
 | `anomaly_z` | float | yes | z of the region total against its own baseline (`meta.anomalies.baseline_years`) |
+| `source` | string | yes | what feeds `harmonized`: `MODIS` (estimate from MODIS), `SNPP` (observed S-NPP), `NOAA20` (NOAA-20 calibrated to S-NPP), or two joined by `+` for a month split at a switch date (`MODIS+SNPP` = 2012-01, `SNPP+NOAA20` = 2026-11). Null iff `data_available` is false |
 | `is_estimate` | bool | no | the month is (wholly or partly) estimated from MODIS: all months ≤ 2011-12 and 2012-01 |
 | `has_gap` | bool | no | at least one satellite-outage day for a sensor feeding the month |
 | `data_available` | bool | no | false when the feeding sensor has no data (e.g. 2026 months after the last date). Show "no data", never 0 |
@@ -80,7 +95,7 @@ is global, so the same cell has the same ID in every region.
 ## cells_series/{year}.json (compact per-cell file)
 
 ```json
-{"contract_version": "0.4", "year": 2007, "ym": ["2007-01", "...", "2007-12"],
+{"contract_version": "0.5", "year": 2007, "ym": ["2007-01", "...", "2007-12"],
  "fields": {"h": "harmonized", "m": "modis_raw", "v": "viirs_raw"},
  "omitted_cells": "no fire-days this year: 0 where data_available, else null",
  "cells": {"2461_4303": {"h": [0, 0, ..., 0.17, 0, 0, 0], "m": [0, ...], "v": [null, ...]}}}
@@ -101,16 +116,29 @@ is global, so the same cell has the same ID in every region.
 | `ym` | string | no | "YYYY-MM" |
 | `year`, `month` | int16, int8 | no | |
 | `modis_raw` | Int16 | yes | MODIS (Terra ∪ Aqua) fire-days; **MODIS units** |
-| `viirs_raw` | Int16 | yes | VIIRS S-NPP fire-days; null before 2012-01; January 2012 counts days from the 20th |
-| `harmonized`, `harmonized_low`, `harmonized_high` | float32 | yes | VIIRS-equivalent value and 90% band. Bands equal the value for observed months |
+| `viirs_raw` | Int16 | yes | VIIRS S-NPP fire-days; null before 2012-01 and after S-NPP's end; January 2012 counts days from the 20th |
+| `noaa20_raw` | Int16 | yes | VIIRS NOAA-20 fire-days (uncalibrated); null before 2018-04 |
+| `harmonized`, `harmonized_low`, `harmonized_high` | float32 | yes | VIIRS-equivalent value and 90% band. Bands equal the value for observed S-NPP months; NOAA-20 months carry the c_m bootstrap band |
 | `anomaly_z` | float32 | yes | cell z against the cell's baseline for that calendar month; null when baseline sd = 0 or no data |
 
 Invariants (checked by `tests/test_export_contract.py`):
 - `harmonized_low ≤ harmonized ≤ harmonized_high`;
 - `harmonized` is null iff the month's `data_available` is false;
-- for observed months `harmonized == viirs_raw`;
+- for months with `source == "SNPP"`, `harmonized == viirs_raw`;
+- for months with `source == "NOAA20"`, `harmonized == c_m × noaa20_raw` (c_m from
+  `meta.calibration.continuation.factors`);
 - (`cell_id`, `ym`) is unique;
 - the series files equal the calendar values.
+
+## The VIIRS switch (S-NPP → NOAA-20)
+- S-NPP's last data is 2026-11-02. From 2026-11-03 (`meta.time.viirs_switch_date`) `harmonized` =
+  c_m × NOAA-20 fire-days, with c_m = Σ N_SNPP / Σ N_NOAA20 per calendar month over 2018–2025 (both
+  satellites observing the same days). November 2026 is mixed: days 1–2 S-NPP, from the 3rd NOAA-20.
+- The factors are close to 1, so the switch is a small correction, not a model estimate:
+  `is_estimate` stays false for NOAA-20 months. Show `source` in the month tooltip or legend
+  ("NOAA-20, calibrated to S-NPP").
+- `meta.calibration.continuation.continuity` checks that the switch adds no step (calibrated NOAA-20 vs
+  S-NPP on 2026-01-01 to 2026-11-02, out of sample).
 
 ## Aggregating over areas (user-drawn polygons, provinces)
 - **Counts and bands add up.** Sum `harmonized`, `harmonized_low`, `harmonized_high`, `modis_raw` and
@@ -129,11 +157,14 @@ Invariants (checked by `tests/test_export_contract.py`):
   (version, config hash), `formats_status`, `units`, `n_cells`, `n_persistent_cells`.
 - **`files`:** `{path: bytes}` for every exported file.
 - **`time`:** `first_month`, `last_month`, `stats_last_year`, `display_only_years`, `splice_date`
-  (2012-01-20) and `terra_only_until` (2002-07-04). `sources`: first and last date per product.
+  (2012-01-20), `terra_only_until` (2002-07-04) and `viirs_switch_date` (2026-11-03). `sources`: first
+  and last date per product (SP and NRT). `source_values`: meaning of each `source` value.
 - **`calibration`:**
   - `strategy`, `overlap_years`, `exclude_persistent_from_fit`;
   - `factors[]` (`a, a_low, a_high, b, b_low, b_high, w_local` per month), plus `terra_strategy` and
     `terra_correction[]`;
+  - `continuation`: the NOAA-20 → S-NPP transfer (`satellite`, `replaces`, `switch_date`, `strategy`,
+    `overlap_years`, `factors[]` with `c, c_low, c_high` per month, `holdout`, `continuity`);
   - `composite`, when the strategy is a composite: `shape` and `level` with their factors. In that case
     `factors[]` are the level model's, and bands carry the level model's uncertainty only.
 - **`low_confidence_rule`:** the region's thresholds (`min_modis_fire_days`, `max_zero_modis_share`),
@@ -143,13 +174,15 @@ Invariants (checked by `tests/test_export_contract.py`):
 - **`anomalies`:** `baseline_years`, `baseline_source` and `sensitivity` (alternative baseline: correlation
   and mean |Δz|). `outages`: confirmed outage runs. `caveats`: text for the about box.
 
-## Sizes (2026-11-12 run)
+## Sizes (2026-11-14 run)
 
 | region | cells | cells.geojson | cells_series (largest year / all) | region_monthly.json | calendar.parquet | calendar.csv.gz |
 |---|---|---|---|---|---|---|
-| lebanon | 429 | 0.15 MB | 0.06 / 0.93 MB | 0.11 MB | 0.29 MB | 0.67 MB |
-| greece | 5,910 | 1.99 MB | 0.20 / 3.60 MB | 0.11 MB | 1.27 MB | 6.40 MB |
-| eastmed | 15,872 | 5.32 MB | 0.72 / 10.4 MB | 0.11 MB | 3.88 MB | 17.2 MB |
+| lebanon | 431 | 0.15 MB | 0.06 / 0.93 MB | 0.12 MB | 0.29 MB | 0.67 MB |
+| greece | 5,954 | 2.00 MB | 0.20 / 3.62 MB | 0.12 MB | 1.33 MB | 6.51 MB |
+| eastmed | 15,894 | 5.33 MB | 0.72 / 10.6 MB | 0.12 MB | 4.10 MB | 17.4 MB |
+
+Cell counts grew slightly from 0.4 because NOAA-20 detects fire in a few cells S-NPP and MODIS never did.
 
 A browser map needs `region_monthly.json`, `cells.geojson` and one `cells_series/{year}.json` at a time:
 under 0.5 MB for Lebanon and about 6 MB for EastMed.
@@ -165,7 +198,7 @@ Committed for sharing, with a limit of 5 MB (5,000,000 bytes):
 | file | size |
 |---|---|
 | `eastmed/cells.geojson` | 5.3 MB |
-| `greece/calendar.csv.gz` | 6.4 MB |
-| `eastmed/calendar.csv.gz` | 17.2 MB |
+| `greece/calendar.csv.gz` | 6.5 MB |
+| `eastmed/calendar.csv.gz` | 17.4 MB |
 
 Everything else regenerates with `.venv/bin/python -m firecal all --region <region>`.

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from .. import outages as outages_mod
-from ..config import as_date, path
+from ..config import as_date, continuation, path
 from ..firedays import count_by_sensor
 from ..io import read_stage, stage_file, write_stage
 from ..geo import cell_index
@@ -27,7 +27,7 @@ def sp_precedence(df: pd.DataFrame, cfg: dict) -> np.ndarray:
     nrt = df.source.str.endswith("_NRT").to_numpy()
     if not nrt.any():
         return np.ones(len(df), bool)
-    cov = outages_mod.satellite_coverage(cfg)
+    cov = outages_mod.satellite_coverage(cfg, sp_only=True)
     date = df.datetime_utc.dt.tz_convert(None).dt.date
     covered = np.zeros(len(df), bool)
     for sat, (a, b) in cov.items():
@@ -69,6 +69,20 @@ def persistence_stats(df: pd.DataFrame, cell_deg: float) -> pd.DataFrame:
     s["lat_center"] = np.round((r + 0.5) * cell_deg - 90, 6)
     s["lon_center"] = np.round((c + 0.5) * cell_deg - 180, 6)
     return s.reset_index()
+
+
+def pcells(df: pd.DataFrame, cell_deg: float) -> np.ndarray:
+    row, col = cell_index(df.lat, df.lon, cell_deg)
+    return pd.Series(row).astype(str).values + "_" + pd.Series(col).astype(str).values
+
+
+def static_cells(df: pd.DataFrame, p: dict) -> set:
+    """Fine cells whose typed detections are mostly static land sources (type 2), before rule 1."""
+    typed = df[df.fire_type.notna()]
+    if typed.empty:
+        return set()
+    share = pd.Series((typed.fire_type == 2).to_numpy()).groupby(pcells(typed, p["cell_deg"])).mean()
+    return set(share.index[share >= p["static_min_share"]])
 
 
 def flag_persistent(stats: pd.DataFrame, p: dict) -> pd.Series:
@@ -148,7 +162,11 @@ def run(cfg: dict, region_name: str) -> pd.DataFrame:
     c = cfg["clean"]
     df = read_stage(cfg, region_name, "detections")
     rep = {"input": len(df), "removed": {}}
+    p = cfg["persistence"]
+    static = static_cells(df, p)
     df = _step(df, df.fire_type.isin(c["fire_types"]) | df.fire_type.isna(), "fire_type", rep)
+    df = _step(df, ~(df.fire_type.isna().to_numpy() & np.isin(pcells(df, p["cell_deg"]), list(static))),
+               "untyped_in_static_cells", rep)
     df = _step(df, df.satellite.isin(cfg["sensors"]["satellites"]), "satellite", rep)
     df = _step(df, df.confidence_class.isin(c["confidence_classes"]), "confidence", rep)
     df = _step(df, sp_precedence(df, cfg), "nrt_where_sp_exists", rep)
@@ -156,8 +174,14 @@ def run(cfg: dict, region_name: str) -> pd.DataFrame:
     df = _step(df, df.datetime_utc.dt.date <= max(as_date(b) for _, b in cfg["coverage"].values()),
                "after_coverage", rep)
 
-    p = cfg["persistence"]
-    stats = persistence_stats(df, p["cell_deg"])
+    # Statistics on typed rows of the original constellation, so adding NRT rows (which keep static sources)
+    # or the continuation satellite (NOAA-20) leaves the flagged cells unchanged; the flagged list is then
+    # applied to every satellite's untyped rows. Inputs with no typed rows at all use every row.
+    cont = continuation(cfg)
+    base = df[df.satellite != cont["satellite"]] if cont else df
+    if base.fire_type.notna().any():
+        base = base[base.fire_type.notna()]
+    stats = persistence_stats(base, p["cell_deg"])
     stats["flagged"] = flag_persistent(stats, p)
     if p["mode"] != "off":
         row, col = cell_index(df.lat, df.lon, p["cell_deg"])
@@ -169,7 +193,8 @@ def run(cfg: dict, region_name: str) -> pd.DataFrame:
         rep["removed"]["persistent_off"] = 0
     rep["persistent_cells_flagged"] = int(stats.flagged.sum())
     if region_name in p.get("diagnostic_regions", []):
-        rep["persistence_diagnostic"] = persistence_diagnostic(cfg, region_name, df, stats)
+        rep["persistence_diagnostic"] = persistence_diagnostic(
+            cfg, region_name, df[df.satellite != cont["satellite"]] if cont else df, stats)
 
     out = build_outages(cfg)
     rep["outage_runs"] = outages_mod.runs(out).assign(

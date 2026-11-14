@@ -1,6 +1,6 @@
 # CLAUDE.md — MODIS/VIIRS burning-activity calendar (NASA Space Apps 2026)
 
-Status: **All phases done and merged to `main` (81 tests), 2026-11-12. See docs/reports/WHILE_YOU_WERE_AWAY.md.**
+Status: **All phases done and merged to `main`; NOAA-20 continuation added 2026-11-13 (90 tests). See docs/reports/WHILE_YOU_WERE_AWAY.md and the last section below.**
 
 ## Working rules
 - Work in phases and stop after each one for review. Phase 4 must not continue until every difference from the
@@ -429,3 +429,26 @@ download: {...}                     # Phase 0 section, unchanged
   - `cells.json` dropped.
 
   The contract is docs/data_contract.md; the preview in tools/preview uses it.
+
+## NOAA-20 continuation (2026-11-13)
+- **Why:** S-NPP stopped delivering data on 2026-11-02 (FIRMS `VIIRS_SNPP_NRT` max_date). From
+  `sensors.continuation.switch_date` (2026-11-03) harmonized = c_m × NOAA-20 fire-days.
+- **Data:** `VIIRS_NOAA20_SP` country archives (prefix `viirs-jpss1`, from 2018-04-01) for 2018–2025, plus the area
+  API for 2026 (SP to 07-31, then `VIIRS_NOAA20_NRT`). S-NPP NRT fills 2026-08-01 → 11-02. NRT sources have
+  no archive (`download.sources.<X>_NRT: {}`). The real NRT files have no `type` column (confirmed).
+- **Separation:** NOAA20 is its own satellite with its own flag `noaa20` / `n_noaa20`; `viirs` stays S-NPP.
+  NOAA-20 never enters the a_m/kT fits, the persistence statistics, the Table 1 check, or the fire-day
+  country vote (except on cell-days only it observed), so history is unchanged.
+- **Coverage:** a satellite's span is SP start → NRT end (`satellite_coverage`); `sp_only=True` for SP
+  precedence.
+- **NRT cleaning:** untyped rows are also dropped in fine cells where ≥ `persistence.static_min_share` of
+  typed (SP) detections are type 2 (`untyped_in_static_cells`). Persistence statistics use typed rows only.
+- **Stage `continuation`** (after calibrate): c_m = Σ N_SNPP / Σ N_NOAA20 per month over
+  `continuation.overlap_years` (2018–2025), same strategies + bootstrap; hold-out 2018–21 / 2022–25;
+  continuity = Σ c N_N20 / Σ N_SNPP on 2026-01-01 → switch−1 (out of sample). Writes `cont_factors`,
+  `cont_boot`, `docs/reports/{r}_continuation.md`. Strategy: `single` for Lebanon/Greece, `local` for EastMed.
+- **Splice/export:** segment boundary at the switch (`cont_era`); November 2026 is `SNPP+NOAA20`.
+  Contract 0.5 adds `source` (region_monthly), `noaa20_raw` (calendar + region_monthly),
+  `meta.calibration.continuation`, `meta.time.viirs_switch_date`.
+- **Synthetic tests** isolate coverage with `coverage!`; `SynthSpec(noaa20_start=..., snpp_end=...)` simulates
+  the switch (tests/test_continuation.py).

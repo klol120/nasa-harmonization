@@ -27,6 +27,7 @@ log = logging.getLogger(__name__)
 TARGETS = {
     "a": {"num": "viirs", "den": "modis", "sats": ["Terra", "Aqua", "SNPP"]},
     "kT": {"num": "modis", "den": "terra", "sats": ["Terra", "Aqua"]},
+    "c": {"num": "viirs", "den": "noaa20", "sats": ["SNPP", "NOAA20"]},      # S-NPP from NOAA-20 (continuation)
 }
 
 
@@ -189,14 +190,14 @@ def components(cfg: dict, strategy: str) -> list[str]:
     return [c["shape"], c["level"]] if c else [strategy]
 
 
-def fit_point(cfg: dict, region: str, strategy: str, years, exclude_persistent: bool):
+def fit_point(cfg: dict, region: str, strategy: str, years, exclude_persistent: bool, target: str = "a"):
     """Point (a, b, k) of a plain strategy fitted on `years` (k chosen by leave-one-year-out there)."""
     kind, _, g = strategy.partition(":")
-    local = table(cfg, region, FitSpec("a", years, exclude_persistent))
+    local = table(cfg, region, FitSpec(target, years, exclude_persistent))
     donor, scale, k = None, 1.0, None
     if g:
         d = donor_groups(cfg, region)[g]
-        donor = table(cfg, d["region"], FitSpec("a", years, exclude_persistent), d["countries"])
+        donor = table(cfg, d["region"], FitSpec(target, years, exclude_persistent), d["countries"])
         if kind.startswith("affine"):
             scale = intercept_scale(cfg, region, g)
     if is_blended(strategy):
@@ -206,12 +207,13 @@ def fit_point(cfg: dict, region: str, strategy: str, years, exclude_persistent: 
     return a[0], b[0], k
 
 
-def predict_table(cfg: dict, region: str, strategy: str, fit_years, test: YearMonth, exclude_persistent: bool):
-    """Predicted VIIRS per (test year, month) for any strategy, composites included. Returns (pred, k)."""
-    c = composite_spec(cfg, strategy)
+def predict_table(cfg: dict, region: str, strategy: str, fit_years, test: YearMonth, exclude_persistent: bool,
+                  target: str = "a"):
+    """Predicted numerator per (test year, month) for any strategy, composites included. Returns (pred, k)."""
+    c = composite_spec(cfg, strategy) if target == "a" else None
     if c:
         aS, bS, k = fit_point(cfg, region, c["shape"], fit_years, exclude_persistent)
         aL, bL, _ = fit_point(cfg, region, c["level"], fit_years, exclude_persistent)
         return shape_level(aS * test.den + bS, aL * test.den + bL), k
-    a, b, k = fit_point(cfg, region, strategy, fit_years, exclude_persistent)
+    a, b, k = fit_point(cfg, region, strategy, fit_years, exclude_persistent, target)
     return a * test.den + b, k

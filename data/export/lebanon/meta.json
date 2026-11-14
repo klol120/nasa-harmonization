@@ -1,5 +1,5 @@
 {
-  "contract_version": "0.4",
+  "contract_version": "0.5",
   "region": "lebanon",
   "bbox": [
     35.0,
@@ -10,19 +10,19 @@
   "countries": [
     "Lebanon"
   ],
-  "generated_at": "2026-11-12T15:56:36Z",
+  "generated_at": "2026-11-14T10:36:11Z",
   "pipeline": {
     "version": "0.1.0",
-    "config_hash": "sha256:13865d53d09f670d"
+    "config_hash": "sha256:19626f9d1fd3d091"
   },
   "formats_status": "pending confirmation from the frontend team",
   "units": "VIIRS-equivalent fire-days per 0.05\u00b0 cell per month",
-  "n_cells": 429,
+  "n_cells": 431,
   "n_persistent_cells": 6,
   "files": {
-    "calendar.csv.gz": 665049,
-    "calendar.parquet": 285319,
-    "cells.geojson": 145036,
+    "calendar.csv.gz": 674255,
+    "calendar.parquet": 294389,
+    "cells.geojson": 145710,
     "cells_series/2000.json": 6638,
     "cells_series/2001.json": 55609,
     "cells_series/2002.json": 55593,
@@ -49,9 +49,9 @@
     "cells_series/2023.json": 18999,
     "cells_series/2024.json": 26935,
     "cells_series/2025.json": 23863,
-    "cells_series/2026.json": 15991,
-    "region_monthly.csv": 28411,
-    "region_monthly.json": 109500
+    "cells_series/2026.json": 20907,
+    "region_monthly.csv": 30753,
+    "region_monthly.json": 121350
   },
   "time": {
     "first_month": "2000-11",
@@ -61,7 +61,8 @@
       2026
     ],
     "splice_date": "2012-01-20",
-    "terra_only_until": "2002-07-04"
+    "terra_only_until": "2002-07-04",
+    "viirs_switch_date": "2026-11-03"
   },
   "sources": {
     "MODIS_SP": {
@@ -78,7 +79,34 @@
       ],
       "first_date": "2012-01-20",
       "last_date": "2026-07-31"
+    },
+    "VIIRS_SNPP_NRT": {
+      "satellites": [
+        "SNPP"
+      ],
+      "first_date": "2026-08-01",
+      "last_date": "2026-11-02"
+    },
+    "VIIRS_NOAA20_SP": {
+      "satellites": [
+        "NOAA20"
+      ],
+      "first_date": "2018-04-01",
+      "last_date": "2026-07-31"
+    },
+    "VIIRS_NOAA20_NRT": {
+      "satellites": [
+        "NOAA20"
+      ],
+      "first_date": "2026-08-01",
+      "last_date": "2026-11-13"
     }
+  },
+  "source_values": {
+    "MODIS": "estimate converted from MODIS (is_estimate)",
+    "SNPP": "observed VIIRS S-NPP",
+    "NOAA20": "VIIRS NOAA-20 calibrated to S-NPP units (calibration.continuation)",
+    "A+B": "month split between two sources at a switch date (e.g. MODIS+SNPP, SNPP+NOAA20)"
   },
   "calibration": {
     "strategy": "affine_shape_single_level_pool",
@@ -539,7 +567,148 @@
         "kT_low": 2.0912,
         "kT_high": 2.3315
       }
-    ]
+    ],
+    "continuation": {
+      "satellite": "NOAA20",
+      "replaces": "SNPP",
+      "switch_date": "2026-11-03",
+      "strategy": "single",
+      "overlap_years": [
+        2018,
+        2025
+      ],
+      "factors": [
+        {
+          "month": 1,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 2,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 3,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 4,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 5,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 6,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 7,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 8,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 9,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 10,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 11,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        },
+        {
+          "month": 12,
+          "c": 0.9278,
+          "c_low": 0.8825,
+          "c_high": 0.9664
+        }
+      ],
+      "holdout": [
+        {
+          "strategy": "single",
+          "k": null,
+          "wape": 0.1763,
+          "bias": 0.0037
+        },
+        {
+          "strategy": "blend:cyprus",
+          "k": 50.0,
+          "wape": 0.1874,
+          "bias": -0.0005
+        },
+        {
+          "strategy": "local",
+          "k": null,
+          "wape": 0.1895,
+          "bias": 0.0137
+        },
+        {
+          "strategy": "blend:southern_turkey",
+          "k": 1000000000.0,
+          "wape": 0.2008,
+          "bias": 0.0518
+        },
+        {
+          "strategy": "blend:eastmed_pool",
+          "k": 1000000000.0,
+          "wape": 0.2058,
+          "bias": 0.0773
+        },
+        {
+          "strategy": "blend:israel_palestine",
+          "k": 1000000000.0,
+          "wape": 0.206,
+          "bias": 0.0583
+        },
+        {
+          "strategy": "blend:syria",
+          "k": 1000000000.0,
+          "wape": 0.2206,
+          "bias": 0.1272
+        }
+      ],
+      "continuity": {
+        "window": [
+          "2026-01-01",
+          "2026-11-02"
+        ],
+        "step_index": 0.9278350515463918,
+        "band": [
+          0.8141474954988661,
+          1.0848657442041907
+        ],
+        "step_flagged": false,
+        "raw_ratio": 1.0
+      }
+    }
   },
   "low_confidence_rule": {
     "min_modis_fire_days": 20,
@@ -818,10 +987,10 @@
           2001,
           2025
         ],
-        "region_corr_z": 0.8988030575514763,
-        "region_mean_abs_dz": 0.45855441735831354,
-        "cells_corr_z": 0.7701963286738738,
-        "cells_mean_abs_dz": 0.18916258491329865
+        "region_corr_z": 0.8993746023147116,
+        "region_mean_abs_dz": 0.4589093660589117,
+        "cells_corr_z": 0.7727415574882285,
+        "cells_mean_abs_dz": 0.1890087211227207
       }
     ]
   },
@@ -847,6 +1016,7 @@
     "low_confidence marks pre-2012 months where MODIS sees almost none of the VIIRS-detected activity or the factor rests on few MODIS fire-days; show them with extra caution.",
     "Fire-days measure burning activity, not burned area.",
     "2026 is a partial year shown for display only.",
+    "From the VIIRS switch date (S-NPP's end) harmonized is NOAA-20 calibrated to S-NPP units per calendar month (source = NOAA20); viirs_raw stays S-NPP only, noaa20_raw is the uncalibrated NOAA-20 count.",
     "is_persistent cells contain persistent (industrial / waste-burning) sources; they are excluded from calibration but kept in the data so the UI can show or hide them."
   ]
 }

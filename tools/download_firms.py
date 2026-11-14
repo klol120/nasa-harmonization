@@ -106,13 +106,18 @@ def in_bbox(df: pd.DataFrame, bbox) -> pd.Series:
 
 # ---------- archives ----------
 
+def archive_sources() -> dict:
+    """Sources published as yearly country archives (NRT products are area-API only)."""
+    return {k: s for k, s in DL["sources"].items() if s and s.get("archive_prefix")}
+
+
 def archive_path(source: str, country: str, year: int) -> Path:
     return RAW / "archive" / source / f"{country}_{year}.csv"
 
 
 def download_archives():
     countries = sorted({c for r in CFG["regions"].values() for c in r["countries"]})
-    for source, s in DL["sources"].items():
+    for source, s in archive_sources().items():
         p = s["archive_prefix"]
         for year in range(s["first_year"], DL["archive_last_year"] + 1):
             for c in countries:
@@ -131,7 +136,7 @@ def download_archives():
 
 def build_region_files():
     for region, r in CFG["regions"].items():
-        for source, s in DL["sources"].items():
+        for source, s in archive_sources().items():
             for year in range(s["first_year"], DL["archive_last_year"] + 1):
                 out = RAW / region / f"{source}_{year}.csv"
                 if out.exists():
@@ -184,8 +189,9 @@ def pull_api(key: str, start: dt.date, end: dt.date, regions: list[str]):
     for region in regions:
         bbox = ",".join(f"{v:.2f}" for v in CFG["regions"][region]["bbox"])
         for source in DL["sources"]:
+            first = max(start, dt.date.fromisoformat(avail[source][0]))
             last = min(end, dt.date.fromisoformat(avail[source][1]))
-            d = start
+            d = first
             while d <= last:
                 days = min(step, (last - d).days + 1)
                 chunk = RAW / "api" / region / source / f"{d}_{days}d.csv"
@@ -247,8 +253,11 @@ def write_manifest():
         "## Sources",
         "- `MODIS_SP`: MODIS Collection 6.1 standard processing (Terra + Aqua), 1 km.",
         "- `VIIRS_SNPP_SP`: VIIRS S-NPP 375 m standard processing.",
-        f"- Country archives (full years {min(s['first_year'] for s in DL['sources'].values())}"
-        f"-{DL['archive_last_year']}): `{BASE}/data/country/{{prefix}}/{{year}}/{{prefix}}_{{year}}_{{Country}}.csv`."
+        "- `VIIRS_NOAA20_SP`: VIIRS NOAA-20 (JPSS-1) 375 m standard processing (archive prefix `viirs-jpss1`).",
+        "- `VIIRS_SNPP_NRT`, `VIIRS_NOAA20_NRT`: near-real-time products after the SP max_date (area API only; "
+        "no `type` column).",
+        f"- Country archives (full years {min(s['first_year'] for s in archive_sources().values())}"
+        f"-{DL['archive_last_year']}; NOAA-20 from 2018): `{BASE}/data/country/{{prefix}}/{{year}}/{{prefix}}_{{year}}_{{Country}}.csv`."
         " Verbatim copies in `archive/{source}/{Country}_{year}.csv`.",
         f"- Area API ({DL['api_year']}): `{BASE}/api/area/csv/<KEY>/{{source}}/{{bbox}}/{DL['api_day_range']}/{{date}}`."
         " Verbatim chunks in `api/{region}/{source}/`.",

@@ -17,17 +17,22 @@ from .config import as_date
 COLUMNS = ["satellite", "date", "kind", "flagged", "note", "expected"]
 
 
-def satellite_coverage(cfg: dict) -> dict[str, tuple[dt.date, dt.date]]:
-    """Date span each configured satellite has data, from config coverage."""
+def satellite_coverage(cfg: dict, sp_only: bool = False) -> dict[str, tuple[dt.date, dt.date]]:
+    """Date span each configured satellite has data, from config coverage.
+
+    A satellite's span runs from the start of its first product to the end of its last (SP, then NRT
+    after the SP max_date); sp_only gives the SP span alone (for SP precedence over NRT). Satellites
+    without any coverage entry are left out."""
     cov = {k: (as_date(a), as_date(b)) for k, (a, b) in cfg["coverage"].items()}
     out = {}
     for sat in cfg["sensors"]["satellites"]:
-        if sat in ("Terra", "Aqua"):
-            a, b = cov["MODIS_SP"]
-            if sat == "Aqua":
-                a = max(a, as_date(cfg["sensors"]["terra_only_until"]))
-        else:
-            a, b = cov[f"VIIRS_{sat}_SP"]
+        prefix = "MODIS" if sat in ("Terra", "Aqua") else f"VIIRS_{sat}"
+        spans = [cov[k] for k in ([f"{prefix}_SP"] if sp_only else [f"{prefix}_SP", f"{prefix}_NRT"]) if k in cov]
+        if not spans:
+            continue
+        a, b = min(x for x, _ in spans), max(y for _, y in spans)
+        if sat == "Aqua":
+            a = max(a, as_date(cfg["sensors"]["terra_only_until"]))
         out[sat] = (a, b)
     return out
 

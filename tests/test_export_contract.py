@@ -180,4 +180,4 @@ def test_meta(exported):
     assert m["time"]["first_month"] == "2000-11" and m["time"]["last_month"] == "2021-03"
     assert m["time"]["display_only_years"] == [2020, 2021]
     assert len(m["calibration"]["factors"]) == 12
-    assert m["contract_version"] == "0.4" and "cells_series/2005.json" in m["files"]
+    assert m["contract_version"] == "0.5" and "cells_series/2005.json" in m["files"]
