@@ -128,6 +128,21 @@ calibration:
   blend_k_grid: [0, 5, 10, 20, 50, 100, 1000000000]   # last ~ donor only
   bootstrap: {n: 1000, seed: 2026, ci: 0.90}
 
+# Automatic strategy choice for a new region (add-country). The thresholds are DERIVED, not hand-set:
+# docs/reports/thresholds.md (tools/thresholds_experiment.py + tools/thresholds_analysis.py, cell
+# subsampling of Greece and EastMed, pooled estimates, 90% ranges in the report). n = local MODIS fire-days
+# in a calendar month summed over calibration.overlap_years (fitting inputs); annual = sum of n / years.
+# Rule: annual < n_min_annual -> donor_only; thin share (months with n < n_month) >= n_country -> thin;
+# otherwise rich. The configured calibration.strategy stays the one used; the rule's pick is recorded in
+# meta.calibration.auto_strategy (with the rule that fired per month) and compared with it.
+auto_strategy:
+  n_month: 149              # 90%: 146-156 (Greece alone 61, EastMed alone 426)
+  n_country: 0.72           # thin-month share; 90%: 0.71-0.77 (Greece 0.62, EastMed 0.68)
+  n_country_annual: 132     # the same crossing on the annual total; reported, not used by the rule
+  n_min_annual: 3.6         # 90%: 2.4-4.9 (Greece 3.6, EastMed 17)
+  outcomes: {donor_only: "donor:eastmed_pool", thin: affine_shape_single_level_pool, rich: local}
+  report: docs/reports/thresholds.md
+
 donors:
   cyprus:           {region: eastmed, countries: [Cyprus]}
   southern_turkey:  {region: eastmed, countries: [Turkey]}

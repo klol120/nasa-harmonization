@@ -3,6 +3,10 @@
 Version **0.5** (draft, 2026-11-13). Producer: `firecal export`. Consumer: the frontend team (browser app).
 The formats are still pending confirmation from the frontend team.
 
+**Addition within 0.5 (2026-11-14, meta.json only, no version bump):** `meta.calibration.auto_strategy`,
+the data-thinness rule's pick for the region with the rule that fired per calendar month (see below).
+Informational: `harmonized` still uses `meta.calibration.strategy`.
+
 **Changes from 0.4** (additive, nothing removed or renamed):
 - **New `source` field in `region_monthly`:** which satellite product feeds the month's `harmonized` value
   (see below). Months from the VIIRS switch date (2026-11-03) are **`NOAA20`**: S-NPP stopped delivering
@@ -167,6 +171,10 @@ Invariants (checked by `tests/test_export_contract.py`):
     `overlap_years`, `factors[]` with `c, c_low, c_high` per month, `holdout`, `continuity`);
   - `composite`, when the strategy is a composite: `shape` and `level` with their factors. In that case
     `factors[]` are the level model's, and bands carry the level model's uncertainty only.
+  - `auto_strategy`: the strategy the data-thinness rule would pick (`strategy`, `outcome` = rich |
+    thin | donor_only, `reason`), the thresholds used (docs/reports/thresholds.md), `inputs` (annual
+    local MODIS fire-days, thin-month share), whether it `agrees_with_configured`, and `months[]` with
+    `n`, `thin`, `rule` (rich_month | thin_month | n_country | n_min) and a `reason` per calendar month.
 - **`low_confidence_rule`:** the region's thresholds (`min_modis_fire_days`, `max_zero_modis_share`),
   `months` (the flagged calendar months) and `by_month` (the statistics behind them).
 - **`validation`:** the hold-out table per strategy, and `continuity_2012` with `step_index`, `band`

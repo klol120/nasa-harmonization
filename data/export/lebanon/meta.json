@@ -10,10 +10,10 @@
   "countries": [
     "Lebanon"
   ],
-  "generated_at": "2026-11-14T10:36:11Z",
+  "generated_at": "2026-11-14T12:37:58Z",
   "pipeline": {
     "version": "0.1.0",
-    "config_hash": "sha256:19626f9d1fd3d091"
+    "config_hash": "sha256:4591ae4e5707d6a1"
   },
   "formats_status": "pending confirmation from the frontend team",
   "units": "VIIRS-equivalent fire-days per 0.05\u00b0 cell per month",
@@ -708,6 +708,128 @@
         "step_flagged": false,
         "raw_ratio": 1.0
       }
+    },
+    "auto_strategy": {
+      "strategy": "affine_shape_single_level_pool",
+      "outcome": "thin",
+      "reason": "12/12 months thin (n < n_month 149): share 1.00 >= n_country 0.72",
+      "available": true,
+      "configured_strategy": "affine_shape_single_level_pool",
+      "agrees_with_configured": true,
+      "inputs": {
+        "overlap_years": [
+          2012,
+          2020
+        ],
+        "exclude_persistent": true,
+        "annual": 53.11,
+        "thin_share": 1.0
+      },
+      "thresholds": {
+        "n_month": 149,
+        "n_country": 0.72,
+        "n_country_annual": 132,
+        "n_min_annual": 3.6
+      },
+      "report": "docs/reports/thresholds.md",
+      "months": [
+        {
+          "month": 1,
+          "name": "Jan",
+          "n": 3,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 3 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 2,
+          "name": "Feb",
+          "n": 2,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 2 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 3,
+          "name": "Mar",
+          "n": 3,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 3 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 4,
+          "name": "Apr",
+          "n": 4,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 4 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 5,
+          "name": "May",
+          "n": 5,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 5 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 6,
+          "name": "Jun",
+          "n": 27,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 27 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 7,
+          "name": "Jul",
+          "n": 56,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 56 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 8,
+          "name": "Aug",
+          "n": 66,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 66 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 9,
+          "name": "Sep",
+          "n": 116,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 116 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 10,
+          "name": "Oct",
+          "n": 133,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 133 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 11,
+          "name": "Nov",
+          "n": 53,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 53 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 12,
+          "name": "Dec",
+          "n": 10,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 10 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        }
+      ]
     }
   },
   "low_confidence_rule": {

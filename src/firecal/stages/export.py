@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from .. import __version__
+from ..auto_strategy import decide
 from ..config import as_date, config_hash, continuation, path, region_settings, stage_dir
 from ..fitting import chosen, composite_spec
 from ..io import read_report, read_stage
@@ -166,6 +167,9 @@ def meta(cfg, region, cal: pd.DataFrame, cells, files: dict | None = None) -> di
             "terra_strategy": pick_k,
             "terra_correction": records(kt[["month", "kT", "kT_low", "kT_high"]]),
             "continuation": continuation_meta(cfg, region) if cont else None,
+            # rule-based pick from data thinness (config auto_strategy, docs/reports/thresholds.md); the
+            # configured `strategy` above is what the data use
+            "auto_strategy": decide(cfg, region) if cfg.get("auto_strategy") else None,
         },
         "low_confidence_rule": {**region_settings(cfg, "low_confidence", region),
                                 "months": [int(m["month"]) for m in srep["low_confidence_months"] if m["low_confidence"]],

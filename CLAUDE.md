@@ -461,3 +461,14 @@ download: {...}                     # Phase 0 section, unchanged
   - It reads our exports as-is and never re-harmonizes.
   - Contract 0.5 support is on its local branch `contract-0.5`, which is not pushed.
   - Its `export/export/` folder is a copy of our 0.4 exports. Point `EXPORT_DIR` at `data/export` instead.
+
+## Data-thinness thresholds (2026-11-14)
+- **Where they come from:** `config.auto_strategy` holds N_month, N_country and N_min, derived from cell
+  subsampling of Greece and EastMed. Code: `tools/thresholds_experiment.py` and
+  `tools/thresholds_analysis.py`. Report and chart: `docs/reports/thresholds.md` and `thresholds.png`.
+- **The rule:** `firecal.auto_strategy.decide()`, which add-country will call. To print a region's pick:
+  `python -m firecal auto-strategy --region R`.
+- **What it changes:** export records the pick and the per-month rule in `meta.calibration.auto_strategy`.
+  The configured `calibration.strategy` is still what the data use, so harmonized values are unchanged.
+- **Thresholds disagree between regions:** N_month is 61 for Greece and 426 for EastMed; the pooled value
+  149 is the one adopted. Revisit with each new region's subsampling.
