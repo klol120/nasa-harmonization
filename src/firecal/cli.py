@@ -5,10 +5,10 @@ import argparse
 import logging
 
 from .config import load_config
-from .stages import anomalies, calibrate, clean, export, grid, ingest, splice, terra, validate
+from .stages import anomalies, calibrate, clean, continuation, export, grid, ingest, splice, terra, validate
 
 STAGES = {"ingest": ingest.run, "clean": clean.run, "grid": grid.run, "terra": terra.run,
-          "calibrate": calibrate.run, "validate": validate.run, "splice": splice.run,
+          "calibrate": calibrate.run, "continuation": continuation.run, "validate": validate.run, "splice": splice.run,
           "anomalies": anomalies.run, "export": export.run}
 
 

@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from ..calibration import shape_level, wape_bias
-from ..config import as_date, path
+from ..config import as_date, continuation, path
 from ..firedays import count_by_sensor
 from ..fitting import (FitSpec, chosen, components, composite_spec, donor_groups, expand_strategies, fit_all,
                        predict_table, table)
@@ -61,6 +61,8 @@ def counting_units(cfg: dict, region: str) -> pd.DataFrame:
     y0, y1 = cfg["calibration"]["overlap_years"]
     det = read_stage(cfg, region, "detections_clean")
     det = det[det.datetime_utc.dt.year.between(y0, y1)]
+    if (c := continuation(cfg)):                       # Table 1 is S-NPP vs MODIS: leave NOAA-20 out
+        det = det[det.satellite != c["satellite"]]
     stats = read_stage(cfg, region, "persistent_sources")
     row, col = cell_index(det.lat, det.lon, cfg["persistence"]["cell_deg"])
     pcell = pd.Series(row).astype(str).values + "_" + pd.Series(col).astype(str).values

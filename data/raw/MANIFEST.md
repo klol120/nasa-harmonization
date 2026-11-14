@@ -1,11 +1,13 @@
 # Raw data manifest
 
-Generated 2026-11-12 by `tools/download_firms.py`. Request log: `download.log` (key redacted).
+Generated 2026-11-13 by `tools/download_firms.py`. Request log: `download.log` (key redacted).
 
 ## Sources
 - `MODIS_SP`: MODIS Collection 6.1 standard processing (Terra + Aqua), 1 km.
 - `VIIRS_SNPP_SP`: VIIRS S-NPP 375 m standard processing.
-- Country archives (full years 2000-2025): `https://firms.modaps.eosdis.nasa.gov/data/country/{prefix}/{year}/{prefix}_{year}_{Country}.csv`. Verbatim copies in `archive/{source}/{Country}_{year}.csv`.
+- `VIIRS_NOAA20_SP`: VIIRS NOAA-20 (JPSS-1) 375 m standard processing (archive prefix `viirs-jpss1`).
+- `VIIRS_SNPP_NRT`, `VIIRS_NOAA20_NRT`: near-real-time products after the SP max_date (area API only; no `type` column).
+- Country archives (full years 2000-2025; NOAA-20 from 2018): `https://firms.modaps.eosdis.nasa.gov/data/country/{prefix}/{year}/{prefix}_{year}_{Country}.csv`. Verbatim copies in `archive/{source}/{Country}_{year}.csv`.
 - Area API (2026): `https://firms.modaps.eosdis.nasa.gov/api/area/csv/<KEY>/{source}/{bbox}/5/{date}`. Verbatim chunks in `api/{region}/{source}/`.
 
 ## Regions
@@ -47,6 +49,17 @@ Region files `{region}/{source}_{year}.csv` = the listed countries' archive file
 | eastmed | MODIS_SP | 2024 | country archive | 8654 | 2024-01-01 | 2024-12-29 |
 | eastmed | MODIS_SP | 2025 | country archive | 5425 | 2025-01-02 | 2025-12-28 |
 | eastmed | MODIS_SP | 2026 | area API | 3544 | 2026-01-03 | 2026-08-31 |
+| eastmed | VIIRS_NOAA20_NRT | 2026 | area API | 16185 | 2026-08-01 | 2026-11-13 |
+| eastmed | VIIRS_NOAA20_SP | 2018 | country archive | 24730 | 2018-04-01 | 2018-12-31 |
+| eastmed | VIIRS_NOAA20_SP | 2019 | country archive | 54980 | 2019-01-01 | 2019-12-31 |
+| eastmed | VIIRS_NOAA20_SP | 2020 | country archive | 47072 | 2020-01-01 | 2020-12-31 |
+| eastmed | VIIRS_NOAA20_SP | 2021 | country archive | 37036 | 2021-01-01 | 2021-12-31 |
+| eastmed | VIIRS_NOAA20_SP | 2022 | country archive | 24568 | 2022-01-01 | 2022-12-31 |
+| eastmed | VIIRS_NOAA20_SP | 2023 | country archive | 36433 | 2023-01-01 | 2023-12-31 |
+| eastmed | VIIRS_NOAA20_SP | 2024 | country archive | 44534 | 2024-01-01 | 2024-12-31 |
+| eastmed | VIIRS_NOAA20_SP | 2025 | country archive | 28988 | 2025-01-01 | 2025-12-31 |
+| eastmed | VIIRS_NOAA20_SP | 2026 | area API | 13616 | 2026-01-01 | 2026-07-31 |
+| eastmed | VIIRS_SNPP_NRT | 2026 | area API | 14958 | 2026-08-01 | 2026-11-02 |
 | eastmed | VIIRS_SNPP_SP | 2012 | country archive | 29554 | 2012-01-20 | 2012-12-31 |
 | eastmed | VIIRS_SNPP_SP | 2013 | country archive | 43153 | 2013-01-01 | 2013-12-31 |
 | eastmed | VIIRS_SNPP_SP | 2014 | country archive | 27114 | 2014-01-01 | 2014-12-31 |
@@ -89,6 +102,17 @@ Region files `{region}/{source}_{year}.csv` = the listed countries' archive file
 | greece | MODIS_SP | 2024 | country archive | 1281 | 2024-01-01 | 2024-12-15 |
 | greece | MODIS_SP | 2025 | country archive | 1188 | 2025-01-04 | 2025-12-30 |
 | greece | MODIS_SP | 2026 | area API | 644 | 2026-01-11 | 2026-08-27 |
+| greece | VIIRS_NOAA20_NRT | 2026 | area API | 1840 | 2026-08-01 | 2026-11-13 |
+| greece | VIIRS_NOAA20_SP | 2018 | country archive | 3507 | 2018-04-01 | 2018-12-30 |
+| greece | VIIRS_NOAA20_SP | 2019 | country archive | 5151 | 2019-01-01 | 2019-12-31 |
+| greece | VIIRS_NOAA20_SP | 2020 | country archive | 4717 | 2020-01-01 | 2020-12-31 |
+| greece | VIIRS_NOAA20_SP | 2021 | country archive | 11061 | 2021-01-01 | 2021-12-31 |
+| greece | VIIRS_NOAA20_SP | 2022 | country archive | 5031 | 2022-01-02 | 2022-12-31 |
+| greece | VIIRS_NOAA20_SP | 2023 | country archive | 10648 | 2023-01-01 | 2023-12-31 |
+| greece | VIIRS_NOAA20_SP | 2024 | country archive | 5271 | 2024-01-01 | 2024-12-31 |
+| greece | VIIRS_NOAA20_SP | 2025 | country archive | 4177 | 2025-01-01 | 2025-12-31 |
+| greece | VIIRS_NOAA20_SP | 2026 | area API | 1986 | 2026-01-02 | 2026-07-31 |
+| greece | VIIRS_SNPP_NRT | 2026 | area API | 1947 | 2026-08-01 | 2026-11-02 |
 | greece | VIIRS_SNPP_SP | 2012 | country archive | 9264 | 2012-01-20 | 2012-12-29 |
 | greece | VIIRS_SNPP_SP | 2013 | country archive | 7368 | 2013-01-02 | 2013-12-31 |
 | greece | VIIRS_SNPP_SP | 2014 | country archive | 5980 | 2014-01-03 | 2014-12-29 |
@@ -131,6 +155,17 @@ Region files `{region}/{source}_{year}.csv` = the listed countries' archive file
 | lebanon | MODIS_SP | 2024 | country archive | 229 | 2024-03-02 | 2024-12-08 |
 | lebanon | MODIS_SP | 2025 | country archive | 91 | 2025-02-26 | 2025-11-23 |
 | lebanon | MODIS_SP | 2026 | area API | 65 | 2026-01-08 | 2026-08-29 |
+| lebanon | VIIRS_NOAA20_NRT | 2026 | area API | 387 | 2026-08-01 | 2026-11-12 |
+| lebanon | VIIRS_NOAA20_SP | 2018 | country archive | 511 | 2018-04-01 | 2018-12-18 |
+| lebanon | VIIRS_NOAA20_SP | 2019 | country archive | 638 | 2019-01-05 | 2019-12-29 |
+| lebanon | VIIRS_NOAA20_SP | 2020 | country archive | 849 | 2020-02-02 | 2020-12-28 |
+| lebanon | VIIRS_NOAA20_SP | 2021 | country archive | 901 | 2021-01-02 | 2021-12-30 |
+| lebanon | VIIRS_NOAA20_SP | 2022 | country archive | 422 | 2022-01-08 | 2022-12-30 |
+| lebanon | VIIRS_NOAA20_SP | 2023 | country archive | 628 | 2023-01-02 | 2023-12-29 |
+| lebanon | VIIRS_NOAA20_SP | 2024 | country archive | 1223 | 2024-01-03 | 2024-12-21 |
+| lebanon | VIIRS_NOAA20_SP | 2025 | country archive | 614 | 2025-01-10 | 2025-12-24 |
+| lebanon | VIIRS_NOAA20_SP | 2026 | area API | 227 | 2026-01-06 | 2026-07-31 |
+| lebanon | VIIRS_SNPP_NRT | 2026 | area API | 361 | 2026-08-01 | 2026-10-29 |
 | lebanon | VIIRS_SNPP_SP | 2012 | country archive | 637 | 2012-01-25 | 2012-12-31 |
 | lebanon | VIIRS_SNPP_SP | 2013 | country archive | 946 | 2013-01-01 | 2013-12-29 |
 | lebanon | VIIRS_SNPP_SP | 2014 | country archive | 595 | 2014-01-02 | 2014-12-31 |
@@ -152,14 +187,26 @@ Region files `{region}/{source}_{year}.csv` = the listed countries' archive file
 |---|---|---|---|---|---|
 | eastmed | MODIS_SP | area API | 3544 | 2026-01-03 | 2026-08-31 |
 | eastmed | MODIS_SP | country archive | 184250 | 2000-11-01 | 2025-12-28 |
+| eastmed | VIIRS_NOAA20_NRT | area API | 16185 | 2026-08-01 | 2026-11-13 |
+| eastmed | VIIRS_NOAA20_SP | area API | 13616 | 2026-01-01 | 2026-07-31 |
+| eastmed | VIIRS_NOAA20_SP | country archive | 298341 | 2018-04-01 | 2025-12-31 |
+| eastmed | VIIRS_SNPP_NRT | area API | 14958 | 2026-08-01 | 2026-11-02 |
 | eastmed | VIIRS_SNPP_SP | area API | 12458 | 2026-01-01 | 2026-07-31 |
 | eastmed | VIIRS_SNPP_SP | country archive | 528212 | 2012-01-20 | 2025-12-31 |
 | greece | MODIS_SP | area API | 644 | 2026-01-11 | 2026-08-27 |
 | greece | MODIS_SP | country archive | 46350 | 2000-11-01 | 2025-12-30 |
+| greece | VIIRS_NOAA20_NRT | area API | 1840 | 2026-08-01 | 2026-11-13 |
+| greece | VIIRS_NOAA20_SP | area API | 1986 | 2026-01-02 | 2026-07-31 |
+| greece | VIIRS_NOAA20_SP | country archive | 49563 | 2018-04-01 | 2025-12-31 |
+| greece | VIIRS_SNPP_NRT | area API | 1947 | 2026-08-01 | 2026-11-02 |
 | greece | VIIRS_SNPP_SP | area API | 1706 | 2026-01-03 | 2026-07-31 |
 | greece | VIIRS_SNPP_SP | country archive | 90442 | 2012-01-20 | 2025-12-31 |
 | lebanon | MODIS_SP | area API | 65 | 2026-01-08 | 2026-08-29 |
 | lebanon | MODIS_SP | country archive | 2234 | 2000-11-13 | 2025-11-23 |
+| lebanon | VIIRS_NOAA20_NRT | area API | 387 | 2026-08-01 | 2026-11-12 |
+| lebanon | VIIRS_NOAA20_SP | area API | 227 | 2026-01-06 | 2026-07-31 |
+| lebanon | VIIRS_NOAA20_SP | country archive | 5786 | 2018-04-01 | 2025-12-24 |
+| lebanon | VIIRS_SNPP_NRT | area API | 361 | 2026-08-01 | 2026-10-29 |
 | lebanon | VIIRS_SNPP_SP | area API | 271 | 2026-01-03 | 2026-07-31 |
 | lebanon | VIIRS_SNPP_SP | country archive | 9926 | 2012-01-25 | 2025-12-29 |
 
@@ -172,6 +219,12 @@ Region files `{region}/{source}_{year}.csv` = the listed countries' archive file
 | MODIS_SP | Palestine | 1070 |
 | MODIS_SP | Syria | 39495 |
 | MODIS_SP | Turkey | 136112 |
+| VIIRS_NOAA20_SP | Cyprus | 3301 |
+| VIIRS_NOAA20_SP | Israel | 10508 |
+| VIIRS_NOAA20_SP | Lebanon | 5786 |
+| VIIRS_NOAA20_SP | Palestine | 4071 |
+| VIIRS_NOAA20_SP | Syria | 121946 |
+| VIIRS_NOAA20_SP | Turkey | 152729 |
 | VIIRS_SNPP_SP | Cyprus | 5557 |
 | VIIRS_SNPP_SP | Israel | 19737 |
 | VIIRS_SNPP_SP | Lebanon | 9926 |

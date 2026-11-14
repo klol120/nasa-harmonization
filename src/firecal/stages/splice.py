@@ -2,7 +2,8 @@
 
 Per segment (a month split at 2002-07-04 / 2012-01-20 when they fall inside it):
   before the VIIRS start: estimate = a_m * (kT_m if Terra-only) * n_modis + b_m * share_cell_m * days/month_days
-  from the VIIRS start:   observed = n_viirs
+  from the VIIRS start:   observed = n_viirs (S-NPP)
+  from the continuation switch (S-NPP's end): calibrated = c_m * n_noaa20, bands from the c_m bootstrap
 b_m is the affine intercept (0 for ratio strategies), spread over cells by each cell's share of the
 region's overlap-period VIIRS fire-days in that calendar month. Bands come from the bootstrap draws of
 a_m and kT (independent draws multiplied); for affine strategies a and b quantiles are combined per
@@ -16,7 +17,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from ..config import path, region_settings
+from ..config import continuation, path, region_settings
 from ..fitting import chosen, composite_spec, ensure_fire_days, usable_dates
 from ..geo import cell_id as make_cell_id, footprint_cells
 from ..io import read_stage, write_stage
@@ -120,9 +121,25 @@ def estimate_rows(cfg: dict, region: str, fs: pd.DataFrame, seg_info: pd.DataFra
 def observed_rows(fs: pd.DataFrame, seg_info: pd.DataFrame) -> pd.DataFrame:
     c = fs.groupby(["cell_id", "year", "month", "seg"])[["n_viirs"]].sum().reset_index()
     c = c.merge(seg_info, on=["year", "month", "seg"])
-    c = c[c.viirs_era & (c.viirs_days > 0)]
+    c = c[c.viirs_era & ~c.cont_era & (c.viirs_days > 0)]
     return pd.DataFrame({"cell_id": c.cell_id, "year": c.year, "month": c.month,
                          "val": c.n_viirs.astype(float), "lo": c.n_viirs.astype(float), "hi": c.n_viirs.astype(float)})
+
+
+def continuation_factors(cfg: dict, region: str) -> tuple[pd.DataFrame, str]:
+    """c_m with its bootstrap band for the region's continuation strategy."""
+    pick = chosen(cfg, "continuation", region)
+    f = read_stage(cfg, region, "cont_factors").query("strategy == @pick")
+    return f[["month", "a", "a_low", "a_high"]].rename(columns={"a": "c", "a_low": "c_low", "a_high": "c_high"}), pick
+
+
+def continuation_rows(fs: pd.DataFrame, seg_info: pd.DataFrame, cf: pd.DataFrame) -> pd.DataFrame:
+    """Segments from the switch: NOAA-20 fire-days converted to S-NPP units."""
+    c = fs.groupby(["cell_id", "year", "month", "seg"])[["n_noaa20"]].sum().reset_index()
+    c = c.merge(seg_info, on=["year", "month", "seg"])
+    c = c[c.cont_era & (c.noaa20_days > 0)].merge(cf, on="month", how="left")
+    return pd.DataFrame({"cell_id": c.cell_id, "year": c.year, "month": c.month,
+                         "val": c.n_noaa20 * c.c, "lo": c.n_noaa20 * c.c_low, "hi": c.n_noaa20 * c.c_high})
 
 
 def shape_level_rows(shape: pd.DataFrame, level: pd.DataFrame, fb_level: pd.DataFrame) -> pd.DataFrame:
@@ -146,13 +163,19 @@ def shape_level_rows(shape: pd.DataFrame, level: pd.DataFrame, fb_level: pd.Data
 
 def month_flags(cfg: dict, seg: pd.DataFrame, lcm: pd.DataFrame) -> pd.DataFrame:
     """Region-wide flags per (year, month): availability, partial, estimate, gap, low confidence."""
-    est = ~seg.viirs_era
-    s = seg.assign(feed_days=np.where(est, seg.modis_days, seg.viirs_days),
-                   gap=np.where(est, seg.gap_terra + seg.gap_aqua, seg.gap_viirs))
+    est, cont = ~seg.viirs_era, seg.cont_era.astype(bool)
+    s = seg.assign(feed_days=np.select([est, cont], [seg.modis_days, seg.noaa20_days], seg.viirs_days),
+                   gap=np.select([est, cont], [seg.gap_terra + seg.gap_aqua, seg.gap_noaa20], seg.gap_viirs))
     s["est_seg"] = est & (s.feed_days > 0)
+    # source feeding each segment; a month's source joins its segments' sources ("MODIS+SNPP" for 2012-01)
+    s["seg_source"] = np.where(s.feed_days > 0, np.select([est, cont], ["MODIS", "NOAA20"], "SNPP"), "")
     m = s.groupby(["year", "month"]).agg(feed_days=("feed_days", "sum"), month_days=("month_days", "first"),
                                          is_estimate=("est_seg", "any"), gap=("gap", "sum"),
-                                         modis_days=("modis_days", "sum"), viirs_days=("viirs_days", "sum")).reset_index()
+                                         modis_days=("modis_days", "sum"), viirs_days=("viirs_days", "sum"),
+                                         noaa20_days=("noaa20_days", "sum"),
+                                         source=("seg_source", lambda x: "+".join(dict.fromkeys(v for v in x if v)))
+                                         ).reset_index()
+    m["source"] = m.source.replace("", None)
     m["data_available"] = m.feed_days > 0
     m["partial_month"] = m.data_available & (m.feed_days < m.month_days)
     m["has_gap"] = m.gap > 0
@@ -170,7 +193,8 @@ def run(cfg: dict, region_name: str) -> pd.DataFrame:
     comp = composite_spec(cfg, pick)
     lcm = low_confidence_months(cfg, region_name)
     flags = month_flags(cfg, seg, lcm)
-    seg_info = seg[["year", "month", "seg", "ndays", "month_days", "modis_days", "viirs_days", "terra_only", "viirs_era"]]
+    seg_info = seg[["year", "month", "seg", "ndays", "month_days", "modis_days", "viirs_days", "noaa20_days",
+                    "terra_only", "viirs_era", "cont_era"]]
     if comp:
         fbS, _, pick_k = factor_bands(cfg, region_name, comp["shape"])
         fbL, _, _ = factor_bands(cfg, region_name, comp["level"])
@@ -183,8 +207,12 @@ def run(cfg: dict, region_name: str) -> pd.DataFrame:
         est = estimate_rows(cfg, region_name, fs, seg_info, fb)
     pick_a = pick
     parts = [est[["cell_id", "year", "month", "val", "lo", "hi"]], observed_rows(fs, seg_info)]
+    cont, pick_c = continuation(cfg), None
+    if cont:
+        cf, pick_c = continuation_factors(cfg, region_name)
+        parts.append(continuation_rows(fs, seg_info, cf))
     v = pd.concat(parts).groupby(["cell_id", "year", "month"])[["val", "lo", "hi"]].sum()
-    raw = fs.groupby(["cell_id", "year", "month"])[["n_modis", "n_viirs"]].sum()
+    raw = fs.groupby(["cell_id", "year", "month"])[["n_modis", "n_viirs", "n_noaa20"]].sum()
 
     # dense grid: every cell x every month
     cat = pd.CategoricalDtype(cells.cell_id.sort_values())
@@ -196,20 +224,21 @@ def run(cfg: dict, region_name: str) -> pd.DataFrame:
     vv = v.reset_index().astype({"cell_id": cat})
     rr = raw.reset_index().astype({"cell_id": cat})
     m = grid.merge(vv, on=key, how="left").merge(rr, on=key, how="left").merge(flags, on=["year", "month"], how="left")
-    for col in ("val", "lo", "hi", "n_modis", "n_viirs"):
+    for col in ("val", "lo", "hi", "n_modis", "n_viirs", "n_noaa20"):
         m[col] = m[col].fillna(0.0)
     m["harmonized"] = m.val.where(m.data_available).astype("float32")
     m["harmonized_low"] = m.lo.where(m.data_available).astype("float32")
     m["harmonized_high"] = m.hi.where(m.data_available).astype("float32")
     m["modis_raw"] = m.n_modis.where(m.modis_days > 0).round().astype("Int16")
     m["viirs_raw"] = m.n_viirs.where(m.viirs_days > 0).round().astype("Int16")
+    m["noaa20_raw"] = m.n_noaa20.where(m.noaa20_days > 0).round().astype("Int16")
     m = m.merge(cells[["cell_id", "is_persistent"]].astype({"cell_id": cat}), on="cell_id")
     m["year"], m["month"] = m.year.astype("int16"), m.month.astype("int8")
-    cols = ["cell_id", "year", "month", "modis_raw", "viirs_raw", "harmonized", "harmonized_low", "harmonized_high",
-            "is_estimate", "has_gap", "data_available", "partial_month", "display_only", "low_confidence",
+    cols = ["cell_id", "year", "month", "modis_raw", "viirs_raw", "noaa20_raw", "harmonized", "harmonized_low",
+            "harmonized_high", "source", "is_estimate", "has_gap", "data_available", "partial_month", "display_only", "low_confidence",
             "is_persistent"]
     m = m[cols].sort_values(key, ignore_index=True)
-    report = {"strategy": pick_a, "terra_strategy": pick_k, "cells": len(cells), "rows": len(m),
+    report = {"strategy": pick_a, "terra_strategy": pick_k, "continuation_strategy": pick_c, "cells": len(cells), "rows": len(m),
               "low_confidence_months": lcm.to_dict("records"), "factor_table": fb.round(4).to_dict("records")}
     write_stage(cfg, region_name, "harmonized", m, report, ["fire_segments", "segments", "factors", "kT"])
     write_stage(cfg, region_name, "cells", cells.assign(countries=cells.countries.map(lambda x: "|".join(x))))

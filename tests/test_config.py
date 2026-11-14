@@ -6,7 +6,7 @@ from firecal.config import ConfigError, config_hash, load_config, region
 def test_real_config_loads(cfg):
     assert set(cfg["regions"]) == {"lebanon", "greece", "eastmed"}
     assert cfg["grid"]["size_deg"] == 0.05
-    assert cfg["sensors"]["satellites"] == ["Terra", "Aqua", "SNPP"]
+    assert cfg["sensors"]["satellites"] == ["Terra", "Aqua", "SNPP", "NOAA20"]
     assert cfg["calibration"]["overlap_years"] == [2012, 2020]
     assert set(cfg["donors"]["israel_palestine"]["countries"]) == {"Israel", "Palestine"}
 

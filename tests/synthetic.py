@@ -5,11 +5,13 @@ Model, per 0.05° cell and UTC day:
   given a fire, Terra detects with p_terra[m], Aqua with p_aqua[m], S-NPP with p_viirs[m], independently;
   a VIIRS detection is a cluster of 1 + Poisson(viirs_cluster) pixels inside the cell
   (so detections over-count and fire-days must collapse them).
-Terra only before terra_only_until; VIIRS only from viirs_start.
+Terra only before terra_only_until; VIIRS only from viirs_start. Optionally NOAA-20 (satellite "N20")
+detects with p_noaa20[m] from noaa20_start, and S-NPP stops after snpp_end.
 
 Truth in fire-days (expected values, exact in the large-sample limit):
   a[m]  = p_viirs / (1 - (1 - p_terra)(1 - p_aqua))     VIIRS / MODIS(Terra ∪ Aqua)
   kT[m] = (1 - (1 - p_terra)(1 - p_aqua)) / p_terra     MODIS(T ∪ A) / Terra
+  c[m]  = p_viirs / p_noaa20                            S-NPP / NOAA-20
 Noise rows cleaning must remove: type 2 static sources and low-confidence detections.
 """
 from __future__ import annotations
@@ -44,6 +46,9 @@ class SynthSpec:
     viirs_cluster: float = 1.5
     terra_only_until: dt.date = dt.date(2002, 7, 4)
     viirs_start: dt.date = dt.date(2012, 1, 20)
+    noaa20_start: dt.date | None = None
+    snpp_end: dt.date | None = None
+    p_noaa20: np.ndarray = field(default_factory=lambda: np.linspace(0.80, 0.85, 12))
     noise_static_per_year: int = 40
     noise_low_conf_frac: float = 0.1
     country: str = "Synthland"
@@ -55,7 +60,7 @@ class SynthSpec:
 
     def truth(self) -> dict:
         pm = 1 - (1 - self.p_terra) * (1 - self.p_aqua)
-        return {"a": self.p_viirs / pm, "kT": pm / self.p_terra}
+        return {"a": self.p_viirs / pm, "kT": pm / self.p_terra, "c": self.p_viirs / self.p_noaa20}
 
 
 def _jitter(rng, n, centre, half):
@@ -77,6 +82,8 @@ def simulate(spec: SynthSpec) -> tuple[pd.DataFrame, pd.DataFrame]:
     date = days[d_idx]
     aqua_on = np.asarray(date >= pd.Timestamp(spec.terra_only_until))
     viirs_on = np.asarray(date >= pd.Timestamp(spec.viirs_start))
+    if spec.snpp_end:
+        viirs_on &= np.asarray(date <= pd.Timestamp(spec.snpp_end))
 
     modis_rows = []
     for sat, p, on, hhmm in [("Terra", spec.p_terra, np.ones_like(aqua_on), "0830"),
@@ -92,18 +99,24 @@ def simulate(spec: SynthSpec) -> tuple[pd.DataFrame, pd.DataFrame]:
             "frp": rng.gamma(2, 10, k).round(1), "daynight": "D", "type": 0, "country": spec.country}))
     modis = pd.concat(modis_rows, ignore_index=True)
 
-    hit = viirs_on & (rng.random(len(d_idx)) < spec.p_viirs[m])
-    reps = 1 + rng.poisson(spec.viirs_cluster, hit.sum())
-    vc = np.repeat(c_idx[hit], reps)
-    vdate = np.repeat(np.asarray(date[hit].strftime("%Y-%m-%d")), reps)
-    k = len(vc)
-    viirs = pd.DataFrame({
-        "latitude": _jitter(rng, k, lat_c[vc], 0.015).round(5),
-        "longitude": _jitter(rng, k, lon_c[vc], 0.015).round(5),
-        "bright_ti4": 330.0, "scan": 0.4, "track": 0.4, "acq_date": vdate, "acq_time": "1110",
-        "satellite": "N", "instrument": "VIIRS", "confidence": rng.choice(["n", "h"], k), "version": "2",
-        "bright_ti5": 295.0, "frp": rng.gamma(2, 3, k).round(2), "daynight": "D", "type": 0,
-        "country": spec.country})
+    sats = [("N", spec.p_viirs, viirs_on, "1110")]
+    if spec.noaa20_start:
+        sats.append(("N20", spec.p_noaa20, np.asarray(date >= pd.Timestamp(spec.noaa20_start)), "1200"))
+    vrows = []
+    for sat, p, on, hhmm in sats:
+        hit = on & (rng.random(len(d_idx)) < p[m])
+        reps = 1 + rng.poisson(spec.viirs_cluster, hit.sum())
+        vc = np.repeat(c_idx[hit], reps)
+        vdate = np.repeat(np.asarray(date[hit].strftime("%Y-%m-%d")), reps)
+        k = len(vc)
+        vrows.append(pd.DataFrame({
+            "latitude": _jitter(rng, k, lat_c[vc], 0.015).round(5),
+            "longitude": _jitter(rng, k, lon_c[vc], 0.015).round(5),
+            "bright_ti4": 330.0, "scan": 0.4, "track": 0.4, "acq_date": vdate, "acq_time": hhmm,
+            "satellite": sat, "instrument": "VIIRS", "confidence": rng.choice(["n", "h"], k), "version": "2",
+            "bright_ti5": 295.0, "frp": rng.gamma(2, 3, k).round(2), "daynight": "D", "type": 0,
+            "country": spec.country}))
+    viirs = pd.concat(vrows, ignore_index=True)
 
     n_years = spec.end.year - spec.start.year + 1
     modis = _add_noise(rng, spec, modis, low_value=10, n_static=spec.noise_static_per_year * n_years)
@@ -123,12 +136,15 @@ def _add_noise(rng, spec, frame: pd.DataFrame, low_value, n_static: int) -> pd.D
 
 
 def write_csvs(spec: SynthSpec, out_dir: Path, region: str = "synth") -> dict:
-    """Write {out_dir}/{region}/{MODIS_SP|VIIRS_SNPP_SP}_{year}.csv like the Phase 0 region files."""
+    """Write {out_dir}/{region}/{MODIS_SP|VIIRS_SNPP_SP|VIIRS_NOAA20_SP}_{year}.csv like the Phase 0 region files."""
     modis, viirs = simulate(spec)
     d = Path(out_dir) / region
     d.mkdir(parents=True, exist_ok=True)
     files = []
-    for name, df in (("MODIS_SP", modis), ("VIIRS_SNPP_SP", viirs)):
+    products = [("MODIS_SP", modis), ("VIIRS_SNPP_SP", viirs[viirs.satellite == "N"])]
+    if spec.noaa20_start:
+        products.append(("VIIRS_NOAA20_SP", viirs[viirs.satellite == "N20"]))
+    for name, df in products:
         for y, g in df.groupby(df.acq_date.str[:4]):
             f = d / f"{name}_{y}.csv"
             cols = MODIS_COLS if name == "MODIS_SP" else VIIRS_COLS
@@ -139,7 +155,7 @@ def write_csvs(spec: SynthSpec, out_dir: Path, region: str = "synth") -> dict:
 
 def config_overrides(spec: SynthSpec, tmp: Path, region: str = "synth") -> dict:
     """Config overrides pointing the pipeline at synthetic data in tmp."""
-    return {
+    ov = {
         "paths": {"raw": str(tmp / "raw"), "interim": str(tmp / "interim"), "processed": str(tmp / "processed"),
                   "export": str(tmp / "export"), "reports": str(tmp / "reports")},
         "regions!": {region: {"bbox": spec.bbox, "countries": [spec.country]}},   # only the synthetic region
@@ -148,7 +164,17 @@ def config_overrides(spec: SynthSpec, tmp: Path, region: str = "synth") -> dict:
             {"path": "{raw}/{region}/MODIS_SP_[0-9][0-9][0-9][0-9].csv", "format": "firms_archive_csv", "source": "MODIS_SP"},
             {"path": "{raw}/{region}/VIIRS_SNPP_SP_[0-9][0-9][0-9][0-9].csv", "format": "firms_archive_csv", "source": "VIIRS_SNPP_SP"},
         ],
-        "coverage": {"MODIS_SP": [spec.start, spec.end], "VIIRS_SNPP_SP": [spec.viirs_start, spec.end]},
+        "coverage!": {"MODIS_SP": [spec.start, spec.end], "VIIRS_SNPP_SP": [spec.viirs_start, spec.end]},   # only synthetic products
         "gaps": {"reference_regions": [region], "known": []},
         "persistence": {"diagnostic_regions": []},
     }
+    if spec.noaa20_start:                       # NOAA-20 continuation after S-NPP's end
+        ov["inputs"].append({"path": "{raw}/{region}/VIIRS_NOAA20_SP_[0-9][0-9][0-9][0-9].csv",
+                             "format": "firms_archive_csv", "source": "VIIRS_NOAA20_SP"})
+        ov["coverage!"]["VIIRS_NOAA20_SP"] = [spec.noaa20_start, spec.end]
+        ov["coverage!"]["VIIRS_SNPP_SP"] = [spec.viirs_start, spec.snpp_end]
+        ov["sensors"] = {"continuation": {"satellite": "NOAA20", "replaces": "SNPP",
+                                          "switch_date": spec.snpp_end + dt.timedelta(days=1)}}
+    else:
+        ov["sensors"] = {"continuation": None}
+    return ov

@@ -53,6 +53,9 @@ def validate(cfg: dict) -> None:
     for src, (a, b) in cfg["coverage"].items():
         if as_date(a) > as_date(b):
             raise ConfigError(f"coverage {src}: start after end")
+    c = cfg["sensors"].get("continuation")
+    if c and c["satellite"] not in cfg["sensors"]["satellites"]:
+        raise ConfigError(f"sensors.continuation.satellite {c['satellite']} is not in sensors.satellites")
     mode = cfg["persistence"]["mode"]
     if mode not in ("auto", "always", "off"):
         raise ConfigError(f"persistence.mode must be auto|always|off, got {mode}")
@@ -89,3 +92,14 @@ def region_settings(cfg: dict, section: str, region_name: str) -> dict:
     """A config section with its `by_region.<region>` overrides applied (by_region itself removed)."""
     sec = {k: v for k, v in cfg[section].items() if k != "by_region"}
     return deep_merge(sec, (cfg[section].get("by_region") or {}).get(region_name, {}))
+
+
+def continuation(cfg: dict) -> dict | None:
+    """sensors.continuation with switch_date as a date, or None when the continuation satellite has no
+    configured coverage (e.g. test configs). The switch is the first day served by the continuation."""
+    from .outages import satellite_coverage
+
+    c = cfg["sensors"].get("continuation")
+    if not c or c["satellite"] not in satellite_coverage(cfg):
+        return None
+    return {**c, "switch_date": as_date(c["switch_date"])}

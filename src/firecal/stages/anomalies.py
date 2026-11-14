@@ -16,7 +16,7 @@ from ..config import path, region_settings
 from ..io import read_stage, write_stage
 
 log = logging.getLogger(__name__)
-SUM_COLS = ["modis_raw", "viirs_raw", "harmonized", "harmonized_low", "harmonized_high"]
+SUM_COLS = ["modis_raw", "viirs_raw", "noaa20_raw", "harmonized", "harmonized_low", "harmonized_high"]
 OR_COLS = ["is_estimate", "has_gap", "partial_month", "display_only", "low_confidence"]
 
 
@@ -37,6 +37,7 @@ def region_monthly(h: pd.DataFrame) -> pd.DataFrame:
     r = g[SUM_COLS].sum(min_count=1)
     r[OR_COLS] = g[OR_COLS].any()
     r["data_available"] = g.data_available.all()
+    r["source"] = g.source.first()                 # region-wide: identical for every cell
     r["n_cells"] = g.size()
     r = r.reset_index()
     for c in ("harmonized", "harmonized_low", "harmonized_high"):

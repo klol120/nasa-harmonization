@@ -27,12 +27,21 @@ inputs:
   - {path: "{raw}/{region}/VIIRS_SNPP_SP_[0-9][0-9][0-9][0-9].csv", format: firms_archive_csv, source: VIIRS_SNPP_SP}
   - {path: "{raw}/{region}/MODIS_SP_2026_api.csv", format: firms_api_csv, source: MODIS_SP}
   - {path: "{raw}/{region}/VIIRS_SNPP_SP_2026_api.csv", format: firms_api_csv, source: VIIRS_SNPP_SP}
+  - {path: "{raw}/{region}/VIIRS_NOAA20_SP_[0-9][0-9][0-9][0-9].csv", format: firms_archive_csv, source: VIIRS_NOAA20_SP}
+  - {path: "{raw}/{region}/VIIRS_NOAA20_SP_2026_api.csv", format: firms_api_csv, source: VIIRS_NOAA20_SP}
+  # NRT after the SP max_date (no `type`: the empirical persistence filter applies, clean rule 5)
+  - {path: "{raw}/{region}/VIIRS_SNPP_NRT_2026_api.csv", format: firms_nrt_csv, source: VIIRS_SNPP_NRT}
+  - {path: "{raw}/{region}/VIIRS_NOAA20_NRT_2026_api.csv", format: firms_nrt_csv, source: VIIRS_NOAA20_NRT}
 
-# First/last date each product has data (FIRMS /api/data_availability, 2026-11-12). Used for
-# data_available / partial_month and to give SP precedence over NRT.
+# First/last date each product has data (FIRMS /api/data_availability, 2026-11-13). A satellite has
+# data from its SP start to its NRT end (SP, then NRT after the SP max_date); SP takes precedence
+# over NRT where both exist. Used for data_available / partial_month.
 coverage:
   MODIS_SP: [2000-11-01, 2026-08-31]
   VIIRS_SNPP_SP: [2012-01-20, 2026-07-31]
+  VIIRS_SNPP_NRT: [2026-08-01, 2026-11-02]   # S-NPP stopped delivering data on 2026-11-02 (NASA Earthdata)
+  VIIRS_NOAA20_SP: [2018-04-01, 2026-07-31]
+  VIIRS_NOAA20_NRT: [2026-08-01, 2026-11-13]
 
 # Clip every input to the archive footprint (Phase 0): Natural Earth country tag; a point in NE's sea
 # takes the nearest country within max_sea_km.
@@ -43,9 +52,12 @@ grid:
   size_deg: 0.05
 
 sensors:
-  satellites: [Terra, Aqua, SNPP]       # NOAA-20/21 excluded: constant constellation
+  satellites: [Terra, Aqua, SNPP, NOAA20]   # NOAA-21 excluded. NOAA20 is kept apart from SNPP (own flag)
   terra_only_until: 2002-07-04          # first day of Aqua MODIS data
   viirs_start: 2012-01-20
+  # VIIRS continuation: from switch_date the harmonized series is NOAA-20 calibrated to S-NPP units.
+  # NOAA-20 never enters the MODIS->VIIRS calibration, persistence statistics or Table 1 checks.
+  continuation: {satellite: NOAA20, replaces: SNPP, switch_date: 2026-11-03}   # first day without S-NPP
 
 clean:
   fire_types: [0]                       # vegetation fires
@@ -61,6 +73,9 @@ persistence:
   cell_deg: 0.01
   min_year_frac: 0.6                    # share of that sensor's years with a detection
   min_night_frac: 0.8
+  # Untyped rows (NRT) have no `type` to drop static land sources (type 2) the way rule 1 does for SP.
+  # They are dropped in fine cells where at least this share of the typed (SP) detections is type 2.
+  static_min_share: 0.5
   diagnostic_regions: [lebanon]         # report top cells, never remove
   diagnostic_top_n: 20
 
@@ -80,6 +95,18 @@ terra:
   fit_years: [2003, 2020]
   strategies: [single, local, "donor:*", "pooled:*", "blend:*"]
   strategy: {greece: local, eastmed: local, lebanon: single}   # Lebanon: winter Terra counts too thin for monthly kT
+
+# NOAA-20 -> S-NPP transfer (stage `continuation`): c_m = sum_y N_SNPP / sum_y N_NOAA20 per calendar month on
+# overlap_years, same strategy machinery and year bootstrap as calibration. Strategy chosen from the
+# hold-out table in docs/reports/{region}_continuation.md.
+continuation:
+  overlap_years: [2018, 2025]           # NOAA-20 SP starts 2018-04-01; 2018 Jan-Mar contribute nothing
+  holdout: {fit: [2018, 2021], test: [2022, 2025]}
+  strategies: [single, local, "blend:*"]
+  # 2026-11-13: `single` has the lowest hold-out WAPE on both folds in Lebanon (0.177/0.206 vs local
+  # 0.190/0.215) and Greece (0.115/0.079 vs 0.135/0.103); EastMed ties (local 0.087/0.082, single 0.088/0.078).
+  strategy: {greece: single, lebanon: single, eastmed: local}
+  # continuity check window: from Jan 1 after the overlap years to the day before the switch (out of sample)
 
 calibration:
   overlap_years: [2012, 2020]
@@ -141,6 +168,11 @@ download:
     VIIRS_SNPP_SP:
       archive_prefix: viirs-snpp
       first_year: 2012
+    VIIRS_NOAA20_SP:
+      archive_prefix: viirs-jpss1    # NOAA-20 = JPSS-1; SP starts 2018-04-01
+      first_year: 2018
+    VIIRS_SNPP_NRT: {}               # area API only (no country archives); S-NPP's last data 2026-11-02
+    VIIRS_NOAA20_NRT: {}             # area API only; fills NOAA-20 after its SP max_date
   archive_last_year: 2025            # last full year published as country archives
   api_year: 2026                     # pulled via area API up to the SP max_date
   api_day_range: 5                   # API rejects >5

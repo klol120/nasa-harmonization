@@ -59,8 +59,8 @@ def test_sp_preferred_over_nrt(tmp_path):
     f, n = _nrt_copy(w, tmp_path, "2013-06-01", "2013-12-31")
     ov = config_overrides(spec, tmp_path)
     ov["inputs"].append({"path": str(f), "format": "firms_nrt_csv", "source": "auto"})
-    ov["coverage"]["VIIRS_SNPP_SP"] = [spec.viirs_start, dt.date(2013, 8, 31)]   # SP ends 08-31 here
-    ov["coverage"]["VIIRS_SNPP_NRT"] = [dt.date(2013, 6, 1), spec.end]
+    ov["coverage!"]["VIIRS_SNPP_SP"] = [spec.viirs_start, dt.date(2013, 8, 31)]   # SP ends 08-31 here
+    ov["coverage!"]["VIIRS_SNPP_NRT"] = [dt.date(2013, 6, 1), spec.end]
     cfg = load_config(overrides=ov)
     df, rep = run_both(cfg)
     nrt = df[df.source == "VIIRS_SNPP_NRT"]
@@ -87,9 +87,9 @@ def test_persistent_modes(tmp_path, mode):
     ov = config_overrides(spec, tmp_path)
     ov["inputs"] += [{"path": str(typed), "format": "firms_archive_csv", "source": "VIIRS_SNPP_SP"},
                      {"path": str(untyped), "format": "firms_nrt_csv", "source": "auto"}]
-    ov["coverage"]["VIIRS_SNPP_NRT"] = [spec.viirs_start, spec.end]
+    ov["coverage!"]["VIIRS_SNPP_NRT"] = [spec.viirs_start, spec.end]
     # keep the NRT rows: SP "covers" a single day only, so SP precedence does not apply here
-    ov["coverage"]["VIIRS_SNPP_SP"] = [spec.viirs_start, spec.viirs_start]
+    ov["coverage!"]["VIIRS_SNPP_SP"] = [spec.viirs_start, spec.viirs_start]
     ov["persistence"] = {"mode": mode, "cell_deg": 0.01, "min_year_frac": 0.8, "min_night_frac": 0.9,
                                  "diagnostic_regions": []}
     cfg = load_config(overrides=ov)
@@ -134,3 +134,26 @@ def test_fire_days_collapse_clusters_and_match_truth(tmp_path):
     assert n["VIIRS"] / n["MODIS"] == pytest.approx(expected, rel=0.03)
     det_ratio = (df.sensor == "VIIRS").sum() / (df.sensor == "MODIS").sum()
     assert det_ratio > 1.5 * expected   # raw detections over-count VIIRS clusters
+
+
+def test_untyped_rows_dropped_in_static_cells(tmp_path):
+    """NRT rows have no `type`: in fine cells the SP record marks as static (type 2) they are dropped too."""
+    spec = SynthSpec(seed=6, start=dt.date(2012, 1, 1), end=dt.date(2013, 12, 31))
+    write_csvs(spec, tmp_path / "raw")
+    days = pd.date_range("2012-02-01", "2013-12-31", freq="7D")
+    lat, lon = 10.1495, 20.1495          # a fine cell the synthetic fires never reach
+    src = pd.DataFrame({"latitude": lat, "longitude": lon, "bright_ti4": 300, "scan": .4, "track": .4,
+                        "acq_date": days.strftime("%Y-%m-%d"), "acq_time": "1300", "satellite": "N",
+                        "instrument": "VIIRS", "confidence": "n", "version": "2", "bright_ti5": 290, "frp": 5.0,
+                        "daynight": "D", "country": spec.country})
+    typed, untyped = tmp_path / "typed.csv", tmp_path / "untyped.csv"
+    src.assign(type=2).to_csv(typed, index=False)
+    src.assign(acq_time="1310", version="2.0NRT").to_csv(untyped, index=False)
+    ov = config_overrides(spec, tmp_path)
+    ov["inputs"] += [{"path": str(typed), "format": "firms_archive_csv", "source": "VIIRS_SNPP_SP"},
+                     {"path": str(untyped), "format": "firms_nrt_csv", "source": "auto"}]
+    ov["coverage!"]["VIIRS_SNPP_NRT"] = [spec.viirs_start, spec.end]
+    ov["coverage!"]["VIIRS_SNPP_SP"] = [spec.viirs_start, spec.viirs_start]   # keep the NRT rows
+    df, rep = run_both(load_config(overrides=ov))
+    assert rep["removed"]["untyped_in_static_cells"] == len(days)
+    assert not ((df.lat == lat) & (df.lon == lon)).any()

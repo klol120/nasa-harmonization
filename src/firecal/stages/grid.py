@@ -6,7 +6,10 @@ Outputs per region:
                  (most common among its detections) for donor subsetting.
   fire_segments  fire-day counts per (cell_id, country, year, month, seg) for splice/export.
   segments       region-wide calendar: each month split at the config boundaries that fall inside it
-                 (Terra-only cutoff, VIIRS start), with days, sensor availability and outage days.
+                 (Terra-only cutoff, VIIRS start, VIIRS continuation switch), with days, sensor
+                 availability and outage days.
+
+`viirs` is S-NPP only; NOAA-20 has its own flag (`noaa20`) and is used only after the switch.
 """
 from __future__ import annotations
 
@@ -16,18 +19,23 @@ import logging
 import numpy as np
 import pandas as pd
 
-from ..config import as_date
+from ..config import as_date, continuation
 from ..geo import cell_id, cell_index
 from ..io import read_stage, write_stage
 from ..outages import satellite_coverage
 
 log = logging.getLogger(__name__)
-SATS = {"Terra": "terra", "Aqua": "aqua", "SNPP": "viirs"}
-FLAGS = ["terra", "aqua", "modis", "viirs"]
+SATS = {"Terra": "terra", "Aqua": "aqua", "SNPP": "viirs", "NOAA20": "noaa20"}
+FLAGS = ["terra", "aqua", "modis", "viirs", "noaa20"]
+DAY_COLS = ["terra", "aqua", "modis", "viirs", "noaa20"]
+GAP_COLS = ["terra", "aqua", "viirs", "noaa20"]
 
 
 def boundaries(cfg: dict) -> list[dt.date]:
-    return sorted({as_date(cfg["sensors"]["terra_only_until"]), as_date(cfg["sensors"]["viirs_start"])})
+    b = {as_date(cfg["sensors"]["terra_only_until"]), as_date(cfg["sensors"]["viirs_start"])}
+    if (c := continuation(cfg)):
+        b.add(c["switch_date"])
+    return sorted(b)
 
 
 def segment_of(dates: pd.Series, bounds: list[dt.date]) -> np.ndarray:
@@ -61,7 +69,11 @@ def build_fire_days(det: pd.DataFrame, persistent: np.ndarray, size: float) -> p
     d["persistent"] = persistent
     keys = ["cell_id", "date"]
     agg = d.groupby(keys)[[c for c in d.columns if c not in (*keys, "country")]].max()
-    cc = d.groupby([*keys, "country"]).size().rename("n").reset_index()
+    # country vote by the original constellation's detections; NOAA-20 votes only on cell-days it alone
+    # observed, so adding it leaves the donor subsets of the S-NPP era unchanged
+    d["primary"] = ~d.noaa20
+    cc = d.groupby([*keys, "country"]).agg(n=("primary", "sum"), n_all=("primary", "size")).reset_index()
+    cc["n"] = cc.n.where(cc.groupby(keys).n.transform("max") > 0, cc.n_all)
     cc = cc.sort_values([*keys, "n", "country"], ascending=[True, True, False, True]).drop_duplicates(keys)
     fd = agg.join(cc.set_index(keys).country).reset_index()
     fd["modis"] = fd.terra | fd.aqua
@@ -83,13 +95,19 @@ def build_segments(cfg: dict, outages: pd.DataFrame) -> pd.DataFrame:
         days[f"{col}_on"] = days.date.between(pd.Timestamp(a), pd.Timestamp(b))
         out_days = set(flagged.date[flagged.satellite == sat])
         days[f"gap_{col}"] = days[f"{col}_on"] & days.date.isin(out_days)
+    for col in GAP_COLS:                      # satellites without coverage (not configured)
+        if f"{col}_on" not in days:
+            days[f"{col}_on"], days[f"gap_{col}"] = False, False
     days["modis_on"] = days.terra_on | days.aqua_on
     g = days.groupby(["year", "month", "seg"])
     seg = g.agg(start=("date", "min"), end=("date", "max"), ndays=("date", "size"),
-                **{f"{c}_days": (f"{c}_on", "sum") for c in ("terra", "aqua", "modis", "viirs")},
-                **{f"gap_{c}": (f"gap_{c}", "sum") for c in ("terra", "aqua", "viirs")}).reset_index()
+                **{f"{c}_days": (f"{c}_on", "sum") for c in DAY_COLS},
+                **{f"gap_{c}": (f"gap_{c}", "sum") for c in GAP_COLS}).reset_index()
     seg["terra_only"] = (seg.aqua_days == 0) & (seg.terra_days > 0)
     seg["viirs_era"] = seg.start >= pd.Timestamp(as_date(cfg["sensors"]["viirs_start"]))
+    c = continuation(cfg)
+    # continuation era: from the switch the VIIRS value comes from the continuation satellite
+    seg["cont_era"] = seg.start >= pd.Timestamp(c["switch_date"]) if c else False
     seg["month_days"] = seg.groupby(["year", "month"]).ndays.transform("sum")
     return seg
 
