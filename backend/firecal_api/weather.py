@@ -48,6 +48,7 @@ TILES_PER_SIDE = 3  # the region's bbox is split 3×3; each tile with fires give
 INVALID = -999  # Meteomatics' "no value"
 RECENT_MONTHS = 2  # incomplete months this recent are fetched again (data for the last days may arrive late)
 LOCK_KEY = 0x6D657465  # pg advisory lock: one weather fetch at a time per database
+LOCK_RETRY_S = 15  # how often a waiting fetch retries the lock
 
 
 class MeteomaticsError(Exception):
@@ -351,12 +352,24 @@ async def fetch_all(
     creds: Credentials | None,
     fields: list[str],
     log: Callable[[str], None] = print,
+    wait_lock: float = 0,
     **kw,
 ) -> int:
-    """Fetch every region's missing months (default: every region with a current release). Returns 0 on success."""
-    if not await conn.fetchval("select pg_try_advisory_lock($1)", LOCK_KEY):
-        log("another weather fetch is already running against this database; skipping")
-        return 0
+    """Fetch every region's missing months (default: every region with a current release). Returns 0 on success.
+
+    wait_lock: seconds to keep retrying when another fetch holds the lock. During a deploy the new container
+    starts while the old one is still fetching; waiting lets the new one carry on once the old one stops.
+    """
+    deadline = time.monotonic() + wait_lock
+    waiting = False
+    while not await conn.fetchval("select pg_try_advisory_lock($1)", LOCK_KEY):
+        if time.monotonic() >= deadline:
+            log("another weather fetch is already running against this database; skipping")
+            return 0
+        if not waiting:
+            log(f"another weather fetch is running; waiting up to {wait_lock:.0f}s for it to finish")
+            waiting = True
+        await asyncio.sleep(min(LOCK_RETRY_S, max(0.0, deadline - time.monotonic())))
     try:
         rows = await conn.fetch("select * from release where is_current order by region_id")
         if regions:
