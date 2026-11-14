@@ -72,6 +72,7 @@ contract's shapes, so the frontend can use the API and the export files intercha
 | `GET /regions/{r}/calendar?cell_id=…&from=YYYY-MM&to=YYYY-MM[&format=csv]` | calendar rows; JSON is capped at 100k rows, CSV streams any size |
 | `POST /regions/{r}/aggregate` | monthly sums over an area (`cell_ids`, `bbox`, GeoJSON `polygon`, `exclude_persistent`, `from`/`to`), with bands, recomputed z and flags |
 | `GET /regions/{r}/model-runs`, `GET /regions/{r}/predictions` | ML runs and their predictions |
+| `GET /regions/{r}/weather[?from=YYYY-MM&to=YYYY-MM]` | monthly past weather with each field's normal, `_anom`, `_z` and `precip_pct_of_normal`; `available: false` until fetched |
 
 **Aggregation** follows the contract:
 - Counts and bands are summed.
@@ -80,6 +81,32 @@ contract's shapes, so the frontend can use the API and the export files intercha
   exported region z exactly.
 - A cell belongs to a polygon or bbox when its centre is inside it.
 - Region totals include persistent cells. `exclude_persistent` drops them and recomputes the z.
+
+## Weather (Meteomatics, `firecal_api/weather.py`)
+
+Past weather is context for the fire calendar, not a forecast. It is fetched once and stored, so the
+website never calls Meteomatics and the credentials never leave the server.
+
+- **Where:** the region's bbox is split 3×3. Each tile with fires gives one point: its busiest non-persistent
+  cell, weighted by the tile's share of fire-days. The points are chosen on the first fetch and kept
+  (`weather_region`).
+- **What:** daily `t_mean_2m_24h:C`, `t_max_2m_24h:C`, `precip_24h:mm`, `wind_speed_mean_10m_24h:ms` and
+  `relative_humidity_mean_2m_24h:p`, averaged over the points and stored per month (`weather_month`; rain is a
+  monthly total). Months with missing days are marked `complete: false` and get no anomaly.
+- **Normals** are the mean (and sample sd, for z) of the same calendar month over the release's baseline years.
+- **Budget:** one request covers every point and field for 12 months, so 2000-2026 is ~27 requests per region.
+  Requests are counted in `meteomatics_usage`, and a fetch stops at `METEOMATICS_DAILY_CAP` (default 800) per UTC day.
+  Re-running only fetches months that are missing, or recent months that have new days.
+
+```sh
+python -m firecal_api.cli weather-check            # 1 request: test credentials and parameters
+python -m firecal_api.cli weather-fetch --dry-run  # what would be fetched
+python -m firecal_api.cli weather-fetch            # fetch it (also runs on Docker start when credentials are set)
+python -m firecal_api.cli weather-export DIR       # <region>.json, to move data without re-fetching
+python -m firecal_api.cli weather-import DIR       # (Docker loads /data/weather on start)
+```
+
+If a parameter isn't in the account's package, `--fields t_mean_c,precip_mm` limits the fetch to the given fields.
 
 ## Machine learning
 

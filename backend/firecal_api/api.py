@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from . import aggregate as A
 from . import contract as C
+from . import weather as W
 from .config import settings
 from .db import create_pool
 
@@ -377,6 +378,24 @@ async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, r
         "baseline_years": [r["baseline_first_year"], r["baseline_last_year"]],
         "months": out,
     })
+
+
+# ---------------------------------------------------------------- weather context
+
+
+@app.get("/regions/{region}/weather")
+async def weather(region: RegionId, c: Conn, frm: Annotated[YmQ, Query(alias="from")] = None, to: YmQ = None):
+    """Monthly past weather at the region's fire hotspots (Meteomatics), with each month's normal and anomaly.
+
+    Served from the database only: `available` is false until `firecal-db weather-fetch` has run.
+    Normals use the current release's baseline years.
+    """
+    r = await release_row(c, region, None)
+    body = await W.region_weather(
+        c, region, (r["baseline_first_year"], r["baseline_last_year"]),
+        C.parse_ym(frm) if frm else None, C.parse_ym(to) if to else None,
+    )
+    return jsonr(body)
 
 
 # ---------------------------------------------------------------- model predictions

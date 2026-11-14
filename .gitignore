@@ -14,3 +14,6 @@ __pycache__/
 # node
 node_modules/
 dist/
+
+# weather fetched from Meteomatics (see weather/README.md)
+weather/*.json
