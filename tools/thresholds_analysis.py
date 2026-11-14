@@ -361,28 +361,43 @@ def report(result):
         d0 = " / ".join(fmt(k, result[lab]["point_delta0"][k]) for lab in ("greece", "eastmed", "pooled"))
         L.append(f"| {k} | " + " | ".join(cells) + f" | {d0} | **{fmt(k, ad[k])}** |")
     L += ["",
-          f"**Adopted: the pooled estimates** (`{ADOPT_FROM}`), so both regions' evidence counts. The bootstrap "
-          "ranges are narrow because 200 repetitions pin each region's curve down. **The real uncertainty is "
-          "between regions:**",
-          "- **N_month: 61 in Greece, 426 in EastMed.** In EastMed the Lebanon strategy's affine shape beats local "
-          "ratios up to about n = 400, because much of EastMed's activity is VIIRS fire in cell-days that MODIS "
-          "doesn't see. That's a model-form effect as well as thinness.",
-          "- **EastMed is sensitive to the tie rule** (δ = 0 moves its N_month to about 780). Greece is not.",
+          "**The threshold depends on the fire regime.** N_month is 61 in Greece and 426 in EastMed:",
+          "- **Greece:** ratio-type fire. Local monthly ratios win as soon as a month has about 60 MODIS "
+          "fire-days.",
+          "- **EastMed:** much of the activity is small agricultural fire that MODIS doesn't see. VIIRS fire-days "
+          "in cell-days without MODIS make an affine (intercept) shape better than local ratios up to about "
+          "n = 400. EastMed is also sensitive to the tie rule (δ = 0 moves its N_month to about 780); Greece "
+          "is not.",
+          "- **Bootstrap ranges:** narrow, because 200 repetitions pin each region's curve down. The "
+          "uncertainty that matters is between regimes, not within one.",
           "",
-          "## Check against Lebanon (Dec–May thin, Jun–Nov enough) and k = 20", "",
+          f"**Adopted: the pooled estimates (`{ADOPT_FROM}`, decided 2026-11-14), a conservative choice for new "
+          "countries.**",
+          "- A new country's fire regime is unknown until it is calibrated, so the rule borrows unless a month "
+          "has enough data for local ratios to win under both regimes.",
+          "- Pooled N_month (149) is about 2.5 times Greece's (61). Ratio-type countries may therefore be sent to "
+          "the Lebanon strategy (pooled level, affine shape) somewhat earlier than they need to be.",
+          "- That costs little: in the Greece subsamples between n = 60 and 150, the Lebanon strategy's per-month "
+          "error is within 0.01–0.03 of local. The reverse mistake costs more: applying Greece's threshold to "
+          "an EastMed-like country would leave months on local ratios that lose by 0.05–0.08 per month "
+          "(n = 60–400).",
+          "",
+          "## Check against Lebanon and k = 20", "",
           "| month | " + " | ".join(MONTHS_ABBR) + " |", "|---|" + "---|" * 12,
           "| Lebanon n | " + " | ".join(f"{x:.0f}" for x in months["lebanon"]) + " |"]
     for lab in ("greece", "pooled"):
         thr = result[lab]["point"]["N_month"]
         L.append(f"| thin at N_month = {thr:.0f} ({lab}) | " + " | ".join("thin" if x < thr else "" for x in months["lebanon"]) + " |")
     L += ["",
-          "- **Dec–May thin: confirmed** at every threshold (n = 2–10, far below any range).",
-          "- **Jun–Nov enough: not confirmed.**",
-          "  - Greece's N_month (61) also makes Jun (27), Jul (56) and Nov (53) thin, leaving only Aug–Oct rich.",
-          "  - The pooled N_month (149) makes every Lebanon month thin, since Lebanon's largest month is Oct with "
-          "133.",
-          "  - The earlier Jun–Nov reading was optimistic: in subsamples, a month with Lebanon's Jun–Nov n is "
-          "predicted better by borrowing.",
+          "Lebanon's months, in order of richness: Oct 133, Sep 116, Aug 66, Jul 56, Nov 53, Jun 27, Dec 10, then "
+          "Jan–May 2–5.",
+          "- **Under the adopted (pooled) threshold, all 12 months are thin**, so Lebanon is a thin country "
+          "(share 1.00 ≥ 0.72) and the Lebanon strategy applies, as in v1.0-data. Aug–Oct are the richest "
+          "months.",
+          "- **This replaces the earlier reading** (Dec–May need donor borrowing, Jun–Nov have enough local "
+          "signal). Dec–May are confirmed thin at every threshold. Jun–Nov are not \"enough\": even Greece's "
+          "threshold (61) leaves only Aug–Oct rich.",
+          "- **No Lebanon value changes:** the strategy and factors are those of v1.0-data.",
           "- **k = 20:**",
           "  - Blend weight on local is w = n / (n + k). With k = 20, w is 0.75 at Greece's N_month (61) and 0.88 "
           "at the pooled 149, so local dominates by the time the thresholds say it should.",

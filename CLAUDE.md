@@ -70,9 +70,13 @@ Lebanon fire-days per calendar month, summed over 2012–2020 (MODIS = Terra ∪
 | Dec | 10 | 78 | 4 | 7.8 |
 | **total** | **480** | **3044** | | **6.34** |
 
-- **Dec–May need donor borrowing.** There are 2–10 MODIS fire-days in 9 years, and MODIS sees fire in only
-  2–4 of the 9 years, so a local a_m is noise.
-- **Jun–Nov have enough local signal** for a blend.
+- **All 12 months are thin** under the derived, pooled threshold (N_month = 149; docs/reports/thresholds.md,
+  2026-11-14). This replaces the earlier hand-made reading that Dec–May needed donor borrowing and Jun–Nov
+  had enough local signal.
+  - **Dec–May:** 2–10 MODIS fire-days in 9 years, with fire in only 2–4 of the years.
+  - **Richest months:** Aug–Oct (66, 116 and 133), but even these are below N_month.
+  - **Consequence:** Lebanon is a thin country (thin share 1.00 ≥ N_country 0.72), so the Lebanon strategy
+    applies. That is the v1.0-data choice; no values changed.
 - **The ratio is 2.2× Greece's.** That fits the PDF's explanation (VIIRS gains most on small, cool
   agricultural burns), but it's worth checking against donors in Phase 5.
 

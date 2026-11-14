@@ -17,6 +17,16 @@ sys.path.insert(0, str(ROOT / "src"))
 from firecal.config import load_config  # noqa: E402
 
 REGIONS = ["lebanon", "greece", "eastmed"]
+NOTES = """## Notes
+
+- **Lebanon rationale (updated 2026-11-14; values unchanged).** Under the derived, pooled data-thinness
+  threshold (N_month = 149 MODIS fire-days per calendar month on 2012–2020; docs/reports/thresholds.md), all
+  12 of Lebanon's months are thin, so Lebanon is a thin country. Its richest months are Aug–Oct (66, 116,
+  133). This replaces the earlier reading that Dec–May needed donor borrowing and Jun–Nov had enough local
+  signal. The strategy and factors above are the v1.0-data ones; nothing was refitted.
+- **Threshold choice.** The threshold depends on the fire regime (Greece 61, EastMed 426). The pooled value
+  is a conservative choice for new countries.
+"""
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 
@@ -132,6 +142,7 @@ def main() -> None:
             f"{ct['step_index']:.3f}, band {band(*ct['band'])}, {'**flagged**' if ct['step_flagged'] else 'no step'}.",
         ]
 
+    L += ["", *NOTES.strip("\n").split("\n")]
     L += [
         "",
         "## Cross-check with the frontend/backend (2026-11-14)",

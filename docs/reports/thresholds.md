@@ -30,11 +30,17 @@ Derived from a cell-subsampling experiment instead of being hand-set. Code: `too
 | N_country_annual | 84 [54–88] | 419 [383–590] | 132 [129–149] | 90 / — / 139 | **132** |
 | N_min_annual | 3.6 [2.5–5.0] | 17 [12–18] | 3.6 [2.4–4.9] | 3.8 / 17 / 3.8 | **3.6** |
 
-**Adopted: the pooled estimates** (`pooled`), so both regions' evidence counts. The bootstrap ranges are narrow because 200 repetitions pin each region's curve down. **The real uncertainty is between regions:**
-- **N_month: 61 in Greece, 426 in EastMed.** In EastMed the Lebanon strategy's affine shape beats local ratios up to about n = 400, because much of EastMed's activity is VIIRS fire in cell-days that MODIS doesn't see. That's a model-form effect as well as thinness.
-- **EastMed is sensitive to the tie rule** (δ = 0 moves its N_month to about 780). Greece is not.
+**The threshold depends on the fire regime.** N_month is 61 in Greece and 426 in EastMed:
+- **Greece:** ratio-type fire. Local monthly ratios win as soon as a month has about 60 MODIS fire-days.
+- **EastMed:** much of the activity is small agricultural fire that MODIS doesn't see. VIIRS fire-days in cell-days without MODIS make an affine (intercept) shape better than local ratios up to about n = 400. EastMed is also sensitive to the tie rule (δ = 0 moves its N_month to about 780); Greece is not.
+- **Bootstrap ranges:** narrow, because 200 repetitions pin each region's curve down. The uncertainty that matters is between regimes, not within one.
 
-## Check against Lebanon (Dec–May thin, Jun–Nov enough) and k = 20
+**Adopted: the pooled estimates (`pooled`, decided 2026-11-14), a conservative choice for new countries.**
+- A new country's fire regime is unknown until it is calibrated, so the rule borrows unless a month has enough data for local ratios to win under both regimes.
+- Pooled N_month (149) is about 2.5 times Greece's (61). Ratio-type countries may therefore be sent to the Lebanon strategy (pooled level, affine shape) somewhat earlier than they need to be.
+- That costs little: in the Greece subsamples between n = 60 and 150, the Lebanon strategy's per-month error is within 0.01–0.03 of local. The reverse mistake costs more: applying Greece's threshold to an EastMed-like country would leave months on local ratios that lose by 0.05–0.08 per month (n = 60–400).
+
+## Check against Lebanon and k = 20
 
 | month | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -42,11 +48,10 @@ Derived from a cell-subsampling experiment instead of being hand-set. Code: `too
 | thin at N_month = 61 (greece) | thin | thin | thin | thin | thin | thin | thin |  |  |  | thin | thin |
 | thin at N_month = 149 (pooled) | thin | thin | thin | thin | thin | thin | thin | thin | thin | thin | thin | thin |
 
-- **Dec–May thin: confirmed** at every threshold (n = 2–10, far below any range).
-- **Jun–Nov enough: not confirmed.**
-  - Greece's N_month (61) also makes Jun (27), Jul (56) and Nov (53) thin, leaving only Aug–Oct rich.
-  - The pooled N_month (149) makes every Lebanon month thin, since Lebanon's largest month is Oct with 133.
-  - The earlier Jun–Nov reading was optimistic: in subsamples, a month with Lebanon's Jun–Nov n is predicted better by borrowing.
+Lebanon's months, in order of richness: Oct 133, Sep 116, Aug 66, Jul 56, Nov 53, Jun 27, Dec 10, then Jan–May 2–5.
+- **Under the adopted (pooled) threshold, all 12 months are thin**, so Lebanon is a thin country (share 1.00 ≥ 0.72) and the Lebanon strategy applies, as in v1.0-data. Aug–Oct are the richest months.
+- **This replaces the earlier reading** (Dec–May need donor borrowing, Jun–Nov have enough local signal). Dec–May are confirmed thin at every threshold. Jun–Nov are not "enough": even Greece's threshold (61) leaves only Aug–Oct rich.
+- **No Lebanon value changes:** the strategy and factors are those of v1.0-data.
 - **k = 20:**
   - Blend weight on local is w = n / (n + k). With k = 20, w is 0.75 at Greece's N_month (61) and 0.88 at the pooled 149, so local dominates by the time the thresholds say it should.
   - The k chosen by leave-one-year-out in the subsamples centres on 10–50 for regions of Lebanon's size (annual 20–110), with k ≤ 20 in 35–65 % of runs. It falls to 5 or 0 as n grows.
