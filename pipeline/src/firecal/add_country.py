@@ -183,7 +183,7 @@ def load_backend(cfg: dict, region: str, timings: dict) -> dict:
         return out
     branch = subprocess.run(["git", "-C", str(repo), "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True,
                             text=True).stdout.strip()
-    if branch != b["branch"]:
+    if b.get("branch") and branch != b["branch"]:          # branch: null in the monorepo (backend is ..)
         out["error"] = f"teammate repo is on {branch!r}, expected {b['branch']!r}; not loaded"
         return out
     t = time.time()

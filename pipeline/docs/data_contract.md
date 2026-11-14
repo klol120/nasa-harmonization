@@ -196,17 +196,13 @@ A browser map needs `region_monthly.json`, `cells.geojson` and one `cells_series
 under 0.5 MB for Lebanon and about 6 MB for EastMed.
 
 ## Shared files (in git)
-Committed for sharing, with a limit of 5 MB (5,000,000 bytes):
-- **`lebanon/`:** all files, including `cells_series/`.
-- **All regions:** `region_monthly.json` and `cells_series/` (each year file is 0.72 MB or less).
-- **`greece/cells.geojson`.**
+Since 2026-11-14 (monorepo with the backend and frontend), git holds what the backend needs to load every
+region:
+- **Every region:** `meta.json`, `region_monthly.json`, `cells.geojson`, `calendar.parquet` and
+  `cells_series/`. These are shared at any size; the largest is `eastmed/cells.geojson` at 5.3 MB.
+- **`lebanon/`:** all files.
 
-**Too large for git, share separately:**
-
-| file | size |
-|---|---|
-| `eastmed/cells.geojson` | 5.3 MB |
-| `greece/calendar.csv.gz` | 6.5 MB |
-| `eastmed/calendar.csv.gz` | 17.4 MB |
+**Not in git (same data as `calendar.parquet`, larger):** `calendar.csv.gz` and `region_monthly.csv` outside
+Lebanon. For example `greece/calendar.csv.gz` is 6.5 MB and `eastmed/calendar.csv.gz` is 17.4 MB.
 
 Everything else regenerates with `.venv/bin/python -m firecal all --region <region>`.
