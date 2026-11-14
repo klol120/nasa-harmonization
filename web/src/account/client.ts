@@ -140,7 +140,5 @@ export const api = {
   updateArea: (id: number, patch: Partial<Pick<SavedArea, "name" | "alert_enabled" | "alert_z" | "exclude_persistent">>) =>
     call<SavedArea>(`/me/areas/${id}`, { method: "PATCH", json: patch }),
   deleteArea: (id: number) => call<void>(`/me/areas/${id}`, { method: "DELETE" }),
-  planInterest: (plan: "pro" | "organization", email: string | null, organization?: string, message?: string) =>
-    call<{ ok: true }>("/plans/interest", { method: "POST", json: { plan, email, organization, message } }),
   adminStats: () => call<Record<string, unknown>>("/admin/stats"),
 };

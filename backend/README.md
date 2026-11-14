@@ -144,7 +144,6 @@ None of this gates the data: every region endpoint stays public. Settings are in
 | `GET /auth/me`, `POST /auth/logout`, `DELETE /me` | session, sign out, delete account |
 | `POST /newsletter/subscribe`, `GET /newsletter/confirm`, `GET /newsletter/unsubscribe` | email list with double opt-in |
 | `GET/POST /me/areas`, `PATCH/DELETE /me/areas/{id}` | saved areas with their latest month and alert settings |
-| `POST /plans/interest` | "I'm interested" sign-ups for Pro / Organisation |
 | `GET /admin/stats` | counts for `ADMIN_EMAILS` |
 | `GET /dev/outbox` | the emails that would have been sent (only with `AUTH_DEV_LOGIN=1`) |
 

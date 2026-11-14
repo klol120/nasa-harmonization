@@ -849,18 +849,3 @@ html[data-motion="off"] .pulse-ring { display: none; }
 .area-alert { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .alert-z { padding: 3px 6px; border-radius: var(--radius-sm); border: 1px solid var(--border-2); background: var(--surface); color: var(--text); font-size: 11px; }
 
-.plans-drawer { width: min(640px, 100%); }
-.plans { display: grid; gap: 10px; margin-top: 12px; }
-.plan { padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-2); background: var(--surface-2); display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-.plan.is-current { border-color: var(--accent); background: rgba(61, 123, 255, 0.08); }
-.plan header { display: flex; align-items: baseline; justify-content: space-between; width: 100%; gap: 10px; }
-.plan h3 { margin: 0; font-size: 16px; text-transform: none; letter-spacing: 0; color: var(--text); }
-.plan-price { font-size: 12px; color: var(--fire-2); font-weight: 600; }
-.plan p { margin: 0; }
-.plan ul { margin: 0; padding-left: 18px; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
-.plan-badge { font-size: 12px; color: var(--accent-2); }
-.plan-form { margin-top: 14px; padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-2); display: flex; flex-direction: column; gap: 10px; }
-.plan-form h3 { margin: 0; }
-.plan-form textarea { padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-2); background: var(--surface-2); color: var(--text); font: inherit; font-size: 13px; resize: vertical; }
-.plan-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
-@media (max-width: 900px) { .plans-btn { display: none; } }

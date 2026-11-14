@@ -37,7 +37,6 @@ import { WorldPicker } from "./components/WorldPicker";
 import { AccountMenu } from "./account/AccountMenu";
 import { MyAreasPanel } from "./account/MyAreasPanel";
 import { NewsletterForm } from "./account/NewsletterForm";
-import { PlansDrawer } from "./account/PlansDrawer";
 import { SignInDialog } from "./account/SignInDialog";
 import {
   anomalies,
@@ -99,7 +98,6 @@ export default function App() {
   const [drawMode, setDrawMode] = useState<DrawMode>("none");
   const [methodsOpen, setMethodsOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [plansOpen, setPlansOpen] = useState(false);
   const [hotspots, setHotspots] = useState<HotspotRow[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -430,12 +428,8 @@ export default function App() {
         }
         corner={
           <>
-            <button className="btn btn-ghost" onClick={() => setPlansOpen(true)}>
-              Plans
-            </button>
-            <AccountMenu onPlans={() => setPlansOpen(true)} onFlash={flash} />
+            <AccountMenu onFlash={flash} />
             <SignInDialog />
-            <PlansDrawer open={plansOpen} onClose={() => setPlansOpen(false)} />
             {toast && (
               <div className="toast" role="status">
                 {toast}
@@ -504,8 +498,7 @@ export default function App() {
         exports={exportsList}
         onMethods={() => setMethodsOpen(true)}
         onWorld={() => setView("world")}
-        onPlans={() => setPlansOpen(true)}
-        account={<AccountMenu onPlans={() => setPlansOpen(true)} onFlash={flash} />}
+        account={<AccountMenu onFlash={flash} />}
       />
 
       <div className="layout">
@@ -808,7 +801,6 @@ export default function App() {
         </main>
       </div>
 
-      <PlansDrawer open={plansOpen} onClose={() => setPlansOpen(false)} />
       <SignInDialog />
       <MethodsDrawer open={methodsOpen} onClose={() => setMethodsOpen(false)} meta={meta} sourceLabel={source?.label ?? ""} />
       <ImportDialog

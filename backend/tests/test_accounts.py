@@ -153,14 +153,13 @@ def test_alerts_fire_once_per_month(client):
         assert not first.sent and "below threshold" in first.reason
 
 
-def test_plan_interest_admin_and_delete(client, monkeypatch):
-    assert client.post("/plans/interest", json={"plan": "pro"}).status_code == 422
-    assert client.post("/plans/interest", json={"plan": "pro", "email": "lead@example.com"}).status_code == 201
+def test_admin_and_delete(client, monkeypatch):
+    assert client.post("/plans/interest", json={"plan": "pro", "email": "lead@example.com"}).status_code == 404
     h = sign_in(client, "boss@example.com")
     assert client.get("/admin/stats", headers=h).status_code == 403
     monkeypatch.setenv("ADMIN_EMAILS", "boss@example.com")
     stats = client.get("/admin/stats", headers=h).json()
-    assert stats["users"] >= 1 and stats["plan_interest"]["pro"] >= 1
+    assert stats["users"] >= 1 and "plan_interest" not in stats
 
     client.post("/me/newsletter", json={"subscribed": True}, headers=h)
     client.post("/me/areas", json=CHOUF, headers=h)

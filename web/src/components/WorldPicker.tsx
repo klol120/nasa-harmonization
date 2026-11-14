@@ -15,7 +15,7 @@ interface Props {
   onEnter: (regionId: string) => void;
   /** Region the dashboard last showed, highlighted when coming back. */
   current?: string;
-  /** Optional extras shown in the panel (email list) and the top-right corner (account, plans). */
+  /** Optional extras shown in the panel (email list) and the top-right corner (account). */
   extras?: React.ReactNode;
   corner?: React.ReactNode;
 }

@@ -56,17 +56,6 @@ create table saved_area (
 );
 create index saved_area_user_idx on saved_area (user_id);
 
--- "I'm interested" sign-ups from the plans page (no payments).
-create table plan_interest (
-    interest_id   bigserial primary key,
-    plan          text not null check (plan in ('pro', 'organization')),
-    email         text not null,
-    user_id       bigint references app_user on delete set null,
-    organization  text,
-    message       text,
-    created_at    timestamptz not null default now()
-);
-
 -- Every email the app sends goes through here. Without SMTP settings nothing leaves the server and
 -- the outbox can be read at /dev/outbox (local development only).
 create table email_outbox (

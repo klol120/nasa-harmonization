@@ -1,4 +1,4 @@
-"""Accounts and business features: sign-in, email list, saved areas, plan interest, admin stats.
+"""Accounts and business features: sign-in, email list, saved areas, admin stats.
 
 Nothing here gates the data. Every region endpoint stays public; an account only adds things on top
 (saved areas, alerts). Settings (environment variables):
@@ -524,33 +524,6 @@ async def delete_area(area_id: int, u: User, c: Conn):
     return Response(status_code=204)
 
 
-# ---------------------------------------------------------------- plans
-
-
-class Interest(BaseModel):
-    plan: Literal["pro", "organization"]
-    email: str | None = None
-    organization: str | None = Field(None, max_length=200)
-    message: str | None = Field(None, max_length=2000)
-
-    @field_validator("email")
-    @classmethod
-    def _email(cls, v):
-        return None if v is None else normalize_email(v)
-
-
-@router.post("/plans/interest", status_code=201, tags=["plans"])
-async def plan_interest(body: Interest, c: Conn, u: OptUser):
-    email = body.email or (u["email"] if u else None)
-    if not email:
-        raise HTTPException(422, "email is required")
-    await c.execute(
-        "insert into plan_interest (plan, email, user_id, organization, message) values ($1, $2, $3, $4, $5)",
-        body.plan, email, u["user_id"] if u else None, body.organization, body.message,
-    )
-    return {"ok": True}
-
-
 # ---------------------------------------------------------------- admin
 
 
@@ -566,7 +539,6 @@ async def admin_stats(u: User, c: Conn):
         "subscribers": {r["status"]: r["n"] for r in await c.fetch("select status, count(*) n from subscriber group by status")},
         "saved_areas": await q("select count(*) from saved_area"),
         "areas_with_alerts": await q("select count(*) from saved_area where alert_enabled"),
-        "plan_interest": {r["plan"]: r["n"] for r in await c.fetch("select plan, count(*) n from plan_interest group by plan")},
         "emails": {
             "queued": await q("select count(*) from email_outbox where sent_at is null and error is null"),
             "sent": await q("select count(*) from email_outbox where sent_at is not null"),

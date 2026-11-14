@@ -13,7 +13,7 @@ function Avatar({ name, picture }: { name: string; picture: string | null }) {
 }
 
 /** Top-bar account control: "Sign in" when signed out, an avatar menu when signed in. */
-export function AccountMenu({ onPlans, onFlash }: { onPlans: () => void; onFlash: (msg: string) => void }) {
+export function AccountMenu({ onFlash }: { onFlash: (msg: string) => void }) {
   const { me, loading, requestSignIn, signOut, deleteAccount, refresh } = useAuth();
   const [open, setOpen] = useState(false);
   const [stats, setStats] = useState<Record<string, unknown> | null>(null);
@@ -76,14 +76,10 @@ export function AccountMenu({ onPlans, onFlash }: { onPlans: () => void; onFlash
             <b>{subscribed ? "Unsubscribe from the digest" : "Get the monthly digest"}</b>
             <small>{subscribed ? "You get one email a month" : "One short email a month, no spam"}</small>
           </button>
-          <button role="menuitem" onClick={() => act(async () => onPlans())}>
-            <b>Plans</b>
-            <small>Free today · Pro and Organisation coming</small>
-          </button>
           {u.is_admin && (
             <button role="menuitem" onClick={() => act(async () => setStats(await api.adminStats()))}>
               <b>Admin stats</b>
-              <small>Users, subscribers, saved areas, interest</small>
+              <small>Users, subscribers, saved areas, emails</small>
             </button>
           )}
           <button role="menuitem" onClick={() => act(signOut, "Signed out")}>

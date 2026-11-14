@@ -25,7 +25,6 @@ interface Props {
   exports: ExportAction[];
   onMethods: () => void;
   onWorld: () => void;
-  onPlans: () => void;
   /** Account control (sign in / avatar menu). */
   account: React.ReactNode;
 }
@@ -93,9 +92,6 @@ export function TopBar(p: Props) {
         <ExportMenu actions={p.exports} />
         <button className="btn btn-ghost" onClick={p.onMethods}>
           Methods
-        </button>
-        <button className="btn btn-ghost plans-btn" onClick={p.onPlans}>
-          Plans
         </button>
         {p.account}
       </div>
