@@ -301,10 +301,22 @@ def rule(n_m, thr, years=9):
     return pick, thin, annual
 
 
+def v1_picks(tag="v1.0-data"):
+    """Strategies of the frozen release, in the rule's vocabulary (read from the tag's config.yaml)."""
+    import subprocess
+
+    import yaml
+
+    cfg = yaml.safe_load(subprocess.run(["git", "show", f"{tag}:config.yaml"], cwd=ROOT, capture_output=True,
+                                        text=True, check=True).stdout)
+    names = {"local": "local", "affine_shape_single_level_pool": "lebanon"}
+    return {r: names.get(s, s) for r, s in cfg["calibration"]["strategy"].items()}
+
+
 def report(result):
     ad = adopted(result)
     months = region_months()
-    v1 = {"lebanon": "lebanon", "greece": "local", "eastmed": "local"}
+    v1 = v1_picks()
     fmt = lambda k, v: "—" if v is None or not np.isfinite(v) else (f"{v:.2f}" if k == "N_country" else f"{v:.0f}" if v >= 10 else f"{v:.1f}")  # noqa: E731
     keys = ["N_month", "N_country", "N_country_annual", "N_min_annual"]
     L = ["# Data-thinness thresholds (derived, 2026-11-14)", "",
@@ -380,6 +392,7 @@ def report(result):
           "is consistent with the data.**", "",
           "## Rule (for add-country) and regression against v1.0-data", "",
           "Rule: annual < N_min → `donor`; else thin share ≥ N_country → Lebanon strategy; else `local`.", "",
+          "v1.0-data strategies are read from the tag's config.yaml.", "",
           "| region | annual n | thin months (adopted N_month) | thin share | rule picks | v1.0-data | same? |",
           "|---|---|---|---|---|---|---|"]
     for r, n_m in months.items():

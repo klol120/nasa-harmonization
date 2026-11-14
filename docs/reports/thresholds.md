@@ -56,6 +56,8 @@ Derived from a cell-subsampling experiment instead of being hand-set. Code: `too
 
 Rule: annual < N_min → `donor`; else thin share ≥ N_country → Lebanon strategy; else `local`.
 
+v1.0-data strategies are read from the tag's config.yaml.
+
 | region | annual n | thin months (adopted N_month) | thin share | rule picks | v1.0-data | same? |
 |---|---|---|---|---|---|---|
 | lebanon | 53.1 | Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec | 1.00 | lebanon | lebanon | yes |
