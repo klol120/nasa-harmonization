@@ -1,0 +1,22 @@
+# Written by `python -m firecal add-country` on 2026-11-14. Merged over config.yaml (paths.config_d).
+# Jordan: auto_strategy thin -> affine_shape_single_level_pool (12/12 months thin (n < n_month 149): share 1.00 >= n_country 0.72); NOAA-20 transfer blend:southern_turkey (lowest mean hold-out WAPE).
+regions:
+  jordan:
+    bbox: [34.9, 29.14, 39.34, 33.42]
+    countries: [Jordan]
+calibration:
+  strategy: {jordan: affine_shape_single_level_pool}
+terra:
+  strategy: {jordan: single}
+anomalies:
+  by_region:
+    jordan:
+      baseline_years: [2012, 2025]
+      sensitivity_baselines:
+      - [2001, 2025]
+add_country:
+  regions:
+    jordan: {added: '2026-11-14', outcome: thin, reason: '12/12 months thin (n < n_month 149): share 1.00 >= n_country
+        0.72'}
+continuation:
+  strategy: {jordan: 'blend:southern_turkey'}
