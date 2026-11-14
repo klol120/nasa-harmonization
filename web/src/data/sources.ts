@@ -109,7 +109,7 @@ function rowsAreaSeries(meta: DatasetMeta, rows: CellMonthlyRow[], area: Area, m
   for (let i = first; i <= last; i++) {
     const s = sums.get(i);
     const values = Object.fromEntries(SENSORS.map((k) => [k, i >= starts[k] ? +(s?.[k] ?? 0).toFixed(2) : null])) as Record<Sensor, number | null>;
-    months.push({ i, values, low: values.harmonized, high: values.harmonized, z: null, estimate: false, lowConfidence: false, gap: false, partial: i > lastComplete });
+    months.push({ i, values, low: values.harmonized, high: values.harmonized, z: null, estimate: false, lowConfidence: false, gap: false, partial: i > lastComplete, partialMonth: false, source: null, noaa20: null });
   }
   return { nCells: [...inside.values()].filter(Boolean).length, months };
 }

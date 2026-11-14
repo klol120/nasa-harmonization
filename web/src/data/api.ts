@@ -4,7 +4,7 @@ import { type AreaMonth, type AreaSeries, type BBox, type DatasetMeta, type Sens
 import { countryOutline } from "./regions";
 import type { AreaQuery, CellQuery, CellValues, DataSource } from "./sources";
 
-/** Client for the burning-calendar API (backend/firecal_api). Responses follow data contract v0.4. */
+/** Client for the burning-calendar API (backend/firecal_api). Responses follow data contract v0.4/v0.5. */
 
 export class ApiError extends Error {}
 
@@ -50,10 +50,12 @@ interface MonthRow {
   ym: string;
   modis_raw: number | null;
   viirs_raw: number | null;
+  noaa20_raw?: number | null; // v0.5
   harmonized: number | null;
   harmonized_low: number | null;
   harmonized_high: number | null;
   anomaly_z: number | null;
+  source?: string | null; // v0.5
   is_estimate: boolean;
   has_gap: boolean;
   data_available: boolean;
@@ -85,6 +87,9 @@ function toAreaMonth(r: MonthRow): AreaMonth {
     gap: r.has_gap,
     // display_only (the partial 2026) is shown but excluded from baselines, like a month in progress.
     partial: r.partial_month || r.display_only,
+    partialMonth: r.partial_month,
+    source: r.source ?? null,
+    noaa20: r.noaa20_raw ?? null,
   };
 }
 
@@ -171,6 +176,10 @@ export function apiSource(summary: RegionSummary): DataSource {
         harmonized_unit: m.units,
         estimate_until: estimates.at(-1)?.ym,
         splice_date: m.time.splice_date,
+        viirs_switch_date: m.time.viirs_switch_date,
+        continuation: cal.continuation
+          ? { strategy: cal.continuation.strategy, overlap_years: cal.continuation.overlap_years, factors: cal.continuation.factors ?? [] }
+          : undefined,
         baseline_years: m.anomalies?.baseline_years,
         n_cells: m.n_cells,
         n_persistent_cells: m.n_persistent_cells,

@@ -84,6 +84,19 @@ export function MethodsDrawer({ open, onClose, meta, sourceLabel }: Props) {
               <b>Splice.</b> From {meta.splice_date ?? "2012-01-20"} the record is observed VIIRS. Before that it is MODIS converted to <b>VIIRS-equivalent</b> fire-days, with a
               90% uncertainty band. Those months are labelled as modelled estimates everywhere in the app.
             </li>
+            {meta.viirs_switch_date && meta.continuation && (
+              <li>
+                <b>Continue with NOAA-20.</b> VIIRS on S-NPP stopped delivering data, so from {meta.viirs_switch_date} the record is VIIRS NOAA-20 calibrated to
+                S-NPP units, month by month on {meta.continuation.overlap_years ? `${meta.continuation.overlap_years[0]}–${meta.continuation.overlap_years[1]}` : "the overlap"}
+                {meta.continuation.strategy ? <> (strategy <code>{meta.continuation.strategy}</code>)</> : null}: factor{" "}
+                {(() => {
+                  const cs = meta.continuation.factors.map((f) => f.c);
+                  const lo = Math.min(...cs), hi = Math.max(...cs);
+                  return cs.length ? (lo === hi ? lo.toFixed(3) : `${lo.toFixed(3)}–${hi.toFixed(3)}`) : "–";
+                })()}
+                . These months are observations, not estimates; the month tooltip names the satellite.
+              </li>
+            )}
             <li>
               <b>Anomalies.</b> Each month's z-score compares it with the same calendar month over{" "}
               {meta.baseline_years ? `${meta.baseline_years[0]}–${meta.baseline_years[1]}` : "the baseline years"}. For a drawn area, the server sums the cells first and
@@ -146,7 +159,7 @@ export function MethodsDrawer({ open, onClose, meta, sourceLabel }: Props) {
             <li>
               Hatched calendar cells mean <b>no data</b>, not zero fires. Dotted cells are low-confidence estimates.
             </li>
-            <li>A partial year is outlined with a dashed border and left out of medians and trends.</li>
+            <li>A partial year, or a month whose data is still arriving, is outlined with a dashed border and left out of medians and trends.</li>
             <li>
               The climatology band is the historical median and spread. It describes what has been typical; it is <b>not a forecast</b>.
             </li>
@@ -169,7 +182,7 @@ export function MethodsDrawer({ open, onClose, meta, sourceLabel }: Props) {
             <li>Csiszar et al. 2014, JGR Atmospheres: VIIRS vs MODIS detections.</li>
             <li>Giglio, Schroeder &amp; Justice 2016: MODIS Collection 6 active fires.</li>
             <li>Li et al. 2018, JGR Atmospheres: VIIRS vs MODIS FRP.</li>
-            <li>Data: NASA FIRMS (MODIS C6.1 Terra + Aqua, VIIRS 375 m S-NPP).</li>
+            <li>Data: NASA FIRMS (MODIS C6.1 Terra + Aqua, VIIRS 375 m S-NPP{meta.viirs_switch_date ? " and NOAA-20" : ""}).</li>
           </ul>
         </div>
       </aside>

@@ -133,8 +133,11 @@ def parse_region_monthly(folder: Path, meta: dict, warnings: list[str]) -> list[
             errors.append(f"{where}: harmonized must be null iff data_available is false")
         if h is not None and (lo is None or hi is None or not lo - 1e-6 <= h <= hi + 1e-6):
             errors.append(f"{where}: need harmonized_low <= harmonized <= harmonized_high")
+        # v0.5: source says what feeds harmonized, null iff there is no data (absent in v0.4).
+        if "source" in r and (r["source"] is None) == bool(r.get("data_available")):
+            errors.append(f"{where}: source must be null iff data_available is false")
         out.append((
-            ym, r.get("modis_raw"), r.get("viirs_raw"), h, lo, hi, r.get("anomaly_z"),
+            ym, r.get("modis_raw"), r.get("viirs_raw"), r.get("noaa20_raw"), h, lo, hi, r.get("anomaly_z"), r.get("source"),
             *(r[f] for f in C.REGION_MONTH_FLAGS), r["n_cells"], r["n_persistent_cells"],
         ))
     if errors:
@@ -277,8 +280,8 @@ async def ingest_region(
         await conn.copy_records_to_table(
             "region_month",
             records=[(release_id, *m) for m in months],
-            columns=["release_id", "ym", "modis_raw", "viirs_raw", "harmonized", "harmonized_low", "harmonized_high",
-                     "anomaly_z", *C.REGION_MONTH_FLAGS, "n_cells", "n_persistent_cells"],
+            columns=["release_id", "ym", "modis_raw", "viirs_raw", "noaa20_raw", "harmonized", "harmonized_low",
+                     "harmonized_high", "anomaly_z", "source", *C.REGION_MONTH_FLAGS, "n_cells", "n_persistent_cells"],
         )
 
         # Calendar: stream a CSV into a text staging table whose columns follow the file header
@@ -287,7 +290,7 @@ async def ingest_region(
         with calendar_csv(folder, warnings) as (cal, opener):
             with opener(cal, "rt") as f:
                 header = f.readline().strip().split(",")
-            missing = [c for c in C.CALENDAR_FIELDS if c not in header]
+            missing = [c for c in C.CALENDAR_FIELDS if c not in header and c not in C.OPTIONAL_CALENDAR_FIELDS]
             if missing:
                 raise ContractError(f"calendar: missing columns {missing}")
             extra = [c for c in header if c not in C.CALENDAR_FIELDS]
@@ -309,8 +312,8 @@ async def ingest_region(
                 """insert into cell_month
                    select $1, split_part(cell_id, '_', 1)::int * 7200 + split_part(cell_id, '_', 2)::int,
                           (ym || '-01')::date, modis_raw::smallint, viirs_raw::smallint, harmonized::real,
-                          harmonized_low::real, harmonized_high::real, anomaly_z::real
-                   from _cal""",
+                          harmonized_low::real, harmonized_high::real, anomaly_z::real, {noaa20}
+                   from _cal""".format(noaa20="noaa20_raw::smallint" if "noaa20_raw" in header else "null::smallint"),
                 release_id,
             )
         except asyncpg.UniqueViolationError:
@@ -345,9 +348,23 @@ async def ingest_region(
         errors += await _check(conn, """
             select cm.cell_key, cm.ym, cm.harmonized, cm.viirs_raw from cell_month cm
             join region_month rm using (release_id, ym)
-            where cm.release_id = $1 and not rm.is_estimate and rm.data_available
+            where cm.release_id = $1 and rm.data_available
+              and (rm.source = $2 or (rm.source is null and not rm.is_estimate))
               and (cm.viirs_raw is null or abs(cm.harmonized - cm.viirs_raw) > 1e-4)""",
-            "observed months: harmonized == viirs_raw", R)
+            "observed S-NPP months: harmonized == viirs_raw", R, C.SOURCE_SNPP)
+        # v0.5: NOAA-20 months are c_m x noaa20_raw (meta.calibration.continuation.factors).
+        cont = ((meta.get("calibration") or {}).get("continuation") or {}).get("factors") or []
+        if cont:
+            c_by_month = [None] * 12
+            for f in cont:
+                c_by_month[f["month"] - 1] = f["c"]
+            errors += await _check(conn, """
+                select cm.cell_key, cm.ym, cm.harmonized, cm.noaa20_raw from cell_month cm
+                join region_month rm using (release_id, ym)
+                where cm.release_id = $1 and rm.source = $2
+                  and (cm.noaa20_raw is null
+                       or abs(cm.harmonized - ($3::float8[])[extract(month from cm.ym)::int] * cm.noaa20_raw) > 1e-3)""",
+                "NOAA-20 months: harmonized == c_m * noaa20_raw", R, C.SOURCE_NOAA20, c_by_month)
         errors += await _check(conn, """
             select cell_key, ym, viirs_raw from cell_month
             where release_id = $1 and ym < date '2012-01-01' and viirs_raw is not null""",
@@ -355,12 +372,13 @@ async def ingest_region(
         # Region totals are sums over all cells (persistent included). Cell values are rounded in the
         # CSV, so allow a rounding tolerance that grows with the number of cells.
         errors += await _check(conn, """
-            select rm.ym, rm.harmonized, s.h, rm.modis_raw, s.m, rm.viirs_raw, s.v from region_month rm
-            join (select ym, sum(harmonized) h, sum(modis_raw) m, sum(viirs_raw) v
+            select rm.ym, rm.harmonized, s.h, rm.modis_raw, s.m, rm.viirs_raw, s.v, rm.noaa20_raw, s.n from region_month rm
+            join (select ym, sum(harmonized) h, sum(modis_raw) m, sum(viirs_raw) v, sum(noaa20_raw) n
                   from cell_month where release_id = $1 group by ym) s using (ym)
             where rm.release_id = $1 and (
                 abs(coalesce(rm.harmonized, 0) - coalesce(s.h, 0)) > 0.01 + 1e-4 * $2
-                or rm.modis_raw is distinct from s.m::int or rm.viirs_raw is distinct from s.v::int)""",
+                or rm.modis_raw is distinct from s.m::int or rm.viirs_raw is distinct from s.v::int
+                or rm.noaa20_raw is distinct from s.n::int)""",
             "region_monthly totals == sum over cells", R, len(cells))
 
         if check_series and series:
@@ -395,6 +413,9 @@ async def ingest_region(
         cal_meta = meta.get("calibration") or {}
         factors = [("level", f) for f in cal_meta.get("factors", [])]
         factors += [("shape", f) for f in ((cal_meta.get("composite") or {}).get("shape") or {}).get("factors", [])]
+        # v0.5 NOAA-20 -> S-NPP factors c_m, stored in the a columns.
+        factors += [("continuation", {"month": f["month"], "a": f["c"], "a_low": f.get("c_low"), "a_high": f.get("c_high")})
+                    for f in (cal_meta.get("continuation") or {}).get("factors", [])]
         if factors:
             await conn.copy_records_to_table(
                 "calibration_factor",

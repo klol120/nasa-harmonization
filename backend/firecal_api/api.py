@@ -145,14 +145,21 @@ async def meta(region: RegionId, c: Conn, release: ReleaseQ = None):
 
 
 REGION_MONTH_SQL = """
-    select ym, modis_raw, viirs_raw, harmonized, harmonized_low, harmonized_high, anomaly_z,
+    select ym, modis_raw, viirs_raw, noaa20_raw, harmonized, harmonized_low, harmonized_high, anomaly_z, source,
            is_estimate, has_gap, data_available, partial_month, display_only, low_confidence, n_cells, n_persistent_cells
     from region_month where release_id = $1 order by ym"""
 
 
-def region_month_out(m: asyncpg.Record) -> dict:
+# Fields added in v0.5; left out of responses for releases loaded from a v0.4 export.
+V05_REGION_MONTH_FIELDS = ("noaa20_raw", "source")
+
+
+def region_month_out(m: asyncpg.Record, contract_version: str) -> dict:
     d = dict(m)
     ym = d.pop("ym")
+    if contract_version == "0.4":
+        for f in V05_REGION_MONTH_FIELDS:
+            d.pop(f, None)
     return {"ym": C.ym_str(ym), "year": ym.year, "month": ym.month, **d}
 
 
@@ -160,10 +167,11 @@ def region_month_out(m: asyncpg.Record) -> dict:
 async def monthly(region: RegionId, c: Conn, release: ReleaseQ = None, format: Literal["json", "csv"] = "json"):
     """region_monthly: region totals and every region-wide flag, one row per month."""
     r = await release_row(c, region, release)
-    rows = [region_month_out(m) for m in await c.fetch(REGION_MONTH_SQL, r["release_id"])]
+    rows = [region_month_out(m, r["contract_version"]) for m in await c.fetch(REGION_MONTH_SQL, r["release_id"])]
     if format == "csv":
         buf = io.StringIO()
-        w = csv.DictWriter(buf, fieldnames=C.REGION_MONTH_FIELDS, lineterminator="\n")
+        fields = [f for f in C.REGION_MONTH_FIELDS if not rows or f in rows[0]]
+        w = csv.DictWriter(buf, fieldnames=fields, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
         return Response(buf.getvalue(), media_type="text/csv",
@@ -268,7 +276,7 @@ async def calendar(
         unknown = wanted - {ids[k] for k in keys}
         if unknown:
             raise HTTPException(404, f"cells not in region {region!r}: {sorted(unknown)[:5]}")
-    sql = """select cell_key, ym, modis_raw, viirs_raw, harmonized, harmonized_low, harmonized_high, anomaly_z
+    sql = """select cell_key, ym, modis_raw, viirs_raw, noaa20_raw, harmonized, harmonized_low, harmonized_high, anomaly_z
              from cell_month where release_id = $1 and ym between $2 and $3"""
     args: list = [rid, a, b]
     if keys is not None:
@@ -280,7 +288,7 @@ async def calendar(
         ym = row["ym"]
         return {
             "cell_id": ids[row["cell_key"]], "ym": C.ym_str(ym), "year": ym.year, "month": ym.month,
-            "modis_raw": row["modis_raw"], "viirs_raw": row["viirs_raw"],
+            "modis_raw": row["modis_raw"], "viirs_raw": row["viirs_raw"], "noaa20_raw": row["noaa20_raw"],
             "harmonized": r4(row["harmonized"]), "harmonized_low": r4(row["harmonized_low"]),
             "harmonized_high": r4(row["harmonized_high"]), "anomaly_z": r4(row["anomaly_z"]),
         }
@@ -349,7 +357,8 @@ async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, r
     sums = {
         s["ym"]: s
         for s in await c.fetch(
-            """select ym, sum(modis_raw)::int modis_raw, sum(viirs_raw)::int viirs_raw, sum(harmonized)::float8 harmonized,
+            """select ym, sum(modis_raw)::int modis_raw, sum(viirs_raw)::int viirs_raw, sum(noaa20_raw)::int noaa20_raw,
+                      sum(harmonized)::float8 harmonized,
                       sum(harmonized_low)::float8 harmonized_low, sum(harmonized_high)::float8 harmonized_high
                from cell_month where release_id = $1 and cell_key = any($2::int[]) group by ym""",
             rid, keys,
@@ -367,6 +376,7 @@ async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, r
             "ym": C.ym_str(m["ym"]), "year": m["ym"].year, "month": m["ym"].month,
             **{f: (r4(s[f]) if s else None) for f in C.ADDITIVE_FIELDS},
             "anomaly_z": r4(z.get(m["ym"])),
+            "source": m["source"],
             **{f: m[f] for f in C.REGION_MONTH_FLAGS},
         })
     return jsonr({

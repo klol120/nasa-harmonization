@@ -70,7 +70,7 @@ export function Timeline({ series, selected, onSelect, windowMode, setWindowMode
           <strong>
             {MONTH_ABBR[ymMonth(selected) - 1]} {ymYear(selected)}
           </strong>
-          <span>{cur?.value === null ? "no coverage" : `${fmt(cur?.value)} ${unit}${cur?.partial ? " · partial" : ""}`}</span>
+          <span>{cur?.value === null ? "no coverage" : `${fmt(cur?.value)} ${unit}${cur?.partialMonth ? " · partial month" : cur?.partial ? " · partial" : ""}`}</span>
         </div>
         <button className="chip" onClick={() => setSpeed(speed >= 4 ? 1 : speed * 2)} title="Playback speed">
           {speed}×
