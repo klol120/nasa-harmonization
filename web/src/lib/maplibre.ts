@@ -11,6 +11,8 @@ export { maplibregl };
 const STYLE_URLS = {
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   darkNoLabels: "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
+  /** Light street map (Carto Positron) for the light theme. */
+  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
 };
 
 export const FALLBACK_STYLE: StyleSpecification = {

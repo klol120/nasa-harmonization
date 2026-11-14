@@ -270,7 +270,7 @@ export function LayersPanel({ layers, setLayers, detections }: { layers: LayerSt
       <div className="seg seg-sm seg-full" role="radiogroup" aria-label="Basemap">
         {(["dark", "satellite"] as const).map((b) => (
           <button key={b} role="radio" aria-checked={layers.basemap === b} className={layers.basemap === b ? "is-on" : ""} onClick={() => setLayers({ ...layers, basemap: b })}>
-            {b === "dark" ? "Dark map" : "Satellite"}
+            {b === "dark" ? "Street map" : "Satellite"}
           </button>
         ))}
       </div>

@@ -805,6 +805,9 @@ export default function App() {
       <section className="hero stage">
         <div className="card map-card">
           <MapView
+            // The street map and lighting differ per theme, so the map is rebuilt when the theme changes.
+            key={theme}
+            theme={theme}
             area={ar}
             extent={m.bbox}
             gridDeg={fineCells ? FINE_GRID : m.grid_deg}
