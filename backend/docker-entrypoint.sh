@@ -14,7 +14,8 @@ if [ -n "${WEATHER_DIR:-}" ] && ls "$WEATHER_DIR"/*.json >/dev/null 2>&1; then
   python -m firecal_api.cli weather-import "$WEATHER_DIR" || echo "weather import reported problems"
 fi
 if [ -n "${METEOMATICS_USER:-}" ] && [ "${WEATHER_FETCH:-1}" != "0" ]; then
-  python -m firecal_api.cli weather-fetch &
+  # During a deploy the old container may still hold the fetch lock for a while: wait for it, then continue.
+  python -m firecal_api.cli weather-fetch --wait-lock 900 &
 else
   echo "weather: METEOMATICS_USER not set (or WEATHER_FETCH=0); serving stored weather only"
 fi
