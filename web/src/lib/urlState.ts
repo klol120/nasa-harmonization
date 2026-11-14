@@ -1,7 +1,7 @@
 import { METRICS, type Metric, SENSORS, type Sensor, parseYm, ymKey } from "../data/contract";
 import { type Area, type Ring, areaFromBBox, areaFromRing } from "./geo";
 
-/** Shareable view state in the URL hash, e.g. #src=mock:lebanon&s=harmonized&b=35.4,33.5,35.7,33.8&r=2000-11,2026-11 */
+/** Shareable view state in the URL hash, e.g. #src=api:lebanon&s=harmonized&b=35.4,33.5,35.7,33.8&r=2000-11,2026-11 */
 export interface UrlState {
   source?: string;
   sensor?: Sensor;
