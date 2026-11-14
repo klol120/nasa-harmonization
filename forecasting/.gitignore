@@ -1,0 +1,5 @@
+data/*
+!data/README.md
+outputs/
+*.egg-info/
+.ipynb_checkpoints/

@@ -1,0 +1,116 @@
+[
+  {
+    "region": "eastmed",
+    "cells": 15872,
+    "persistent_cells": 92,
+    "units": "VIIRS-equivalent fire-days per 0.05\u00b0 cell per month",
+    "time": {
+      "first_month": "2000-11",
+      "last_month": "2026-12",
+      "stats_last_year": 2025,
+      "display_only_years": [
+        2026
+      ],
+      "splice_date": "2012-01-20",
+      "terra_only_until": "2002-07-04"
+    },
+    "monthly_rows": 314,
+    "columns": [
+      "ym",
+      "year",
+      "month",
+      "modis_raw",
+      "viirs_raw",
+      "harmonized",
+      "harmonized_low",
+      "harmonized_high",
+      "anomaly_z",
+      "is_estimate",
+      "has_gap",
+      "data_available",
+      "partial_month",
+      "display_only",
+      "low_confidence",
+      "n_cells",
+      "n_persistent_cells"
+    ],
+    "eligible_for_daily_labels": false,
+    "reason": "No detection acquisition times or daily observation coverage"
+  },
+  {
+    "region": "greece",
+    "cells": 5910,
+    "persistent_cells": 13,
+    "units": "VIIRS-equivalent fire-days per 0.05\u00b0 cell per month",
+    "time": {
+      "first_month": "2000-11",
+      "last_month": "2026-12",
+      "stats_last_year": 2025,
+      "display_only_years": [
+        2026
+      ],
+      "splice_date": "2012-01-20",
+      "terra_only_until": "2002-07-04"
+    },
+    "monthly_rows": 314,
+    "columns": [
+      "ym",
+      "year",
+      "month",
+      "modis_raw",
+      "viirs_raw",
+      "harmonized",
+      "harmonized_low",
+      "harmonized_high",
+      "anomaly_z",
+      "is_estimate",
+      "has_gap",
+      "data_available",
+      "partial_month",
+      "display_only",
+      "low_confidence",
+      "n_cells",
+      "n_persistent_cells"
+    ],
+    "eligible_for_daily_labels": false,
+    "reason": "No detection acquisition times or daily observation coverage"
+  },
+  {
+    "region": "lebanon",
+    "cells": 429,
+    "persistent_cells": 6,
+    "units": "VIIRS-equivalent fire-days per 0.05\u00b0 cell per month",
+    "time": {
+      "first_month": "2000-11",
+      "last_month": "2026-12",
+      "stats_last_year": 2025,
+      "display_only_years": [
+        2026
+      ],
+      "splice_date": "2012-01-20",
+      "terra_only_until": "2002-07-04"
+    },
+    "monthly_rows": 314,
+    "columns": [
+      "ym",
+      "year",
+      "month",
+      "modis_raw",
+      "viirs_raw",
+      "harmonized",
+      "harmonized_low",
+      "harmonized_high",
+      "anomaly_z",
+      "is_estimate",
+      "has_gap",
+      "data_available",
+      "partial_month",
+      "display_only",
+      "low_confidence",
+      "n_cells",
+      "n_persistent_cells"
+    ],
+    "eligible_for_daily_labels": false,
+    "reason": "No detection acquisition times or daily observation coverage"
+  }
+]

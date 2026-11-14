@@ -55,3 +55,25 @@ jobs:
       # Tests marked `db` need PostgreSQL and are left out. The others use the export files in
       # export/export/ (checked into the repo) and a fake Meteomatics client.
       - run: uv run --frozen python -m pytest -q -m "not db"
+
+  forecasting:
+    name: Forecasting (synthetic leakage and label checks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: forecasting
+    env:
+      MPLBACKEND: Agg
+      MPLCONFIGDIR: /tmp/firecast-matplotlib
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: forecasting/uv.lock
+      - run: uv sync --frozen --extra dev
+      - run: uv run --frozen pytest -q
+      - name: Build inference container
+        run: docker build -t firecast:ci .

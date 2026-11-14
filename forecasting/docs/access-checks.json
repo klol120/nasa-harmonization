@@ -1,0 +1,72 @@
+{
+  "checked_at": "2026-11-14T14:46:25.603345+00:00",
+  "checks": [
+    {
+      "source": "firms",
+      "url": "https://firms.modaps.eosdis.nasa.gov/api/",
+      "status": 200
+    },
+    {
+      "source": "power",
+      "url": "https://power.larc.nasa.gov/docs/services/api/",
+      "status": 200
+    },
+    {
+      "source": "geos",
+      "url": "https://gmao.gsfc.nasa.gov/weather_prediction/",
+      "status": 200
+    },
+    {
+      "source": "landcover",
+      "url": "https://lpdaac.usgs.gov/products/mcd12q1v061/",
+      "status": 200
+    },
+    {
+      "source": "acled",
+      "url": "https://acleddata.com/data-access",
+      "status": "HTTPError (403 observed in initial direct check)"
+    },
+    {
+      "source": "emdat",
+      "url": "https://doc.emdat.be/",
+      "status": 200
+    },
+    {
+      "source": "desinventar",
+      "url": "https://www.desinventar.net/",
+      "status": 200
+    },
+    {
+      "source": "power_sample",
+      "status": "cached historical weather",
+      "path": "data/source-checks/power_beirut_20200801_07.json"
+    },
+    {
+      "source": "Beirut 2020 FIRMS query",
+      "status": "blocked: historical archive/Earthdata access needed; NRT endpoint is unsuitable for 2020",
+      "request": {
+        "date": "2020-08-04",
+        "center": [
+          35.519,
+          33.901
+        ],
+        "provisional_radius_km": 3,
+        "provisional_utc_window": [
+          "2020-08-04T14:00:00Z",
+          "2020-08-05T18:00:00Z"
+        ]
+      },
+      "detections_found": null,
+      "note": "Review envelope only; verify overpasses and authoritative event timing before adjudication"
+    },
+    {
+      "source": "credentials",
+      "present": {
+        "FIRMS_MAP_KEY": false,
+        "EARTHDATA_USERNAME": false,
+        "EARTHDATA_PASSWORD": false,
+        "ACLED_ACCESS_TOKEN": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "generated_at": "2026-11-14T18:56:08.270553+00:00",
+  "nasa_data": {
+    "firms_detections": 17946,
+    "power_weather_point_days": 61368,
+    "power_cloud_point_days": 20456,
+    "snpp_daily_tiles": 10119,
+    "noaa20_daily_tiles": 5825,
+    "complete_live_forecast_subsets": 72,
+    "eligible_cells": 124
+  },
+  "earthdata_access": {
+    "authenticated_downloads_succeeded": true,
+    "credentials_committed": false,
+    "note": "Explicit private credential was used; no credential value is retained in this status record."
+  },
+  "real_models_trained": [
+    "NOAA-20 retrospective",
+    "S-NPP retrospective benchmark"
+  ],
+  "synthetic_demonstration_separate": true,
+  "tests": {
+    "passed": 49,
+    "warnings": [
+      "Starlette test-client HTTPX deprecation"
+    ]
+  },
+  "notebooks": {
+    "01_to_03": "Synthetic demonstration executed earlier",
+    "04_to_05": "Earlier real quality/access snapshots executed",
+    "06": "Executed real static transformation, label checks, frozen evaluation and live research inference"
+  },
+  "container": {
+    "latest_build_passed": true,
+    "latest_image_sha256": "9ecd52a47b13123279554b6d4de25230cd1b044e52ed696c2b87a0b0898d2d58",
+    "latest_smoke_test_passed": false,
+    "latest_smoke_test_blocker": "Docker VFS image/container creation exceeded local disk capacity",
+    "earlier_non_root_read_only_smoke_test_passed": true,
+    "disposable_images_removed_after_checks": true
+  },
+  "latest_direct_service_smoke_test": "Latest locked service smoke verified in service-validation.json; valid requests are refused with retrospective artifact.",
+  "production_release_approved": false,
+  "failed_release_checks": [
+    "operational_forecast_mode",
+    "historical_feature_availability",
+    "issued_forecast_backtest",
+    "independent_incident_split_review",
+    "calibration_review"
+  ],
+  "externally_deployed": false,
+  "github_pushed": false,
+  "pending": [
+    "Multi-year NASA issued-meteorology forecasts and historical availability evidence",
+    "Incident-independent split and external validation review",
+    "Useful calibrated held-out operational skill and observation-selection handling",
+    "Fresh confirmation data for future model development",
+    "Latest container smoke test on host with sufficient free disk",
+    "Regional and buffered geographic generalization experiments",
+    "Full time-varying vegetation and authoritative non-target incident/facility adjudication"
+  ],
+  "publication_status_note": "This validation snapshot predates the user-requested branch publication; github_pushed describes the snapshot time."
+}

@@ -1,0 +1,460 @@
+{
+  "generated_at": "2026-11-14T17:04:32.421508+00:00",
+  "bbox": [
+    35,
+    33,
+    36.7,
+    34.75
+  ],
+  "sample_temporal_window": [
+    "2019-08-01T00:00:00Z",
+    "2019-08-17T00:00:00Z"
+  ],
+  "sample_limit_per_product": 8,
+  "full_history_downloaded": false,
+  "products": [
+    {
+      "product": "VNP03IMG",
+      "version": "2",
+      "collection_id": "C2105092163-LAADS",
+      "purpose": "Full 375m swath geolocation matching VNP14IMG acquisition time",
+      "query_url": "https://cmr.earthdata.nasa.gov/search/granules.json?collection_concept_id=C2105092163-LAADS&bounding_box=35%2C33%2C36.7%2C34.75&page_size=8&sort_key%5B%5D=start_date&temporal=2019-08-01T00%3A00%3A00Z%2C2019-08-17T00%3A00%3A00Z",
+      "samples": [
+        {
+          "concept_id": "G2126741704-LAADS",
+          "name": "VNP03IMG.A2019213.0012.002.2021110190915.nc",
+          "observation_start": "2019-08-01T00:12:00.000Z",
+          "observation_end": "2019-08-01T00:18:00.000Z",
+          "catalog_updated_at": "2024-10-09T03:20:37.050Z",
+          "data_url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP03IMG/VNP03IMG.A2019213.0012.002.2021110190915.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2126741047-LAADS",
+          "name": "VNP03IMG.A2019213.0948.002.2021110185459.nc",
+          "observation_start": "2019-08-01T09:48:00.000Z",
+          "observation_end": "2019-08-01T09:54:00.000Z",
+          "catalog_updated_at": "2024-10-09T03:20:26.890Z",
+          "data_url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP03IMG/VNP03IMG.A2019213.0948.002.2021110185459.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2126744837-LAADS",
+          "name": "VNP03IMG.A2019213.1130.002.2021110195102.nc",
+          "observation_start": "2019-08-01T11:30:00.000Z",
+          "observation_end": "2019-08-01T11:36:00.000Z",
+          "catalog_updated_at": "2024-10-09T03:21:07.500Z",
+          "data_url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP03IMG/VNP03IMG.A2019213.1130.002.2021110195102.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2126739352-LAADS",
+          "name": "VNP03IMG.A2019213.2212.002.2021110181712.nc",
+          "observation_start": "2019-08-01T22:12:00.000Z",
+          "observation_end": "2019-08-01T22:18:00.000Z",
+          "catalog_updated_at": "2024-10-09T03:20:11.010Z",
+          "data_url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP03IMG/VNP03IMG.A2019213.2212.002.2021110181712.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2126744777-LAADS",
+          "name": "VNP03IMG.A2019213.2354.002.2021110195120.nc",
+          "observation_start": "2019-08-01T23:54:00.000Z",
+          "observation_end": "2019-08-02T00:00:00.000Z",
+          "catalog_updated_at": "2024-10-09T03:21:07.500Z",
+          "data_url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP03IMG/VNP03IMG.A2019213.2354.002.2021110195120.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2126737976-LAADS",
+          "name": "VNP03IMG.A2019214.0930.002.2021110165439.nc",
+          "observation_start": "2019-08-02T09:30:00.000Z",
+          "observation_end": "2019-08-02T09:36:00.000Z",
+          "catalog_updated_at": "2024-10-09T03:19:51.970Z",
+          "data_url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP03IMG/VNP03IMG.A2019214.0930.002.2021110165439.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2126743284-LAADS",
+          "name": "VNP03IMG.A2019214.1112.002.2021110192806.nc",
+          "observation_start": "2019-08-02T11:12:00.000Z",
+          "observation_end": "2019-08-02T11:18:00.000Z",
+          "catalog_updated_at": "2024-10-09T03:20:52.310Z",
+          "data_url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP03IMG/VNP03IMG.A2019214.1112.002.2021110192806.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2126741747-LAADS",
+          "name": "VNP03IMG.A2019214.2330.002.2021110190550.nc",
+          "observation_start": "2019-08-02T23:30:00.000Z",
+          "observation_end": "2019-08-02T23:36:00.000Z",
+          "catalog_updated_at": "2024-10-09T03:20:37.050Z",
+          "data_url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP03IMG/VNP03IMG.A2019214.2330.002.2021110190550.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        }
+      ],
+      "status": "metadata discovered; raster download requires authenticated access"
+    },
+    {
+      "product": "VNP14IMG",
+      "version": "002",
+      "collection_id": "C2734202914-LPCLOUD",
+      "purpose": "375m primary-sensor fire mask and QA; requires swath geolocation and per-overpass treatment",
+      "query_url": "https://cmr.earthdata.nasa.gov/search/granules.json?collection_concept_id=C2734202914-LPCLOUD&bounding_box=35%2C33%2C36.7%2C34.75&page_size=8&sort_key%5B%5D=start_date&temporal=2019-08-01T00%3A00%3A00Z%2C2019-08-17T00%3A00%3A00Z",
+      "samples": [
+        {
+          "concept_id": "G2923530840-LPCLOUD",
+          "name": "VNP14IMG.A2019213.0012.002.2024094200802",
+          "observation_start": "2019-08-01T00:12:00.000Z",
+          "observation_end": "2019-08-01T00:18:00.000Z",
+          "catalog_updated_at": "2024-04-06T07:38:28.201Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019213.0012.002.2024094200802/VNP14IMG.A2019213.0012.002.2024094200802.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2923538053-LPCLOUD",
+          "name": "VNP14IMG.A2019213.0948.002.2024094200759",
+          "observation_start": "2019-08-01T09:48:00.000Z",
+          "observation_end": "2019-08-01T09:54:00.000Z",
+          "catalog_updated_at": "2024-04-06T07:42:40.302Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019213.0948.002.2024094200759/VNP14IMG.A2019213.0948.002.2024094200759.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2923527751-LPCLOUD",
+          "name": "VNP14IMG.A2019213.1130.002.2024094200759",
+          "observation_start": "2019-08-01T11:30:00.000Z",
+          "observation_end": "2019-08-01T11:36:00.000Z",
+          "catalog_updated_at": "2024-04-06T07:37:51.763Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019213.1130.002.2024094200759/VNP14IMG.A2019213.1130.002.2024094200759.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2923527430-LPCLOUD",
+          "name": "VNP14IMG.A2019213.2212.002.2024094200800",
+          "observation_start": "2019-08-01T22:12:00.000Z",
+          "observation_end": "2019-08-01T22:18:00.000Z",
+          "catalog_updated_at": "2024-04-06T07:37:47.867Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019213.2212.002.2024094200800/VNP14IMG.A2019213.2212.002.2024094200800.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2923527405-LPCLOUD",
+          "name": "VNP14IMG.A2019213.2354.002.2024094200759",
+          "observation_start": "2019-08-01T23:54:00.000Z",
+          "observation_end": "2019-08-02T00:00:00.000Z",
+          "catalog_updated_at": "2024-04-06T07:38:18.163Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019213.2354.002.2024094200759/VNP14IMG.A2019213.2354.002.2024094200759.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2923535946-LPCLOUD",
+          "name": "VNP14IMG.A2019214.0930.002.2024094203732",
+          "observation_start": "2019-08-02T09:30:00.000Z",
+          "observation_end": "2019-08-02T09:36:00.000Z",
+          "catalog_updated_at": "2024-04-06T07:42:20.039Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019214.0930.002.2024094203732/VNP14IMG.A2019214.0930.002.2024094203732.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2923537104-LPCLOUD",
+          "name": "VNP14IMG.A2019214.1112.002.2024094203733",
+          "observation_start": "2019-08-02T11:12:00.000Z",
+          "observation_end": "2019-08-02T11:18:00.000Z",
+          "catalog_updated_at": "2024-04-06T07:42:50.356Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019214.1112.002.2024094203733/VNP14IMG.A2019214.1112.002.2024094203733.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2923532721-LPCLOUD",
+          "name": "VNP14IMG.A2019214.2330.002.2024094203731",
+          "observation_start": "2019-08-02T23:30:00.000Z",
+          "observation_end": "2019-08-02T23:36:00.000Z",
+          "catalog_updated_at": "2024-04-06T07:41:39.533Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019214.2330.002.2024094203731/VNP14IMG.A2019214.2330.002.2024094203731.nc",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        }
+      ],
+      "status": "metadata discovered; raster download requires authenticated access"
+    },
+    {
+      "product": "VNP14A1",
+      "version": "002",
+      "collection_id": "C2545314541-LPCLOUD",
+      "purpose": "750m-band-derived daily 1km fire/coverage sensitivity proxy, NOT equivalent to 375m detection completeness",
+      "query_url": "https://cmr.earthdata.nasa.gov/search/granules.json?collection_concept_id=C2545314541-LPCLOUD&bounding_box=35%2C33%2C36.7%2C34.75&page_size=8&sort_key%5B%5D=start_date&temporal=2019-08-01T00%3A00%3A00Z%2C2019-08-17T00%3A00%3A00Z",
+      "samples": [
+        {
+          "concept_id": "G2601656247-LPCLOUD",
+          "name": "VNP14A1.A2019213.h21v05.002.2022356071123",
+          "observation_start": "2019-08-01T00:00:00.000Z",
+          "observation_end": "2019-08-01T23:59:00.000Z",
+          "catalog_updated_at": "2022-12-23T08:26:11.900Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14A1.002/VNP14A1.A2019213.h21v05.002.2022356071123/VNP14A1.A2019213.h21v05.002.2022356071123.h5",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2601656909-LPCLOUD",
+          "name": "VNP14A1.A2019213.h20v05.002.2022356070842",
+          "observation_start": "2019-08-01T00:00:00.000Z",
+          "observation_end": "2019-08-01T23:59:00.000Z",
+          "catalog_updated_at": "2022-12-23T08:26:32.099Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14A1.002/VNP14A1.A2019213.h20v05.002.2022356070842/VNP14A1.A2019213.h20v05.002.2022356070842.h5",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2601657460-LPCLOUD",
+          "name": "VNP14A1.A2019214.h20v05.002.2022356093606",
+          "observation_start": "2019-08-02T00:00:00.000Z",
+          "observation_end": "2019-08-02T23:59:00.000Z",
+          "catalog_updated_at": "2022-12-23T10:50:00.578Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14A1.002/VNP14A1.A2019214.h20v05.002.2022356093606/VNP14A1.A2019214.h20v05.002.2022356093606.h5",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2601657850-LPCLOUD",
+          "name": "VNP14A1.A2019214.h21v05.002.2022356094950",
+          "observation_start": "2019-08-02T00:00:00.000Z",
+          "observation_end": "2019-08-02T23:59:00.000Z",
+          "catalog_updated_at": "2022-12-23T10:54:21.498Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14A1.002/VNP14A1.A2019214.h21v05.002.2022356094950/VNP14A1.A2019214.h21v05.002.2022356094950.h5",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2601660032-LPCLOUD",
+          "name": "VNP14A1.A2019215.h21v05.002.2022356122304",
+          "observation_start": "2019-08-03T00:00:00.000Z",
+          "observation_end": "2019-08-03T23:59:00.000Z",
+          "catalog_updated_at": "2022-12-23T13:46:43.178Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14A1.002/VNP14A1.A2019215.h21v05.002.2022356122304/VNP14A1.A2019215.h21v05.002.2022356122304.h5",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2601660056-LPCLOUD",
+          "name": "VNP14A1.A2019215.h20v05.002.2022356122305",
+          "observation_start": "2019-08-03T00:00:00.000Z",
+          "observation_end": "2019-08-03T23:59:00.000Z",
+          "catalog_updated_at": "2022-12-23T13:46:33.116Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14A1.002/VNP14A1.A2019215.h20v05.002.2022356122305/VNP14A1.A2019215.h20v05.002.2022356122305.h5",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2601660525-LPCLOUD",
+          "name": "VNP14A1.A2019216.h21v05.002.2022356144114",
+          "observation_start": "2019-08-04T00:00:00.000Z",
+          "observation_end": "2019-08-04T23:59:00.000Z",
+          "catalog_updated_at": "2022-12-23T15:38:03.838Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14A1.002/VNP14A1.A2019216.h21v05.002.2022356144114/VNP14A1.A2019216.h21v05.002.2022356144114.h5",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2601661294-LPCLOUD",
+          "name": "VNP14A1.A2019216.h20v05.002.2022356144111",
+          "observation_start": "2019-08-04T00:00:00.000Z",
+          "observation_end": "2019-08-04T23:59:00.000Z",
+          "catalog_updated_at": "2022-12-23T15:38:13.856Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14A1.002/VNP14A1.A2019216.h20v05.002.2022356144111/VNP14A1.A2019216.h20v05.002.2022356144111.h5",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        }
+      ],
+      "status": "metadata discovered; raster download requires authenticated access"
+    },
+    {
+      "product": "MCD12Q1",
+      "version": "061",
+      "collection_id": "C2484079608-LPCLOUD",
+      "purpose": "annual land cover and quality; use publication time, not just nominal year",
+      "query_url": "https://cmr.earthdata.nasa.gov/search/granules.json?collection_concept_id=C2484079608-LPCLOUD&bounding_box=35%2C33%2C36.7%2C34.75&page_size=8&sort_key%5B%5D=start_date&temporal=2019-08-01T00%3A00%3A00Z%2C2019-08-17T00%3A00%3A00Z",
+      "samples": [
+        {
+          "concept_id": "G2484176211-LPCLOUD",
+          "name": "MCD12Q1.A2019001.h21v05.061.2022169193259",
+          "observation_start": "2019-01-01T00:00:00.000Z",
+          "observation_end": "2019-12-31T23:59:59.000Z",
+          "catalog_updated_at": "2022-06-19T01:44:17.770Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MCD12Q1.061/MCD12Q1.A2019001.h21v05.061.2022169193259/MCD12Q1.A2019001.h21v05.061.2022169193259.hdf",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2484176255-LPCLOUD",
+          "name": "MCD12Q1.A2019001.h20v05.061.2022169180558",
+          "observation_start": "2019-01-01T00:00:00.000Z",
+          "observation_end": "2019-12-31T23:59:59.000Z",
+          "catalog_updated_at": "2022-06-18T22:49:56.976Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MCD12Q1.061/MCD12Q1.A2019001.h20v05.061.2022169180558/MCD12Q1.A2019001.h20v05.061.2022169180558.hdf",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        }
+      ],
+      "status": "metadata discovered; raster download requires authenticated access"
+    },
+    {
+      "product": "MOD13Q1",
+      "version": "061",
+      "collection_id": "C1748066515-LPCLOUD",
+      "purpose": "NDVI/EVI plus QA; composite interval and production/publication times matter",
+      "query_url": "https://cmr.earthdata.nasa.gov/search/granules.json?collection_concept_id=C1748066515-LPCLOUD&bounding_box=35%2C33%2C36.7%2C34.75&page_size=8&sort_key%5B%5D=start_date&temporal=2019-08-01T00%3A00%3A00Z%2C2019-08-17T00%3A00%3A00Z",
+      "samples": [
+        {
+          "concept_id": "G2192884482-LPCLOUD",
+          "name": "MOD13Q1.A2019209.h20v05.061.2020304165641",
+          "observation_start": "2019-07-28T00:00:00.000Z",
+          "observation_end": "2019-08-12T23:59:59.000Z",
+          "catalog_updated_at": "2020-10-31T07:11:39.444Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD13Q1.061/MOD13Q1.A2019209.h20v05.061.2020304165641/MOD13Q1.A2019209.h20v05.061.2020304165641.hdf",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2192888531-LPCLOUD",
+          "name": "MOD13Q1.A2019209.h21v05.061.2020304171438",
+          "observation_start": "2019-07-28T00:00:00.000Z",
+          "observation_end": "2019-08-12T23:59:59.000Z",
+          "catalog_updated_at": "2020-10-31T07:43:13.783Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD13Q1.061/MOD13Q1.A2019209.h21v05.061.2020304171438/MOD13Q1.A2019209.h21v05.061.2020304171438.hdf",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2192890307-LPCLOUD",
+          "name": "MOD13Q1.A2019225.h20v05.061.2020306130944",
+          "observation_start": "2019-08-13T00:00:00.000Z",
+          "observation_end": "2019-08-28T23:59:59.000Z",
+          "catalog_updated_at": "2020-11-01T13:17:42.428Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD13Q1.061/MOD13Q1.A2019225.h20v05.061.2020306130944/MOD13Q1.A2019225.h20v05.061.2020306130944.hdf",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2192893463-LPCLOUD",
+          "name": "MOD13Q1.A2019225.h21v05.061.2020306134823",
+          "observation_start": "2019-08-13T00:00:00.000Z",
+          "observation_end": "2019-08-28T23:59:59.000Z",
+          "catalog_updated_at": "2020-11-01T14:17:42.717Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD13Q1.061/MOD13Q1.A2019225.h21v05.061.2020306134823/MOD13Q1.A2019225.h21v05.061.2020306134823.hdf",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        }
+      ],
+      "status": "metadata discovered; raster download requires authenticated access"
+    },
+    {
+      "product": "SRTMGL1",
+      "version": "003",
+      "collection_id": "C2763266360-LPCLOUD",
+      "purpose": "elevation; projected slope/aspect derivation required",
+      "query_url": "https://cmr.earthdata.nasa.gov/search/granules.json?collection_concept_id=C2763266360-LPCLOUD&bounding_box=35%2C33%2C36.7%2C34.75&page_size=8&sort_key%5B%5D=start_date",
+      "samples": [
+        {
+          "concept_id": "G2821053669-LPCLOUD",
+          "name": "N34E035.SRTMGL1.hgt",
+          "observation_start": "2000-02-11T00:00:00.000Z",
+          "observation_end": "2000-02-21T23:59:59.000Z",
+          "catalog_updated_at": "2019-10-23T11:53:43.843Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N34E035.SRTMGL1.hgt/N34E035.SRTMGL1.hgt.zip",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2821053699-LPCLOUD",
+          "name": "N33E035.SRTMGL1.hgt",
+          "observation_start": "2000-02-11T00:00:00.000Z",
+          "observation_end": "2000-02-21T23:59:59.000Z",
+          "catalog_updated_at": "2019-10-23T11:53:44.445Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N33E035.SRTMGL1.hgt/N33E035.SRTMGL1.hgt.zip",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2821053739-LPCLOUD",
+          "name": "N33E036.SRTMGL1.hgt",
+          "observation_start": "2000-02-11T00:00:00.000Z",
+          "observation_end": "2000-02-21T23:59:59.000Z",
+          "catalog_updated_at": "2019-10-23T11:53:30.684Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N33E036.SRTMGL1.hgt/N33E036.SRTMGL1.hgt.zip",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2821053791-LPCLOUD",
+          "name": "N34E034.SRTMGL1.hgt",
+          "observation_start": "2000-02-11T00:00:00.000Z",
+          "observation_end": "2000-02-21T23:59:59.000Z",
+          "catalog_updated_at": "2019-10-23T11:53:26.605Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N34E034.SRTMGL1.hgt/N34E034.SRTMGL1.hgt.zip",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2821053820-LPCLOUD",
+          "name": "N32E036.SRTMGL1.hgt",
+          "observation_start": "2000-02-11T00:00:00.000Z",
+          "observation_end": "2000-02-21T23:59:59.000Z",
+          "catalog_updated_at": "2019-10-23T11:53:05.263Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N32E036.SRTMGL1.hgt/N32E036.SRTMGL1.hgt.zip",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2821054038-LPCLOUD",
+          "name": "N32E034.SRTMGL1.hgt",
+          "observation_start": "2000-02-11T00:00:00.000Z",
+          "observation_end": "2000-02-21T23:59:59.000Z",
+          "catalog_updated_at": "2019-10-23T11:53:20.284Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N32E034.SRTMGL1.hgt/N32E034.SRTMGL1.hgt.zip",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2821054163-LPCLOUD",
+          "name": "N32E035.SRTMGL1.hgt",
+          "observation_start": "2000-02-11T00:00:00.000Z",
+          "observation_end": "2000-02-21T23:59:59.000Z",
+          "catalog_updated_at": "2019-10-23T11:53:08.560Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N32E035.SRTMGL1.hgt/N32E035.SRTMGL1.hgt.zip",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        },
+        {
+          "concept_id": "G2821054177-LPCLOUD",
+          "name": "N34E036.SRTMGL1.hgt",
+          "observation_start": "2000-02-11T00:00:00.000Z",
+          "observation_end": "2000-02-21T23:59:59.000Z",
+          "catalog_updated_at": "2019-10-23T11:53:25.301Z",
+          "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N34E036.SRTMGL1.hgt/N34E036.SRTMGL1.hgt.zip",
+          "publication_available_at": null,
+          "availability_note": "Catalog update time is not proof of historical dissemination time"
+        }
+      ],
+      "status": "metadata discovered; raster download requires authenticated access"
+    }
+  ],
+  "authentication": "Set EARTHDATA_TOKEN securely in environment; never put it in notebooks, configs or chat",
+  "coverage_warning": "A daily composite or clear pixel is not continuous 24-hour fire observability; swath QA and incident detectability remain limitations",
+  "historical_snapshot_note": "Initial stage evidence only; see current-results.json and production-status.json for completed actual acquisition and real training."
+}

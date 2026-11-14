@@ -1,0 +1,204 @@
+{
+  "generated_at": "2026-11-14T17:12:46.957919+00:00",
+  "config": {
+    "start": "20120101",
+    "end": "20251231",
+    "latitudes": [
+      33.5,
+      34.5
+    ],
+    "longitudes": [
+      35.5,
+      36.5
+    ],
+    "purpose": "NASA SYN1DEG/POWER daily cloud context over bounding area, not overpass cloud masks"
+  },
+  "files": [
+    {
+      "file": "/workspace/work/nasa-harmonization/forecasting/data/nasa-clouds/raw/cloud_33.5_35.5_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=CLOUD_AMT%2CCLOUD_AMT_DAY%2CCLOUD_AMT_NIGHT&community=AG&latitude=33.5&longitude=35.5&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "sha256": "f9be7128158b4153a40562a2c559c2a2f6f930c8253f5d1d34b6cb2511c4c43f",
+      "point": [
+        33.5,
+        35.5
+      ],
+      "point_days": 5114,
+      "missing": {
+        "CLOUD_AMT": 0,
+        "CLOUD_AMT_DAY": 0,
+        "CLOUD_AMT_NIGHT": 0
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "SYN1DEG",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "parameters": {
+        "CLOUD_AMT": {
+          "units": "%",
+          "longname": "Cloud Amount"
+        },
+        "CLOUD_AMT_DAY": {
+          "units": "%",
+          "longname": "Cloud Amount at Daytime"
+        },
+        "CLOUD_AMT_NIGHT": {
+          "units": "%",
+          "longname": "Cloud Amount at Nighttime"
+        }
+      }
+    },
+    {
+      "file": "/workspace/work/nasa-harmonization/forecasting/data/nasa-clouds/raw/cloud_33.5_36.5_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=CLOUD_AMT%2CCLOUD_AMT_DAY%2CCLOUD_AMT_NIGHT&community=AG&latitude=33.5&longitude=36.5&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "sha256": "50dd5b66aad20eb4ed43bff6a9f390e05ad83a12a6d77acb9994dd775a5882ac",
+      "point": [
+        33.5,
+        36.5
+      ],
+      "point_days": 5114,
+      "missing": {
+        "CLOUD_AMT": 0,
+        "CLOUD_AMT_DAY": 0,
+        "CLOUD_AMT_NIGHT": 0
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "SYN1DEG",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "parameters": {
+        "CLOUD_AMT": {
+          "units": "%",
+          "longname": "Cloud Amount"
+        },
+        "CLOUD_AMT_DAY": {
+          "units": "%",
+          "longname": "Cloud Amount at Daytime"
+        },
+        "CLOUD_AMT_NIGHT": {
+          "units": "%",
+          "longname": "Cloud Amount at Nighttime"
+        }
+      }
+    },
+    {
+      "file": "/workspace/work/nasa-harmonization/forecasting/data/nasa-clouds/raw/cloud_34.5_35.5_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=CLOUD_AMT%2CCLOUD_AMT_DAY%2CCLOUD_AMT_NIGHT&community=AG&latitude=34.5&longitude=35.5&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "sha256": "34a8e807b8c0b610da62e1a65028616afbdeda7de38d023fcbcbe28b5de6381f",
+      "point": [
+        34.5,
+        35.5
+      ],
+      "point_days": 5114,
+      "missing": {
+        "CLOUD_AMT": 0,
+        "CLOUD_AMT_DAY": 0,
+        "CLOUD_AMT_NIGHT": 0
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "SYN1DEG",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "parameters": {
+        "CLOUD_AMT": {
+          "units": "%",
+          "longname": "Cloud Amount"
+        },
+        "CLOUD_AMT_DAY": {
+          "units": "%",
+          "longname": "Cloud Amount at Daytime"
+        },
+        "CLOUD_AMT_NIGHT": {
+          "units": "%",
+          "longname": "Cloud Amount at Nighttime"
+        }
+      }
+    },
+    {
+      "file": "/workspace/work/nasa-harmonization/forecasting/data/nasa-clouds/raw/cloud_34.5_36.5_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=CLOUD_AMT%2CCLOUD_AMT_DAY%2CCLOUD_AMT_NIGHT&community=AG&latitude=34.5&longitude=36.5&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "sha256": "326816089f9042d6d5560a01572b5824cc077e89cee1bfc11038036f25d42816",
+      "point": [
+        34.5,
+        36.5
+      ],
+      "point_days": 5114,
+      "missing": {
+        "CLOUD_AMT": 0,
+        "CLOUD_AMT_DAY": 0,
+        "CLOUD_AMT_NIGHT": 0
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "SYN1DEG",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "parameters": {
+        "CLOUD_AMT": {
+          "units": "%",
+          "longname": "Cloud Amount"
+        },
+        "CLOUD_AMT_DAY": {
+          "units": "%",
+          "longname": "Cloud Amount at Daytime"
+        },
+        "CLOUD_AMT_NIGHT": {
+          "units": "%",
+          "longname": "Cloud Amount at Nighttime"
+        }
+      }
+    }
+  ],
+  "failures": [],
+  "point_days": 20456,
+  "coverage_evidence_qualified": false,
+  "purpose": "Historical cloud context; not a cloud forecast, full satellite mask, or negative-label authorization",
+  "limitations": [
+    "Daily total/day/night percentages do not identify cloud at each fire-satellite overpass",
+    "POWER SYN1DEG is coarse; nearby requests need not be independent cloud observations",
+    "Historical availability/latency is not established by observation date",
+    "Missing values remain missing"
+  ]
+}
