@@ -1,3 +1,5 @@
+> Earlier Lebanon-only stage. The latest completed experiment is [global pretraining and Lebanon adaptation](global-results.md), including conflict exclusions and 2026 comparisons.
+
 # Delivery report
 
 The current report is [actual real-data results](current-results.md). Earlier fixture-only reports have been superseded.

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-14T18:56:08.270553+00:00",
+  "generated_at": "2026-11-14T22:11:13.038743+00:00",
   "nasa_data": {
     "firms_detections": 17946,
     "power_weather_point_days": 61368,
@@ -20,7 +20,7 @@
   ],
   "synthetic_demonstration_separate": true,
   "tests": {
-    "passed": 49,
+    "passed": 74,
     "warnings": [
       "Starlette test-client HTTPX deprecation"
     ]
@@ -45,7 +45,9 @@
     "historical_feature_availability",
     "issued_forecast_backtest",
     "independent_incident_split_review",
-    "calibration_review"
+    "calibration_review",
+    "test_sample_size",
+    "test_span"
   ],
   "externally_deployed": false,
   "github_pushed": false,
@@ -58,5 +60,36 @@
     "Regional and buffered geographic generalization experiments",
     "Full time-varying vegetation and authoritative non-target incident/facility adjudication"
   ],
-  "publication_status_note": "This validation snapshot predates the user-requested branch publication; github_pushed describes the snapshot time."
+  "publication_status_note": "This validation snapshot predates the user-requested branch publication; github_pushed describes the snapshot time.",
+  "historical_note": "Earlier local-only validation details are retained; global_extension is the latest completed stage.",
+  "global_extension": {
+    "completed": true,
+    "model_architecture_groups": 8,
+    "algorithm_types": 6,
+    "neural_architectures": 3,
+    "validation_candidates": 89,
+    "frozen_stage_winners": 58,
+    "conservative_sensitivity_controls": 9,
+    "initial_global_fit_windows": 401767,
+    "initial_global_positive_windows": 5769,
+    "recent_global_fit_windows": 949823,
+    "recent_global_positive_windows": 12903,
+    "recent_lebanon_fit_windows": 260804,
+    "recent_lebanon_positive_windows": 428,
+    "sampled_global_panels": 24,
+    "global_geographic_holdout_panels": 6,
+    "exhaustive_global_coverage": false,
+    "conflict_excluded_cells": 32,
+    "conflict_cutoff_utc": "2023-10-07T00:00:00Z",
+    "new_global_2026_confirmation": true,
+    "new_independent_lebanon_2026_confirmation_for_refit": false,
+    "lebanon_2026_qualified_windows": 24237,
+    "lebanon_2026_positive_windows": 15,
+    "notebooks_07_08_executed": true,
+    "latest_container_build_and_smoke_repeated": false,
+    "direct_service_validation": "global-service-validation.json",
+    "report": "global-results.md",
+    "release": "global-release.json"
+  },
+  "operational_model_validated": false
 }

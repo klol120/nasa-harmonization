@@ -1,10 +1,10 @@
 # Lebanon satellite-detected vegetation-fire occurrence
 
-**Real NASA data have been downloaded, transformed, trained and evaluated. The model is a retrospective research model; production release is blocked.** Read the [actual results](docs/current-results.md), [complete statecharts](docs/statecharts.md), [source ledger](docs/sources.md) and [decisions](../decisions.md).
+**Completed: global NASA pretraining, Lebanon adaptation, multi-algorithm benchmarks and southern-conflict exclusions. Production release remains blocked.** Read the [latest global results](docs/global-results.md), [global statecharts](docs/global-statecharts.md), [source ledger](docs/sources.md) and [decisions](../decisions.md). The [earlier Lebanon-only results](docs/current-results.md) remain a historical baseline.
 
 Estimate whether vegetation-associated fire will be **detected by the configured satellite product** in an eligible Lebanese grid cell during the next 24-hour UTC window. This includes continuing fires and agricultural burning. It does not predict fire spread, damage or whether fire will reach infrastructure. It is not an emergency warning system.
 
-## Actual completed run
+## Original Lebanon-only baseline
 
 * 17,946 NASA FIRMS MODIS/VIIRS detections, 2000–2025, preserved with original sensor/version fields.
 * 10,119 S-NPP VNP14A1 daily tiles, 2012–2025; separate 5,825 NOAA-20 VJ114A1 daily tiles, 2018–2025.
@@ -82,3 +82,97 @@ uv run --frozen firecast predict --model outputs/demo/model.joblib --input outpu
 ```
 
 [Current results](docs/current-results.md) list remaining scientific work, tested behavior and evidence limitations. [Initial plan review](docs/plan-review.md) explains why monthly exports, naive negatives and immediate deep learning were unsuitable.
+
+## Global pretraining and Lebanon adaptation
+
+The completed global experiment is implemented under `global_acquire.py`, `global_weather.py`,
+`global_data.py`, `transfer_models.py` and `benchmark_global.py`. Its fixed design is
+`configs/global-benchmark.json`; [global statecharts](docs/global-statecharts.md)
+explain scientific subsetting, algorithms, genuine neural weight continuation,
+calibration/ensembling, conflict exclusions and the sealed confirmation gate.
+
+`configs/conflict-review.json` implements the user's later instruction to quarantine
+South and El Nabatieh from 2023-10-07 onward. The boundary geometry is CDR/OCHA HDX
+CC BY-IGO, used solely for historical label/evaluation quality; it is not a model
+predictor. Environmental inputs remain NASA-only. A full strike catalogue has not
+been obtained; other Lebanese areas may still contain conflict-related detections.
+
+To restore the inactive S-NPP cache after lossless disk compaction:
+
+```sh
+uv run --frozen python -m firecast.cache_pack restore --raw data/gridded-fire/raw --packed data/gridded-fire/packed-raw
+```
+
+Both archive/member hashes are verified. Packed copies are retained. Ensure enough
+free disk for restoration; all original science files and provenance bytes are
+recoverable. This operation is unnecessary for the active NOAA-20/global benchmark.
+
+The benchmark measured 89 validation candidates in eight model/architecture groups
+and retained 58 stage winners, plus nine conservative-policy controls. The latest
+fixed refit used 949,823 global / 260,804 Lebanese fitting windows. Its transfer
+approach did not beat the matching local-only control on the 15-positive Lebanese
+2026 fold. See [results and limitations](docs/global-results.md); none of these
+artifacts is approved for production.
+
+Run the following after the original Lebanese data preparation. Paths are relative
+to `forecasting/`; `EARTHDATA_TOKEN_FILE` contains a path, never the token value:
+
+```sh
+uv run --frozen python -m firecast.conflict_review --config configs/conflict-review.json --out data/conflict-review
+uv run --frozen python -m firecast.global_acquire --config configs/global-benchmark.json --out data/global-panel --token-file "$EARTHDATA_TOKEN_FILE" --environment data/environment --existing-archive data/gridded-noaa20
+uv run --frozen python -m firecast.global_weather --config configs/global-benchmark.json --out data/global-weather
+uv run --frozen python -m firecast.lebanon_confirmation --config configs/global-benchmark.json --maps outputs/noaa20-real --out data/lebanon-2026-masks --token-file "$EARTHDATA_TOKEN_FILE"
+uv run --frozen python -m firecast.global_weather --config configs/global-benchmark.json --out data/lebanon-2026-weather --lebanon-data data/nasa-lebanon
+uv run --frozen python -m firecast.global_data --config configs/global-benchmark.json --archive data/global-panel --weather data/global-weather/weather.csv.gz --old-data outputs/noaa20-real --confirmation-masks data/lebanon-2026-masks --old-weather data/nasa-lebanon/weather_historical.csv --new-weather data/lebanon-2026-weather/weather.csv.gz --conflict-config configs/conflict-review.json --conflict-geometry data/conflict-review/southern_governorates.geojson --out outputs/global-transfer-data
+uv run --frozen python -m firecast.benchmark_global --data outputs/global-transfer-data --out outputs/global-transfer-benchmark
+```
+
+The trainer freezes all choices before opening confirmation files. Those outcomes
+are now known; reproducing the experiment does not produce a new untouched test.
+Use versioned output directories when changing data/design. Full raw caches with
+manifests support offline preparation/training; credentials are needed for new
+protected downloads, not for fitting already prepared datasets.
+
+For the fixed recent-data refit, capture the **current run's** validation selection
+instead of copying the checked-in snapshot's original commit/selection hash:
+
+```sh
+uv run --frozen python -m firecast.refit_transfer freeze-protocol --benchmark outputs/global-transfer-benchmark --out outputs/reproduced-refit-protocol.json
+uv run --frozen python -m firecast.global_acquire --config configs/global-confirmation-2026.json --out data/global-panel-2026 --token-file "$EARTHDATA_TOKEN_FILE" --environment data/environment --existing-archive data/gridded-noaa20 --stage fire --reuse-static-from data/global-panel
+uv run --frozen python -m firecast.global_weather --config configs/global-confirmation-2026.json --out data/global-2026-weather
+uv run --frozen python -c "from firecast.refit_transfer import prepare_fresh; prepare_fresh('configs/global-confirmation-2026.json', 'data/global-panel-2026', 'data/global-2026-weather/weather.csv.gz', 'outputs/global-2026-confirmation-data')"
+uv run --frozen python -m firecast.refit_transfer --data outputs/global-transfer-data --benchmark outputs/global-transfer-benchmark --fresh-data outputs/global-2026-confirmation-data --protocol outputs/reproduced-refit-protocol.json --out outputs/global-final-refit --environment data/environment
+```
+
+Static raw array reuse shares immutable scientific bytes and copies mutable
+metadata. The refit is selected from 2022 validation, fits through 2024 and
+calibrates on 2025. Its 2023–2025 source data are training/calibration data, not a
+held-out temporal test. Global 2026 was newly held out for the original refit;
+Lebanese 2026 is explicitly a repeated fixed-fold comparison.
+
+The actual future-window research interface adds the same history features, then
+uses the country-view artifact with southern scope suppression:
+
+```sh
+uv run --frozen python -m firecast.transfer_forecast --input data/live-forecast-features/forecast-features.csv --out data/transfer-live-forecast
+uv run --frozen firecast predict --model outputs/global-final-refit/lebanon-view-research.joblib --input data/transfer-live-forecast/forecast-features.csv --out outputs/global-final-refit/live-research-risk
+uv run --frozen python -m firecast.publish_global --root .
+```
+
+The fixed 2026-11-15 example requires cached forecast/history evidence after its
+prediction time passes. For a different future date collect a matching complete
+GEOS window first; never backdate retrieval or fill unavailable recent history.
+Notebooks `07_global_data_and_conflict_quality.ipynb` and
+`08_global_transfer_and_confirmation.ipynb` execute the actual raw-quality and
+frozen-evaluation paths. Generated models/large scientific subsets stay git-ignored.
+
+Optional independent source audit:
+
+```sh
+uv run --frozen python scripts/audit_land_qa.py --out outputs/land-qa-audit.json
+```
+
+If the managed environment's home cache is read-only, set `UV_CACHE_DIR` to a
+writable directory before `uv lock` / `uv sync`. The lock was updated only to
+declare SciPy directly and require neural sample-weight support; fitted runtime
+library versions were preserved.

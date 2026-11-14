@@ -35,17 +35,23 @@ def predict_frame(artifact,frame,location=None,strict_domain=False):
             if pd.isna(r[col]) or r[col]>t: flags.append(f'unavailable_{col}')
         if any(pd.isna(r[c]) for c in time_columns): flags.append('missing_timestamp')
         if not np.isfinite(r[artifact['features']].to_numpy(dtype=float)).all(): flags.append('missing_input')
-        if r.region!='lebanon': flags.append('outside_validated_region')
+        if r.region not in artifact.get('validated_regions',['lebanon']): flags.append('outside_validated_region')
         if any(r[c]<lo or r[c]>hi for c,(lo,hi) in artifact['bounds'].items()): flags.append('outside_training_feature_range')
         if 'ndvi' in artifact['features'] and (t-r.environment_observed_at)>pd.Timedelta(days=60): flags.append('vegetation_older_than_60_days')
         if 'validated_cells' in artifact and r.cell_id not in artifact['validated_cells']:flags.append('outside_validated_cell_grid')
         if 'validated_products' in artifact and r.get('observation_product') not in artifact['validated_products']:flags.append('outside_validated_observation_product')
         if 'validated_weather_sources' in artifact and r.get('weather_source') not in artifact['validated_weather_sources']:flags.append('outside_validated_weather_source')
         if 'analysis_geometry' in artifact and not shape(artifact['analysis_geometry']).covers(Point(r.lon,r.lat)):flags.append('outside_country_geometry')
+        for exclusion in artifact.get('evaluation_exclusions',[]):
+            if r.cell_id in exclusion['cell_ids'] and end>pd.Timestamp(exclusion['start']) and (not exclusion.get('end_exclusive') or t<pd.Timestamp(exclusion['end_exclusive'])):
+                flags.append('outside_conflict_filtered_evaluation_scope')
         fatal=any(s.startswith(('forecast_','unavailable_','missing_')) for s in flags)
         if 'outside_country_geometry' in flags or 'outside_validated_observation_product' in flags:fatal=True
+        if artifact.get('withhold_evaluation_exclusions') and 'outside_conflict_filtered_evaluation_scope' in flags:fatal=True
         if strict_domain and flags:fatal=True
-        p=None if fatal else float(artifact['model'].predict_proba(pd.DataFrame([r])[artifact['features']])[0,1])
+        model_input=pd.DataFrame([r])
+        if not artifact.get('model_accepts_full_frame',False):model_input=model_input[artifact['features']]
+        p=None if fatal else float(artifact['model'].predict_proba(model_input)[0,1])
         if config['synthetic']: flags.append('SYNTHETIC_MODEL_NOT_VALIDATED')
         if config['mode']=='retrospective': flags.append('RETROSPECTIVE_MODEL_NOT_OPERATIONALLY_VALIDATED')
         if config.get('prediction_scope'):flags.append('COVERAGE_CONDITIONAL_RESEARCH_ESTIMATE')

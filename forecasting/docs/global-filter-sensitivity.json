@@ -1,0 +1,1955 @@
+{
+  "primary_policy_selected_here": false,
+  "policy": "conservative",
+  "selection_sha256": "3f23e68794ece00956c6ee35e59262bdeaf6a9e6c2ef93987e6046ff1ed39a53",
+  "results": [
+    {
+      "id": "conservative-seasonal-global",
+      "policy": "conservative",
+      "family": "seasonal",
+      "stage": "global",
+      "parameters": {},
+      "global_validation": {
+        "observations": 133432,
+        "positive_windows": 2019,
+        "pr_auc_average_precision": 0.04940018739975344,
+        "precision": 0.05967196375007978,
+        "recall": 0.4631005448241704,
+        "f1": 0.10572139303482588,
+        "brier": 0.014575769833431368,
+        "threshold": 0.054183267056941986,
+        "confusion_matrix_tn_fp_fn_tp": [
+          116679,
+          14734,
+          1084,
+          935
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 133432,
+            "mean_probability": 0.0153757807805023,
+            "observed_fraction": 0.015131302835901432
+          }
+        ],
+        "prevalence": 0.015131303109228611,
+        "mean_probability": 0.0153757807805023,
+        "start": "2022-01-22 00:00:00+00:00",
+        "end": "2022-12-14 00:00:00+00:00",
+        "site_macro_average_precision": 0.03377387815254752,
+        "sites_with_defined_average_precision": 17
+      },
+      "threshold_global": 0.054183267056941986,
+      "lebanon_validation": {
+        "observations": 38667,
+        "positive_windows": 40,
+        "pr_auc_average_precision": 0.0007684884087145413,
+        "precision": 0.0010344738407427523,
+        "recall": 1.0,
+        "f1": 0.0020668096209987856,
+        "brier": 0.00108780725590734,
+        "threshold": 0.001404698472470045,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          38627,
+          0,
+          40
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 38667,
+            "mean_probability": 0.006382464350186834,
+            "observed_fraction": 0.0010344738407427523
+          }
+        ],
+        "prevalence": 0.0010344738839194179,
+        "mean_probability": 0.006382464350186834,
+        "start": "2022-01-08 00:00:00+00:00",
+        "end": "2022-12-24 00:00:00+00:00",
+        "site_macro_average_precision": 0.0007684884087145413,
+        "sites_with_defined_average_precision": 1
+      },
+      "threshold_lebanon": 0.001404698472470045,
+      "confirmation": {
+        "global_temporal": {
+          "observations": 413817,
+          "positive_windows": 5226,
+          "pr_auc_average_precision": 0.04787965704716332,
+          "precision": 0.05457247062001891,
+          "recall": 0.46383467278989665,
+          "f1": 0.09765530577713319,
+          "brier": 0.012201159762020814,
+          "threshold": 0.054183267056941986,
+          "confusion_matrix_tn_fp_fn_tp": [
+            366597,
+            41994,
+            2802,
+            2424
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 413817,
+              "mean_probability": 0.014784770866880407,
+              "observed_fraction": 0.01262877068849274
+            }
+          ],
+          "prevalence": 0.012628770433366299,
+          "mean_probability": 0.014784770866880407,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.028639829572860306,
+          "sites_with_defined_average_precision": 17
+        },
+        "global_geographic": {
+          "observations": 119788,
+          "positive_windows": 1518,
+          "pr_auc_average_precision": 0.03054287772032141,
+          "precision": 0.035488450122596465,
+          "recall": 0.5434782608695652,
+          "f1": 0.06662628709872805,
+          "brier": 0.01254681937880507,
+          "threshold": 0.054183267056941986,
+          "confusion_matrix_tn_fp_fn_tp": [
+            95848,
+            22422,
+            693,
+            825
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 119788,
+              "mean_probability": 0.02064796886220925,
+              "observed_fraction": 0.012672387885263967
+            }
+          ],
+          "prevalence": 0.01267238799482584,
+          "mean_probability": 0.02064796886220925,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.020073254799916857,
+          "sites_with_defined_average_precision": 6
+        },
+        "lebanon_known_benchmark": {
+          "observations": 96060,
+          "positive_windows": 180,
+          "pr_auc_average_precision": 0.001305674887598096,
+          "precision": 0.0018738288569643974,
+          "recall": 1.0,
+          "f1": 0.003740648379052369,
+          "brier": 0.0019285550354271824,
+          "threshold": 0.001404698472470045,
+          "confusion_matrix_tn_fp_fn_tp": [
+            0,
+            95880,
+            0,
+            180
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 96060,
+              "mean_probability": 0.006671075302957564,
+              "observed_fraction": 0.0018738288569643974
+            }
+          ],
+          "prevalence": 0.0018738288199529052,
+          "mean_probability": 0.006671075302957564,
+          "start": "2023-01-08 00:00:00+00:00",
+          "end": "2025-12-24 00:00:00+00:00",
+          "site_macro_average_precision": 0.001305674887598096,
+          "sites_with_defined_average_precision": 1
+        },
+        "lebanon_fresh_confirmation": {
+          "observations": 24237,
+          "positive_windows": 15,
+          "pr_auc_average_precision": 0.0005181753135859954,
+          "precision": 0.0006188884762965714,
+          "recall": 1.0,
+          "f1": 0.0012370113805047005,
+          "brier": 0.000689110337865737,
+          "threshold": 0.001404698472470045,
+          "confusion_matrix_tn_fp_fn_tp": [
+            0,
+            24222,
+            0,
+            15
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 24237,
+              "mean_probability": 0.00696722013882874,
+              "observed_fraction": 0.0006188884762965714
+            }
+          ],
+          "prevalence": 0.0006188884726725519,
+          "mean_probability": 0.00696722013882874,
+          "start": "2026-01-08 00:00:00+00:00",
+          "end": "2026-11-01 00:00:00+00:00",
+          "site_macro_average_precision": 0.0005181753135859954,
+          "sites_with_defined_average_precision": 1
+        }
+      }
+    },
+    {
+      "id": "conservative-seasonal-lebanon_only",
+      "policy": "conservative",
+      "family": "seasonal",
+      "stage": "lebanon_only",
+      "parameters": {},
+      "global_validation": {
+        "observations": 133432,
+        "positive_windows": 2019,
+        "pr_auc_average_precision": 0.018335799447300072,
+        "precision": 0.019388534105643274,
+        "recall": 0.79247152055473,
+        "f1": 0.03785100896595775,
+        "brier": 0.015080161019569976,
+        "threshold": 0.00221980269998312,
+        "confusion_matrix_tn_fp_fn_tp": [
+          50490,
+          80923,
+          419,
+          1600
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 133432,
+            "mean_probability": 0.0022568199371039415,
+            "observed_fraction": 0.015131302835901432
+          }
+        ],
+        "prevalence": 0.015131303109228611,
+        "mean_probability": 0.0022568199371039415,
+        "start": "2022-01-22 00:00:00+00:00",
+        "end": "2022-12-14 00:00:00+00:00",
+        "site_macro_average_precision": 0.015647790635552633,
+        "sites_with_defined_average_precision": 17
+      },
+      "threshold_global": 0.00221980269998312,
+      "lebanon_validation": {
+        "observations": 38667,
+        "positive_windows": 40,
+        "pr_auc_average_precision": 0.0017498770147656255,
+        "precision": 0.002145778850667203,
+        "recall": 0.8,
+        "f1": 0.004280077576406072,
+        "brier": 0.0010359581767335633,
+        "threshold": 0.0044974759221076965,
+        "confusion_matrix_tn_fp_fn_tp": [
+          23746,
+          14881,
+          8,
+          32
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 38667,
+            "mean_probability": 0.0023693832933925434,
+            "observed_fraction": 0.0010344738407427523
+          }
+        ],
+        "prevalence": 0.0010344738839194179,
+        "mean_probability": 0.0023693832933925434,
+        "start": "2022-01-08 00:00:00+00:00",
+        "end": "2022-12-24 00:00:00+00:00",
+        "site_macro_average_precision": 0.0017498770147656255,
+        "sites_with_defined_average_precision": 1
+      },
+      "threshold_lebanon": 0.0044974759221076965,
+      "confirmation": {
+        "global_temporal": {
+          "observations": 413817,
+          "positive_windows": 5226,
+          "pr_auc_average_precision": 0.015836470308340587,
+          "precision": 0.0166787845860066,
+          "recall": 0.7988901645618064,
+          "f1": 0.0326753905393983,
+          "brier": 0.012587058551961959,
+          "threshold": 0.00221980269998312,
+          "confusion_matrix_tn_fp_fn_tp": [
+            162448,
+            246143,
+            1051,
+            4175
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 413817,
+              "mean_probability": 0.0021712956083139454,
+              "observed_fraction": 0.01262877068849274
+            }
+          ],
+          "prevalence": 0.012628770433366299,
+          "mean_probability": 0.0021712956083139454,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.01253514314261211,
+          "sites_with_defined_average_precision": 17
+        },
+        "global_geographic": {
+          "observations": 119788,
+          "positive_windows": 1518,
+          "pr_auc_average_precision": 0.014915781884168961,
+          "precision": 0.014987634456661006,
+          "recall": 0.9940711462450593,
+          "f1": 0.02953004373734112,
+          "brier": 0.012622476192588251,
+          "threshold": 0.00221980269998312,
+          "confusion_matrix_tn_fp_fn_tp": [
+            19096,
+            99174,
+            9,
+            1509
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 119788,
+              "mean_probability": 0.0023184071566094157,
+              "observed_fraction": 0.012672387885263967
+            }
+          ],
+          "prevalence": 0.01267238799482584,
+          "mean_probability": 0.0023184071566094157,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.011255810551762141,
+          "sites_with_defined_average_precision": 6
+        },
+        "lebanon_known_benchmark": {
+          "observations": 96060,
+          "positive_windows": 180,
+          "pr_auc_average_precision": 0.0033553108545387386,
+          "precision": 0.0037363372741467766,
+          "recall": 0.7444444444444445,
+          "f1": 0.007435356786150261,
+          "brier": 0.0018684015528583112,
+          "threshold": 0.0044974759221076965,
+          "confusion_matrix_tn_fp_fn_tp": [
+            60150,
+            35730,
+            46,
+            134
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 96060,
+              "mean_probability": 0.0022947904375191525,
+              "observed_fraction": 0.0018738288569643974
+            }
+          ],
+          "prevalence": 0.0018738288199529052,
+          "mean_probability": 0.0022947904375191525,
+          "start": "2023-01-08 00:00:00+00:00",
+          "end": "2025-12-24 00:00:00+00:00",
+          "site_macro_average_precision": 0.0033553108545387386,
+          "sites_with_defined_average_precision": 1
+        },
+        "lebanon_fresh_confirmation": {
+          "observations": 24237,
+          "positive_windows": 15,
+          "pr_auc_average_precision": 0.0011194271330768788,
+          "precision": 0.001188734455010973,
+          "recall": 0.8666666666666667,
+          "f1": 0.0023742124006940007,
+          "brier": 0.0006248459555292804,
+          "threshold": 0.0044974759221076965,
+          "confusion_matrix_tn_fp_fn_tp": [
+            13299,
+            10923,
+            2,
+            13
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 24237,
+              "mean_probability": 0.002557531874159811,
+              "observed_fraction": 0.0006188884762965714
+            }
+          ],
+          "prevalence": 0.0006188884726725519,
+          "mean_probability": 0.002557531874159811,
+          "start": "2026-01-08 00:00:00+00:00",
+          "end": "2026-11-01 00:00:00+00:00",
+          "site_macro_average_precision": 0.0011194271330768788,
+          "sites_with_defined_average_precision": 1
+        }
+      }
+    },
+    {
+      "id": "conservative-seasonal-lebanon_calibration",
+      "policy": "conservative",
+      "family": "seasonal",
+      "stage": "lebanon_calibration",
+      "parameters": {},
+      "global_validation": {
+        "observations": 133432,
+        "positive_windows": 2019,
+        "pr_auc_average_precision": 0.009327485689199434,
+        "precision": 0.015131302835901432,
+        "recall": 1.0,
+        "f1": 0.029811518556525977,
+        "brier": 0.01512137817938236,
+        "threshold": 0.00012745813016040448,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          131413,
+          0,
+          2019
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 133432,
+            "mean_probability": 0.0024848908214870893,
+            "observed_fraction": 0.015131302835901432
+          }
+        ],
+        "prevalence": 0.015131303109228611,
+        "mean_probability": 0.0024848908214870893,
+        "start": "2022-01-22 00:00:00+00:00",
+        "end": "2022-12-14 00:00:00+00:00",
+        "site_macro_average_precision": 0.012554854586591856,
+        "sites_with_defined_average_precision": 17
+      },
+      "threshold_global": 0.00012745813016040448,
+      "lebanon_validation": {
+        "observations": 38667,
+        "positive_windows": 40,
+        "pr_auc_average_precision": 0.001808951162973273,
+        "precision": 0.002331002331002331,
+        "recall": 0.65,
+        "f1": 0.004645345720921922,
+        "brier": 0.0010425296923017508,
+        "threshold": 0.0034915142149239023,
+        "confusion_matrix_tn_fp_fn_tp": [
+          27499,
+          11128,
+          14,
+          26
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 38667,
+            "mean_probability": 0.003306814551272269,
+            "observed_fraction": 0.0010344738407427523
+          }
+        ],
+        "prevalence": 0.0010344738839194179,
+        "mean_probability": 0.003306814551272269,
+        "start": "2022-01-08 00:00:00+00:00",
+        "end": "2022-12-24 00:00:00+00:00",
+        "site_macro_average_precision": 0.001808951162973273,
+        "sites_with_defined_average_precision": 1
+      },
+      "threshold_lebanon": 0.0034915142149239023,
+      "confirmation": {
+        "global_temporal": {
+          "observations": 413817,
+          "positive_windows": 5226,
+          "pr_auc_average_precision": 0.007739012541416925,
+          "precision": 0.01262877068849274,
+          "recall": 1.0,
+          "f1": 0.024942547662173093,
+          "brier": 0.012621152977584945,
+          "threshold": 0.00012745813016040448,
+          "confusion_matrix_tn_fp_fn_tp": [
+            0,
+            408591,
+            0,
+            5226
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 413817,
+              "mean_probability": 0.002444945763022219,
+              "observed_fraction": 0.01262877068849274
+            }
+          ],
+          "prevalence": 0.012628770433366299,
+          "mean_probability": 0.002444945763022219,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.009958649052944121,
+          "sites_with_defined_average_precision": 17
+        },
+        "global_geographic": {
+          "observations": 119788,
+          "positive_windows": 1518,
+          "pr_auc_average_precision": 0.008369824886746377,
+          "precision": 0.012672387885263967,
+          "recall": 1.0,
+          "f1": 0.02502761611132178,
+          "brier": 0.012670902910164438,
+          "threshold": 0.00012745813016040448,
+          "confusion_matrix_tn_fp_fn_tp": [
+            0,
+            118270,
+            0,
+            1518
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 119788,
+              "mean_probability": 0.0021340472247158996,
+              "observed_fraction": 0.012672387885263967
+            }
+          ],
+          "prevalence": 0.01267238799482584,
+          "mean_probability": 0.0021340472247158996,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.008692110693596992,
+          "sites_with_defined_average_precision": 6
+        },
+        "lebanon_known_benchmark": {
+          "observations": 96060,
+          "positive_windows": 180,
+          "pr_auc_average_precision": 0.003499849299484937,
+          "precision": 0.003958023167144776,
+          "recall": 0.6055555555555555,
+          "f1": 0.007864641581586637,
+          "brier": 0.0018725532504008536,
+          "threshold": 0.0034915142149239023,
+          "confusion_matrix_tn_fp_fn_tp": [
+            68450,
+            27430,
+            71,
+            109
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 96060,
+              "mean_probability": 0.0032530889167547068,
+              "observed_fraction": 0.0018738288569643974
+            }
+          ],
+          "prevalence": 0.0018738288199529052,
+          "mean_probability": 0.0032530889167547068,
+          "start": "2023-01-08 00:00:00+00:00",
+          "end": "2025-12-24 00:00:00+00:00",
+          "site_macro_average_precision": 0.003499849299484937,
+          "sites_with_defined_average_precision": 1
+        },
+        "lebanon_fresh_confirmation": {
+          "observations": 24237,
+          "positive_windows": 15,
+          "pr_auc_average_precision": 0.0015911000661000933,
+          "precision": 0.001574993942330991,
+          "recall": 0.8666666666666667,
+          "f1": 0.0031442737936872656,
+          "brier": 0.0006303913833919853,
+          "threshold": 0.0034915142149239023,
+          "confusion_matrix_tn_fp_fn_tp": [
+            15981,
+            8241,
+            2,
+            13
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 24237,
+              "mean_probability": 0.0033630486718387335,
+              "observed_fraction": 0.0006188884762965714
+            }
+          ],
+          "prevalence": 0.0006188884726725519,
+          "mean_probability": 0.0033630486718387335,
+          "start": "2026-01-08 00:00:00+00:00",
+          "end": "2026-11-01 00:00:00+00:00",
+          "site_macro_average_precision": 0.0015911000661000933,
+          "sites_with_defined_average_precision": 1
+        }
+      }
+    },
+    {
+      "id": "conservative-logistic-global",
+      "policy": "conservative",
+      "family": "logistic",
+      "stage": "global",
+      "parameters": {
+        "C": 1.0
+      },
+      "global_validation": {
+        "observations": 133432,
+        "positive_windows": 2019,
+        "pr_auc_average_precision": 0.11103533885252515,
+        "precision": 0.2450025627883137,
+        "recall": 0.2367508667657256,
+        "f1": 0.24080604534005037,
+        "brier": 0.014172972863493324,
+        "threshold": 0.1103995218873024,
+        "confusion_matrix_tn_fp_fn_tp": [
+          129940,
+          1473,
+          1541,
+          478
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 130778,
+            "mean_probability": 0.012749947140982687,
+            "observed_fraction": 0.011546284543271805
+          },
+          {
+            "lower": 0.1,
+            "n": 2654,
+            "mean_probability": 0.12650851414629455,
+            "observed_fraction": 0.19178598342125094
+          }
+        ],
+        "prevalence": 0.015131303109228611,
+        "mean_probability": 0.015012637026707982,
+        "start": "2022-01-22 00:00:00+00:00",
+        "end": "2022-12-14 00:00:00+00:00",
+        "site_macro_average_precision": 0.029757703220853457,
+        "sites_with_defined_average_precision": 17
+      },
+      "threshold_global": 0.1103995218873024,
+      "lebanon_validation": {
+        "observations": 38667,
+        "positive_windows": 40,
+        "pr_auc_average_precision": 0.0006637962858064438,
+        "precision": 0.0010616556519892773,
+        "recall": 1.0,
+        "f1": 0.002121059469204868,
+        "brier": 0.0010472804037033293,
+        "threshold": 0.00018441300198901445,
+        "confusion_matrix_tn_fp_fn_tp": [
+          990,
+          37637,
+          0,
+          40
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 38667,
+            "mean_probability": 0.0030290749552074896,
+            "observed_fraction": 0.0010344738407427523
+          }
+        ],
+        "prevalence": 0.0010344738839194179,
+        "mean_probability": 0.0030290749552074896,
+        "start": "2022-01-08 00:00:00+00:00",
+        "end": "2022-12-24 00:00:00+00:00",
+        "site_macro_average_precision": 0.0006637962858064438,
+        "sites_with_defined_average_precision": 1
+      },
+      "threshold_lebanon": 0.00018441300198901445,
+      "confirmation": {
+        "global_temporal": {
+          "observations": 413817,
+          "positive_windows": 5226,
+          "pr_auc_average_precision": 0.11680377603125561,
+          "precision": 0.22454484153742413,
+          "recall": 0.25487944890929964,
+          "f1": 0.23875246459939056,
+          "brier": 0.01186030101508502,
+          "threshold": 0.1103995218873024,
+          "confusion_matrix_tn_fp_fn_tp": [
+            403991,
+            4600,
+            3894,
+            1332
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 404931,
+              "mean_probability": 0.013110819713908026,
+              "observed_fraction": 0.008732351931563648
+            },
+            {
+              "lower": 0.1,
+              "n": 8886,
+              "mean_probability": 0.11886725198094329,
+              "observed_fraction": 0.19018681071348187
+            }
+          ],
+          "prevalence": 0.012628770433366299,
+          "mean_probability": 0.01538175507210954,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.025547029916907063,
+          "sites_with_defined_average_precision": 17
+        },
+        "global_geographic": {
+          "observations": 119788,
+          "positive_windows": 1518,
+          "pr_auc_average_precision": 0.04345513713731661,
+          "precision": 0.01918158567774936,
+          "recall": 0.009881422924901186,
+          "f1": 0.013043478260869565,
+          "brier": 0.01234079722315306,
+          "threshold": 0.1103995218873024,
+          "confusion_matrix_tn_fp_fn_tp": [
+            117503,
+            767,
+            1503,
+            15
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 118102,
+              "mean_probability": 0.014415161729986628,
+              "observed_fraction": 0.012573876818343465
+            },
+            {
+              "lower": 0.1,
+              "n": 1686,
+              "mean_probability": 0.11416388010497902,
+              "observed_fraction": 0.019572953736654804
+            }
+          ],
+          "prevalence": 0.01267238799482584,
+          "mean_probability": 0.015819111534476536,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.01942234987316101,
+          "sites_with_defined_average_precision": 6
+        },
+        "lebanon_known_benchmark": {
+          "observations": 96060,
+          "positive_windows": 180,
+          "pr_auc_average_precision": 0.0012268819815819537,
+          "precision": 0.001894730081248595,
+          "recall": 0.9833333333333333,
+          "f1": 0.0037821725055290235,
+          "brier": 0.0018991523463365973,
+          "threshold": 0.00018441300198901445,
+          "confusion_matrix_tn_fp_fn_tp": [
+            2640,
+            93240,
+            3,
+            177
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 96055,
+              "mean_probability": 0.003615132409637845,
+              "observed_fraction": 0.0018739263963354327
+            },
+            {
+              "lower": 0.1,
+              "n": 5,
+              "mean_probability": 0.10483299940824509,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.0018738288199529052,
+          "mean_probability": 0.0036204008807495776,
+          "start": "2023-01-08 00:00:00+00:00",
+          "end": "2025-12-24 00:00:00+00:00",
+          "site_macro_average_precision": 0.0012268819815819537,
+          "sites_with_defined_average_precision": 1
+        },
+        "lebanon_fresh_confirmation": {
+          "observations": 24237,
+          "positive_windows": 15,
+          "pr_auc_average_precision": 0.000529179139777368,
+          "precision": 0.0006399044409368201,
+          "recall": 1.0,
+          "f1": 0.0012789904502046386,
+          "brier": 0.0006356101817963508,
+          "threshold": 0.00018441300198901445,
+          "confusion_matrix_tn_fp_fn_tp": [
+            796,
+            23426,
+            0,
+            15
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 24237,
+              "mean_probability": 0.003257463479027989,
+              "observed_fraction": 0.0006188884762965714
+            }
+          ],
+          "prevalence": 0.0006188884726725519,
+          "mean_probability": 0.003257463479027989,
+          "start": "2026-01-08 00:00:00+00:00",
+          "end": "2026-11-01 00:00:00+00:00",
+          "site_macro_average_precision": 0.000529179139777368,
+          "sites_with_defined_average_precision": 1
+        }
+      }
+    },
+    {
+      "id": "conservative-logistic-lebanon_only",
+      "policy": "conservative",
+      "family": "logistic",
+      "stage": "lebanon_only",
+      "parameters": {
+        "C": 1.0
+      },
+      "global_validation": {
+        "observations": 133432,
+        "positive_windows": 2019,
+        "pr_auc_average_precision": 0.010515334410957443,
+        "precision": 0.016948990881690894,
+        "recall": 0.8801386825160971,
+        "f1": 0.03325753534899825,
+        "brier": 0.015254551988092453,
+        "threshold": 1.2164884211074423e-08,
+        "confusion_matrix_tn_fp_fn_tp": [
+          28346,
+          103067,
+          242,
+          1777
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 133192,
+            "mean_probability": 0.0030729414950341196,
+            "observed_fraction": 0.015158568082167097
+          },
+          {
+            "lower": 0.1,
+            "n": 240,
+            "mean_probability": 0.11044492165868482,
+            "observed_fraction": 0.0
+          }
+        ],
+        "prevalence": 0.015131303109228611,
+        "mean_probability": 0.0032660681456072663,
+        "start": "2022-01-22 00:00:00+00:00",
+        "end": "2022-12-14 00:00:00+00:00",
+        "site_macro_average_precision": 0.0303020235336562,
+        "sites_with_defined_average_precision": 17
+      },
+      "threshold_global": 1.2164884211074423e-08,
+      "lebanon_validation": {
+        "observations": 38667,
+        "positive_windows": 40,
+        "pr_auc_average_precision": 0.004122212542351043,
+        "precision": 0.005577244841048522,
+        "recall": 0.25,
+        "f1": 0.010911074740861976,
+        "brier": 0.0010413687118912788,
+        "threshold": 0.009960099123418331,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36844,
+          1783,
+          30,
+          10
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 38667,
+            "mean_probability": 0.0023072423829824463,
+            "observed_fraction": 0.0010344738407427523
+          }
+        ],
+        "prevalence": 0.0010344738839194179,
+        "mean_probability": 0.0023072423829824463,
+        "start": "2022-01-08 00:00:00+00:00",
+        "end": "2022-12-24 00:00:00+00:00",
+        "site_macro_average_precision": 0.004122212542351043,
+        "sites_with_defined_average_precision": 1
+      },
+      "threshold_lebanon": 0.009960099123418331,
+      "confirmation": {
+        "global_temporal": {
+          "observations": 413817,
+          "positive_windows": 5226,
+          "pr_auc_average_precision": 0.008635301290371973,
+          "precision": 0.013790023255455792,
+          "recall": 0.8566781477229238,
+          "f1": 0.02714312130738054,
+          "brier": 0.01271811123209054,
+          "threshold": 1.2164884211074423e-08,
+          "confusion_matrix_tn_fp_fn_tp": [
+            88413,
+            320178,
+            749,
+            4477
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 413398,
+              "mean_probability": 0.0026327855174639006,
+              "observed_fraction": 0.012641570592987872
+            },
+            {
+              "lower": 0.1,
+              "n": 418,
+              "mean_probability": 0.1250189420495307,
+              "observed_fraction": 0.0
+            },
+            {
+              "lower": 0.2,
+              "n": 1,
+              "mean_probability": 0.20703022181987762,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.012628770433366299,
+          "mean_probability": 0.002756902725956318,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.028693389304779434,
+          "sites_with_defined_average_precision": 17
+        },
+        "global_geographic": {
+          "observations": 119788,
+          "positive_windows": 1518,
+          "pr_auc_average_precision": 0.012862396233703412,
+          "precision": 0.019955446855576153,
+          "recall": 0.8438735177865613,
+          "f1": 0.03898890596703748,
+          "brier": 0.01307928191533025,
+          "threshold": 1.2164884211074423e-08,
+          "confusion_matrix_tn_fp_fn_tp": [
+            55358,
+            62912,
+            237,
+            1281
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 118248,
+              "mean_probability": 0.004820500152138738,
+              "observed_fraction": 0.012828969623164873
+            },
+            {
+              "lower": 0.1,
+              "n": 1537,
+              "mean_probability": 0.12350786640687507,
+              "observed_fraction": 0.0006506180871828237
+            },
+            {
+              "lower": 0.2,
+              "n": 3,
+              "mean_probability": 0.20371288061141968,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.01267238799482584,
+          "mean_probability": 0.006348359028444442,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.023062359291229562,
+          "sites_with_defined_average_precision": 6
+        },
+        "lebanon_known_benchmark": {
+          "observations": 96060,
+          "positive_windows": 180,
+          "pr_auc_average_precision": 0.00877885879213484,
+          "precision": 0.00966309741446853,
+          "recall": 0.20555555555555555,
+          "f1": 0.01845846844599651,
+          "brier": 0.0018656930859097358,
+          "threshold": 0.009960099123418331,
+          "confusion_matrix_tn_fp_fn_tp": [
+            92088,
+            3792,
+            143,
+            37
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 96059,
+              "mean_probability": 0.0020107598717068018,
+              "observed_fraction": 0.0018738483640262755
+            },
+            {
+              "lower": 0.1,
+              "n": 1,
+              "mean_probability": 0.10645713657140732,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.0018738288199529052,
+          "mean_probability": 0.00201184717523272,
+          "start": "2023-01-08 00:00:00+00:00",
+          "end": "2025-12-24 00:00:00+00:00",
+          "site_macro_average_precision": 0.00877885879213484,
+          "sites_with_defined_average_precision": 1
+        },
+        "lebanon_fresh_confirmation": {
+          "observations": 24237,
+          "positive_windows": 15,
+          "pr_auc_average_precision": 0.0029120268002364004,
+          "precision": 0.004054054054054054,
+          "recall": 0.2,
+          "f1": 0.007947019867549669,
+          "brier": 0.000623297810297538,
+          "threshold": 0.009960099123418331,
+          "confusion_matrix_tn_fp_fn_tp": [
+            23485,
+            737,
+            12,
+            3
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 24237,
+              "mean_probability": 0.001655596990520443,
+              "observed_fraction": 0.0006188884762965714
+            }
+          ],
+          "prevalence": 0.0006188884726725519,
+          "mean_probability": 0.001655596990520443,
+          "start": "2026-01-08 00:00:00+00:00",
+          "end": "2026-11-01 00:00:00+00:00",
+          "site_macro_average_precision": 0.0029120268002364004,
+          "sites_with_defined_average_precision": 1
+        }
+      }
+    },
+    {
+      "id": "conservative-logistic-lebanon_calibration",
+      "policy": "conservative",
+      "family": "logistic",
+      "stage": "lebanon_calibration",
+      "parameters": {
+        "C": 1.0
+      },
+      "global_validation": {
+        "observations": 133432,
+        "positive_windows": 2019,
+        "pr_auc_average_precision": 0.008339591493798735,
+        "precision": 0.015132323512437885,
+        "recall": 1.0,
+        "f1": 0.02981349950532331,
+        "brier": 0.015106926476116661,
+        "threshold": 0.00039986471425627234,
+        "confusion_matrix_tn_fp_fn_tp": [
+          9,
+          131404,
+          0,
+          2019
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 133432,
+            "mean_probability": 0.002251383790733229,
+            "observed_fraction": 0.015131302835901432
+          }
+        ],
+        "prevalence": 0.015131303109228611,
+        "mean_probability": 0.002251383790733229,
+        "start": "2022-01-22 00:00:00+00:00",
+        "end": "2022-12-14 00:00:00+00:00",
+        "site_macro_average_precision": 0.011169390976863168,
+        "sites_with_defined_average_precision": 17
+      },
+      "threshold_global": 0.00039986471425627234,
+      "lebanon_validation": {
+        "observations": 38667,
+        "positive_windows": 40,
+        "pr_auc_average_precision": 0.002077959523395315,
+        "precision": 0.0028131477642878294,
+        "recall": 0.475,
+        "f1": 0.005593170444509862,
+        "brier": 0.0010394363107151556,
+        "threshold": 0.004082395081517403,
+        "confusion_matrix_tn_fp_fn_tp": [
+          31892,
+          6735,
+          21,
+          19
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 38667,
+            "mean_probability": 0.003253896327353213,
+            "observed_fraction": 0.0010344738407427523
+          }
+        ],
+        "prevalence": 0.0010344738839194179,
+        "mean_probability": 0.003253896327353213,
+        "start": "2022-01-08 00:00:00+00:00",
+        "end": "2022-12-24 00:00:00+00:00",
+        "site_macro_average_precision": 0.002077959523395315,
+        "sites_with_defined_average_precision": 1
+      },
+      "threshold_lebanon": 0.004082395081517403,
+      "confirmation": {
+        "global_temporal": {
+          "observations": 413817,
+          "positive_windows": 5226,
+          "pr_auc_average_precision": 0.006971800406912635,
+          "precision": 0.012628923279170251,
+          "recall": 1.0,
+          "f1": 0.02494284527894845,
+          "brier": 0.012609100319821754,
+          "threshold": 0.00039986471425627234,
+          "confusion_matrix_tn_fp_fn_tp": [
+            5,
+            408586,
+            0,
+            5226
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 413816,
+              "mean_probability": 0.0022298145687306876,
+              "observed_fraction": 0.01262880120633325
+            },
+            {
+              "lower": 0.1,
+              "n": 1,
+              "mean_probability": 0.10218738726875433,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.012628770433366299,
+          "mean_probability": 0.00223005611891519,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.009090424455097038,
+          "sites_with_defined_average_precision": 17
+        },
+        "global_geographic": {
+          "observations": 119788,
+          "positive_windows": 1518,
+          "pr_auc_average_precision": 0.007031023229881415,
+          "precision": 0.012672493676275388,
+          "recall": 1.0,
+          "f1": 0.025027822431062198,
+          "brier": 0.012656633402053889,
+          "threshold": 0.00039986471425627234,
+          "confusion_matrix_tn_fp_fn_tp": [
+            1,
+            118269,
+            0,
+            1518
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 119788,
+              "mean_probability": 0.0023108012312420233,
+              "observed_fraction": 0.012672387885263967
+            }
+          ],
+          "prevalence": 0.01267238799482584,
+          "mean_probability": 0.0023108012312420233,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.007387972504662621,
+          "sites_with_defined_average_precision": 6
+        },
+        "lebanon_known_benchmark": {
+          "observations": 96060,
+          "positive_windows": 180,
+          "pr_auc_average_precision": 0.0030522468030586163,
+          "precision": 0.003754546521177989,
+          "recall": 0.35555555555555557,
+          "f1": 0.007430628120283293,
+          "brier": 0.001907314953905381,
+          "threshold": 0.004082395081517403,
+          "confusion_matrix_tn_fp_fn_tp": [
+            78898,
+            16982,
+            116,
+            64
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 95961,
+              "mean_probability": 0.0032008151822717087,
+              "observed_fraction": 0.0018757620283240066
+            },
+            {
+              "lower": 0.1,
+              "n": 99,
+              "mean_probability": 0.1751996312975276,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.0018738288199529052,
+          "mean_probability": 0.0033780781720219723,
+          "start": "2023-01-08 00:00:00+00:00",
+          "end": "2025-12-24 00:00:00+00:00",
+          "site_macro_average_precision": 0.0030522468030586163,
+          "sites_with_defined_average_precision": 1
+        },
+        "lebanon_fresh_confirmation": {
+          "observations": 24237,
+          "positive_windows": 15,
+          "pr_auc_average_precision": 0.0008070146482090429,
+          "precision": 0.0004180602006688963,
+          "recall": 0.13333333333333333,
+          "f1": 0.0008335069806209627,
+          "brier": 0.0006294670986155894,
+          "threshold": 0.004082395081517403,
+          "confusion_matrix_tn_fp_fn_tp": [
+            19440,
+            4782,
+            13,
+            2
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 24237,
+              "mean_probability": 0.003295111286686136,
+              "observed_fraction": 0.0006188884762965714
+            }
+          ],
+          "prevalence": 0.0006188884726725519,
+          "mean_probability": 0.003295111286686136,
+          "start": "2026-01-08 00:00:00+00:00",
+          "end": "2026-11-01 00:00:00+00:00",
+          "site_macro_average_precision": 0.0008070146482090429,
+          "sites_with_defined_average_precision": 1
+        }
+      }
+    },
+    {
+      "id": "conservative-gradient_boosting-global",
+      "policy": "conservative",
+      "family": "gradient_boosting",
+      "stage": "global",
+      "parameters": {
+        "max_iter": 100,
+        "max_leaf_nodes": 15,
+        "l2_regularization": 2
+      },
+      "global_validation": {
+        "observations": 133432,
+        "positive_windows": 2019,
+        "pr_auc_average_precision": 0.13791350200310296,
+        "precision": 0.187014820042343,
+        "recall": 0.26250619118375434,
+        "f1": 0.2184215948897589,
+        "brier": 0.014076984880541687,
+        "threshold": 0.08496316255077055,
+        "confusion_matrix_tn_fp_fn_tp": [
+          129109,
+          2304,
+          1489,
+          530
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 131611,
+            "mean_probability": 0.009416975612497262,
+            "observed_fraction": 0.012331795974500612
+          },
+          {
+            "lower": 0.1,
+            "n": 987,
+            "mean_probability": 0.11560209391390015,
+            "observed_fraction": 0.18541033434650456
+          },
+          {
+            "lower": 0.2,
+            "n": 23,
+            "mean_probability": 0.23763412105537243,
+            "observed_fraction": 0.43478260869565216
+          },
+          {
+            "lower": 0.30000000000000004,
+            "n": 146,
+            "mean_probability": 0.38680423389887425,
+            "observed_fraction": 0.1780821917808219
+          },
+          {
+            "lower": 0.4,
+            "n": 659,
+            "mean_probability": 0.42746531184240727,
+            "observed_fraction": 0.26403641881638845
+          },
+          {
+            "lower": 0.5,
+            "n": 4,
+            "mean_probability": 0.5145592358552352,
+            "observed_fraction": 0.5
+          },
+          {
+            "lower": 0.8,
+            "n": 2,
+            "mean_probability": 0.8195920476904648,
+            "observed_fraction": 0.5
+          }
+        ],
+        "prevalence": 0.015131303109228611,
+        "mean_probability": 0.012746664282225059,
+        "start": "2022-01-22 00:00:00+00:00",
+        "end": "2022-12-14 00:00:00+00:00",
+        "site_macro_average_precision": 0.051203159736094836,
+        "sites_with_defined_average_precision": 17
+      },
+      "threshold_global": 0.08496316255077055,
+      "lebanon_validation": {
+        "observations": 38667,
+        "positive_windows": 40,
+        "pr_auc_average_precision": 0.0012845377784163271,
+        "precision": 0.001565377532228361,
+        "recall": 0.85,
+        "f1": 0.003125,
+        "brier": 0.0010514555136122113,
+        "threshold": 0.001733591334528924,
+        "confusion_matrix_tn_fp_fn_tp": [
+          16941,
+          21686,
+          6,
+          34
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 38666,
+            "mean_probability": 0.0025029938007842143,
+            "observed_fraction": 0.001034500594837842
+          },
+          {
+            "lower": 0.1,
+            "n": 1,
+            "mean_probability": 0.10152844603093822,
+            "observed_fraction": 0.0
+          }
+        ],
+        "prevalence": 0.0010344738839194179,
+        "mean_probability": 0.0025055547817817102,
+        "start": "2022-01-08 00:00:00+00:00",
+        "end": "2022-12-24 00:00:00+00:00",
+        "site_macro_average_precision": 0.0012845377784163271,
+        "sites_with_defined_average_precision": 1
+      },
+      "threshold_lebanon": 0.001733591334528924,
+      "confirmation": {
+        "global_temporal": {
+          "observations": 413817,
+          "positive_windows": 5226,
+          "pr_auc_average_precision": 0.15990432372476382,
+          "precision": 0.18069070788017555,
+          "recall": 0.36241867585151166,
+          "f1": 0.2411510058568882,
+          "brier": 0.011367797703735265,
+          "threshold": 0.08496316255077055,
+          "confusion_matrix_tn_fp_fn_tp": [
+            400003,
+            8588,
+            3332,
+            1894
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 405628,
+              "mean_probability": 0.009309602021045877,
+              "observed_fraction": 0.008579289398167779
+            },
+            {
+              "lower": 0.1,
+              "n": 4267,
+              "mean_probability": 0.1301723179733335,
+              "observed_fraction": 0.12936489336770565
+            },
+            {
+              "lower": 0.2,
+              "n": 254,
+              "mean_probability": 0.23847051223306437,
+              "observed_fraction": 0.18110236220472442
+            },
+            {
+              "lower": 0.30000000000000004,
+              "n": 1856,
+              "mean_probability": 0.3617551159777771,
+              "observed_fraction": 0.3146551724137931
+            },
+            {
+              "lower": 0.4,
+              "n": 1790,
+              "mean_probability": 0.4269335937717205,
+              "observed_fraction": 0.30726256983240224
+            },
+            {
+              "lower": 0.5,
+              "n": 12,
+              "mean_probability": 0.5138092604345752,
+              "observed_fraction": 0.4166666666666667
+            },
+            {
+              "lower": 0.6000000000000001,
+              "n": 1,
+              "mean_probability": 0.6063925959457631,
+              "observed_fraction": 1.0
+            },
+            {
+              "lower": 0.7000000000000001,
+              "n": 2,
+              "mean_probability": 0.7700681708724868,
+              "observed_fraction": 1.0
+            },
+            {
+              "lower": 0.8,
+              "n": 7,
+              "mean_probability": 0.8108822044621051,
+              "observed_fraction": 0.8571428571428571
+            }
+          ],
+          "prevalence": 0.012628770433366299,
+          "mean_probability": 0.014117035025367458,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.036801045312263074,
+          "sites_with_defined_average_precision": 17
+        },
+        "global_geographic": {
+          "observations": 119788,
+          "positive_windows": 1518,
+          "pr_auc_average_precision": 0.057754989779426766,
+          "precision": 0.093711467324291,
+          "recall": 0.05006587615283267,
+          "f1": 0.06526406182911121,
+          "brier": 0.012366468590079924,
+          "threshold": 0.08496316255077055,
+          "confusion_matrix_tn_fp_fn_tp": [
+            117535,
+            735,
+            1442,
+            76
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 119318,
+              "mean_probability": 0.005117632973209476,
+              "observed_fraction": 0.012328399738513887
+            },
+            {
+              "lower": 0.1,
+              "n": 470,
+              "mean_probability": 0.11373770540699525,
+              "observed_fraction": 0.1
+            }
+          ],
+          "prevalence": 0.01267238799482584,
+          "mean_probability": 0.005543814510958493,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.031007191955117242,
+          "sites_with_defined_average_precision": 6
+        },
+        "lebanon_known_benchmark": {
+          "observations": 96060,
+          "positive_windows": 180,
+          "pr_auc_average_precision": 0.002478999864388359,
+          "precision": 0.0026848531169772864,
+          "recall": 0.7611111111111111,
+          "f1": 0.005350830941082274,
+          "brier": 0.0018788400285780224,
+          "threshold": 0.001733591334528924,
+          "confusion_matrix_tn_fp_fn_tp": [
+            44990,
+            50890,
+            43,
+            137
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 96059,
+              "mean_probability": 0.0023546463479151764,
+              "observed_fraction": 0.0018738483640262755
+            },
+            {
+              "lower": 0.1,
+              "n": 1,
+              "mean_probability": 0.10340638761379817,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.0018738288199529052,
+          "mean_probability": 0.0023556983127420127,
+          "start": "2023-01-08 00:00:00+00:00",
+          "end": "2025-12-24 00:00:00+00:00",
+          "site_macro_average_precision": 0.002478999864388359,
+          "sites_with_defined_average_precision": 1
+        },
+        "lebanon_fresh_confirmation": {
+          "observations": 24237,
+          "positive_windows": 15,
+          "pr_auc_average_precision": 0.0010254764658620794,
+          "precision": 0.0008856611460455229,
+          "recall": 0.6666666666666666,
+          "f1": 0.0017689722271360339,
+          "brier": 0.0006255709119143669,
+          "threshold": 0.001733591334528924,
+          "confusion_matrix_tn_fp_fn_tp": [
+            12941,
+            11281,
+            5,
+            10
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 24236,
+              "mean_probability": 0.002075136774164351,
+              "observed_fraction": 0.0006189140122132365
+            },
+            {
+              "lower": 0.1,
+              "n": 1,
+              "mean_probability": 0.14312750216956624,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.0006188884726725519,
+          "mean_probability": 0.002080956486397524,
+          "start": "2026-01-08 00:00:00+00:00",
+          "end": "2026-11-01 00:00:00+00:00",
+          "site_macro_average_precision": 0.0010254764658620794,
+          "sites_with_defined_average_precision": 1
+        }
+      }
+    },
+    {
+      "id": "conservative-gradient_boosting-lebanon_only",
+      "policy": "conservative",
+      "family": "gradient_boosting",
+      "stage": "lebanon_only",
+      "parameters": {
+        "max_iter": 100,
+        "max_leaf_nodes": 15,
+        "l2_regularization": 2
+      },
+      "global_validation": {
+        "observations": 133432,
+        "positive_windows": 2019,
+        "pr_auc_average_precision": 0.01854956256530162,
+        "precision": 0.022303635412053626,
+        "recall": 0.5487865279841506,
+        "f1": 0.04286515658548852,
+        "brier": 0.015107156042936996,
+        "threshold": 0.0006574305184314909,
+        "confusion_matrix_tn_fp_fn_tp": [
+          82843,
+          48570,
+          911,
+          1108
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 133430,
+            "mean_probability": 0.0015183834289696362,
+            "observed_fraction": 0.015131529641010267
+          },
+          {
+            "lower": 0.1,
+            "n": 2,
+            "mean_probability": 0.11250351140950816,
+            "observed_fraction": 0.0
+          }
+        ],
+        "prevalence": 0.015131303109228611,
+        "mean_probability": 0.0015200469748653815,
+        "start": "2022-01-22 00:00:00+00:00",
+        "end": "2022-12-14 00:00:00+00:00",
+        "site_macro_average_precision": 0.022242033547634522,
+        "sites_with_defined_average_precision": 17
+      },
+      "threshold_global": 0.0006574305184314909,
+      "lebanon_validation": {
+        "observations": 38667,
+        "positive_windows": 40,
+        "pr_auc_average_precision": 0.004986648831414961,
+        "precision": 0.02247191011235955,
+        "recall": 0.05,
+        "f1": 0.031007751937984496,
+        "brier": 0.001046047646128465,
+        "threshold": 0.043771130155886774,
+        "confusion_matrix_tn_fp_fn_tp": [
+          38540,
+          87,
+          38,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 38665,
+            "mean_probability": 0.0019505507866266099,
+            "observed_fraction": 0.001034527350316824
+          },
+          {
+            "lower": 0.1,
+            "n": 2,
+            "mean_probability": 0.10364496513014834,
+            "observed_fraction": 0.0
+          }
+        ],
+        "prevalence": 0.0010344738839194179,
+        "mean_probability": 0.001955810797196011,
+        "start": "2022-01-08 00:00:00+00:00",
+        "end": "2022-12-24 00:00:00+00:00",
+        "site_macro_average_precision": 0.004986648831414961,
+        "sites_with_defined_average_precision": 1
+      },
+      "threshold_lebanon": 0.043771130155886774,
+      "confirmation": {
+        "global_temporal": {
+          "observations": 413817,
+          "positive_windows": 5226,
+          "pr_auc_average_precision": 0.01411561562963334,
+          "precision": 0.016294761763835455,
+          "recall": 0.5267891312667432,
+          "f1": 0.03161170310490538,
+          "brier": 0.01261101712397143,
+          "threshold": 0.0006574305184314909,
+          "confusion_matrix_tn_fp_fn_tp": [
+            242394,
+            166197,
+            2473,
+            2753
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 413816,
+              "mean_probability": 0.0015243015970973514,
+              "observed_fraction": 0.01262880120633325
+            },
+            {
+              "lower": 0.1,
+              "n": 1,
+              "mean_probability": 0.10586283901066874,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.012628770433366299,
+          "mean_probability": 0.001524553734001861,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.014841167581096241,
+          "sites_with_defined_average_precision": 17
+        },
+        "global_geographic": {
+          "observations": 119788,
+          "positive_windows": 1518,
+          "pr_auc_average_precision": 0.015400053427809163,
+          "precision": 0.01894963850736243,
+          "recall": 0.7061923583662714,
+          "f1": 0.03690888119953864,
+          "brier": 0.012640952032612415,
+          "threshold": 0.0006574305184314909,
+          "confusion_matrix_tn_fp_fn_tp": [
+            62771,
+            55499,
+            446,
+            1072
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 119788,
+              "mean_probability": 0.0017616784422618723,
+              "observed_fraction": 0.012672387885263967
+            }
+          ],
+          "prevalence": 0.01267238799482584,
+          "mean_probability": 0.0017616784422618723,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.018850828910464964,
+          "sites_with_defined_average_precision": 6
+        },
+        "lebanon_known_benchmark": {
+          "observations": 96060,
+          "positive_windows": 180,
+          "pr_auc_average_precision": 0.012476192867094131,
+          "precision": 0.03571428571428571,
+          "recall": 0.027777777777777776,
+          "f1": 0.03125,
+          "brier": 0.0018656175969367546,
+          "threshold": 0.043771130155886774,
+          "confusion_matrix_tn_fp_fn_tp": [
+            95745,
+            135,
+            175,
+            5
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 96043,
+              "mean_probability": 0.0017228773199306508,
+              "observed_fraction": 0.0018533365263475735
+            },
+            {
+              "lower": 0.1,
+              "n": 16,
+              "mean_probability": 0.1272269444607022,
+              "observed_fraction": 0.125
+            },
+            {
+              "lower": 0.2,
+              "n": 1,
+              "mean_probability": 0.21093053919518734,
+              "observed_fraction": 0.0
+            }
+          ],
+          "prevalence": 0.0018738288199529052,
+          "mean_probability": 0.0017459594845790746,
+          "start": "2023-01-08 00:00:00+00:00",
+          "end": "2025-12-24 00:00:00+00:00",
+          "site_macro_average_precision": 0.012476192867094131,
+          "sites_with_defined_average_precision": 1
+        },
+        "lebanon_fresh_confirmation": {
+          "observations": 24237,
+          "positive_windows": 15,
+          "pr_auc_average_precision": 0.0024925609280926626,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier": 0.0006295692480053595,
+          "threshold": 0.043771130155886774,
+          "confusion_matrix_tn_fp_fn_tp": [
+            24201,
+            21,
+            15,
+            0
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 24237,
+              "mean_probability": 0.0015780771601890565,
+              "observed_fraction": 0.0006188884762965714
+            }
+          ],
+          "prevalence": 0.0006188884726725519,
+          "mean_probability": 0.0015780771601890565,
+          "start": "2026-01-08 00:00:00+00:00",
+          "end": "2026-11-01 00:00:00+00:00",
+          "site_macro_average_precision": 0.0024925609280926626,
+          "sites_with_defined_average_precision": 1
+        }
+      }
+    },
+    {
+      "id": "conservative-gradient_boosting-lebanon_calibration",
+      "policy": "conservative",
+      "family": "gradient_boosting",
+      "stage": "lebanon_calibration",
+      "parameters": {
+        "max_iter": 100,
+        "max_leaf_nodes": 15,
+        "l2_regularization": 2
+      },
+      "global_validation": {
+        "observations": 133432,
+        "positive_windows": 2019,
+        "pr_auc_average_precision": 0.13791350200310296,
+        "precision": 0.187014820042343,
+        "recall": 0.26250619118375434,
+        "f1": 0.2184215948897589,
+        "brier": 0.014928411585391077,
+        "threshold": 0.008292064629161952,
+        "confusion_matrix_tn_fp_fn_tp": [
+          129109,
+          2304,
+          1489,
+          530
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 133432,
+            "mean_probability": 0.004114395988121368,
+            "observed_fraction": 0.015131302835901432
+          }
+        ],
+        "prevalence": 0.015131303109228611,
+        "mean_probability": 0.004114395988121368,
+        "start": "2022-01-22 00:00:00+00:00",
+        "end": "2022-12-14 00:00:00+00:00",
+        "site_macro_average_precision": 0.051203159736094836,
+        "sites_with_defined_average_precision": 17
+      },
+      "threshold_global": 0.008292064629161952,
+      "lebanon_validation": {
+        "observations": 38667,
+        "positive_windows": 40,
+        "pr_auc_average_precision": 0.0012845377784163271,
+        "precision": 0.001565377532228361,
+        "recall": 0.85,
+        "f1": 0.003125,
+        "brier": 0.0010386160681936064,
+        "threshold": 0.003173374793749584,
+        "confusion_matrix_tn_fp_fn_tp": [
+          16941,
+          21686,
+          6,
+          34
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 38667,
+            "mean_probability": 0.003284274231735475,
+            "observed_fraction": 0.0010344738407427523
+          }
+        ],
+        "prevalence": 0.0010344738839194179,
+        "mean_probability": 0.003284274231735475,
+        "start": "2022-01-08 00:00:00+00:00",
+        "end": "2022-12-24 00:00:00+00:00",
+        "site_macro_average_precision": 0.0012845377784163271,
+        "sites_with_defined_average_precision": 1
+      },
+      "threshold_lebanon": 0.003173374793749584,
+      "confirmation": {
+        "global_temporal": {
+          "observations": 413817,
+          "positive_windows": 5226,
+          "pr_auc_average_precision": 0.15990432372476382,
+          "precision": 0.18069070788017555,
+          "recall": 0.36241867585151166,
+          "f1": 0.2411510058568882,
+          "brier": 0.012445187646682036,
+          "threshold": 0.008292064629161952,
+          "confusion_matrix_tn_fp_fn_tp": [
+            400003,
+            8588,
+            3332,
+            1894
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 413817,
+              "mean_probability": 0.004166277914706593,
+              "observed_fraction": 0.01262877068849274
+            }
+          ],
+          "prevalence": 0.012628770433366299,
+          "mean_probability": 0.004166277914706593,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.036801045312263074,
+          "sites_with_defined_average_precision": 17
+        },
+        "global_geographic": {
+          "observations": 119788,
+          "positive_windows": 1518,
+          "pr_auc_average_precision": 0.057754989779426766,
+          "precision": 0.093711467324291,
+          "recall": 0.05006587615283267,
+          "f1": 0.06526406182911121,
+          "brier": 0.012555719519825483,
+          "threshold": 0.008292064629161952,
+          "confusion_matrix_tn_fp_fn_tp": [
+            117535,
+            735,
+            1442,
+            76
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 119788,
+              "mean_probability": 0.0036885926866766713,
+              "observed_fraction": 0.012672387885263967
+            }
+          ],
+          "prevalence": 0.01267238799482584,
+          "mean_probability": 0.0036885926866766713,
+          "start": "2023-01-14 00:00:00+00:00",
+          "end": "2025-12-30 00:00:00+00:00",
+          "site_macro_average_precision": 0.031007191955117242,
+          "sites_with_defined_average_precision": 6
+        },
+        "lebanon_known_benchmark": {
+          "observations": 96060,
+          "positive_windows": 180,
+          "pr_auc_average_precision": 0.002478999864388359,
+          "precision": 0.0026848531169772864,
+          "recall": 0.7611111111111111,
+          "f1": 0.005350830941082274,
+          "brier": 0.0018719818954197362,
+          "threshold": 0.003173374793749584,
+          "confusion_matrix_tn_fp_fn_tp": [
+            44990,
+            50890,
+            43,
+            137
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 96060,
+              "mean_probability": 0.0032601023796462966,
+              "observed_fraction": 0.0018738288569643974
+            }
+          ],
+          "prevalence": 0.0018738288199529052,
+          "mean_probability": 0.0032601023796462966,
+          "start": "2023-01-08 00:00:00+00:00",
+          "end": "2025-12-24 00:00:00+00:00",
+          "site_macro_average_precision": 0.002478999864388359,
+          "sites_with_defined_average_precision": 1
+        },
+        "lebanon_fresh_confirmation": {
+          "observations": 24237,
+          "positive_windows": 15,
+          "pr_auc_average_precision": 0.0010254764658620794,
+          "precision": 0.0008856611460455229,
+          "recall": 0.6666666666666666,
+          "f1": 0.0017689722271360339,
+          "brier": 0.0006251438714969007,
+          "threshold": 0.003173374793749584,
+          "confusion_matrix_tn_fp_fn_tp": [
+            12941,
+            11281,
+            5,
+            10
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 24237,
+              "mean_probability": 0.003188803539382661,
+              "observed_fraction": 0.0006188884762965714
+            }
+          ],
+          "prevalence": 0.0006188884726725519,
+          "mean_probability": 0.003188803539382661,
+          "start": "2026-01-08 00:00:00+00:00",
+          "end": "2026-11-01 00:00:00+00:00",
+          "site_macro_average_precision": 0.0010254764658620794,
+          "sites_with_defined_average_precision": 1
+        }
+      }
+    }
+  ],
+  "note": "Same southern conflict quarantine; different confidence-filter populations. Do not choose a filtering policy by comparing Brier on different targets."
+}

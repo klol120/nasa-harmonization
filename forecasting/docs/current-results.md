@@ -1,3 +1,5 @@
+> Earlier Lebanon-only stage. The latest completed experiment is [global pretraining and Lebanon adaptation](global-results.md), including conflict exclusions and 2026 comparisons.
+
 # Actual real-data results: 14 November 2026
 
 **Real NASA training and reserved-year evaluation are complete. The current model is retrospective research only and is not approved for production.** This report supersedes the earlier fixture-only and access-blocked status snapshots. Full numerical evidence is in [NOAA-20 metrics](real-metrics.json), [S-NPP metrics](snpp-real-metrics.json), [review summary](current-results.json) and [failed release record](release.json). [Statecharts](statecharts.md) explain the entire implemented path.

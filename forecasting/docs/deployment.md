@@ -97,3 +97,20 @@ The 49 passing focused tests include authenticated fixture inference, domain
 withholding, future input rejection, unapproved/synthetic models and checksum
 mismatch. Approved-path unit tests use explicitly artificial fixtures, not a real
 operational artifact. Nothing has been published or deployed externally.
+
+## Global-transfer extension status
+
+The current [global model release](global-release.json) is also **not approved**.
+Its actual refitted global/local neural artifact was tested directly against the
+service; [global service validation](global-service-validation.json) records health
+200, readiness 503 and refusal of a forecast request with the failed manifest.
+The latest global extension has not been rebuilt/smoke-tested as a container in this
+small disk-limited workspace. The prior container result is not claimed as a fresh
+global-model container verification. Use sufficient disk and run the checked-in
+Docker build/CI before deployment, after scientific release conditions are met.
+
+The generic research artifact stores its sampled domains and temporal conflict
+exclusions. Its Lebanese view withholds South/El Nabatieh-intersecting cells after
+the exclusion start. Real-time forecast-source transfer, conditional observation
+selection and the lack of operational validation remain explicit; research maps
+must not be exposed as approved emergency warnings.

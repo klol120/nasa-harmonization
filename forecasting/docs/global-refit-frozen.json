@@ -1,0 +1,60 @@
+{
+  "fixed_recipe_id": "strict-neural_64_32-ensemble-0.75",
+  "base_selection_sha256": "c61ccde48b86aa840a88c26e8e97e5c7858e4146f3f28f9b8f43530d4802fc2a",
+  "protocol_sha256": "ef2c21501316c4f87f894adf325a7b64301b136645b1a7d641bf390cd5bc03d0",
+  "artifacts": {
+    "refit_matching_global_source": {
+      "file": "refit_matching_global_source.joblib",
+      "sha256": "cabfd1ffea23c01a00751331388e66693f5495f64ca4f5b5a348e4c968f6e9b2"
+    },
+    "refit_selected_transfer": {
+      "file": "refit_selected_transfer.joblib",
+      "sha256": "4c339a5cab27f9ff3519208c3b3416bbbb84535f0d4a3bcd9397c67dec13380d"
+    },
+    "refit_matching_local_control": {
+      "file": "refit_matching_local_control.joblib",
+      "sha256": "ccc963da03cac42bc0ba2a5c3ba800814d89e5647dcb0cd61be912477bdafb01"
+    },
+    "refit_matching_local_calibrated": {
+      "file": "refit_matching_local_calibrated.joblib",
+      "sha256": "85d8ff63ac3ef32069000af28aafdca5163f1067b82a09ee50d14a9072576ba6"
+    },
+    "refit_validation_global_winner": {
+      "file": "refit_validation_global_winner.joblib",
+      "sha256": "647ea8d9f874e095461d8fb849daae78071caa0321c57a0598f88de1777d70ec"
+    }
+  },
+  "thresholds": {
+    "refit_matching_global_source": {
+      "calibration_2025_lebanon_F1": 0.018800120800733566,
+      "calibration_2025_global_F1": 0.21010279655456543,
+      "carried_2022_lebanon_threshold": 0.002803959883749485
+    },
+    "refit_selected_transfer": {
+      "calibration_2025_lebanon_F1": 0.08092744666130768,
+      "calibration_2025_global_F1": 0.04859398186415617,
+      "carried_2022_lebanon_threshold": 0.03805280235122453
+    },
+    "refit_matching_local_control": {
+      "calibration_2025_lebanon_F1": 0.11709173023700714,
+      "calibration_2025_global_F1": 0.0,
+      "carried_2022_lebanon_threshold": 0.04596557095646858
+    },
+    "refit_matching_local_calibrated": {
+      "calibration_2025_lebanon_F1": 0.11382677439512762,
+      "calibration_2025_global_F1": 1.745761215300972e-07,
+      "carried_2022_lebanon_threshold": 0.04596557095646858
+    },
+    "refit_validation_global_winner": {
+      "calibration_2025_lebanon_F1": 0.006069894754709886,
+      "calibration_2025_global_F1": 0.17735184132439022,
+      "carried_2022_lebanon_threshold": 0.002803959883749485
+    }
+  },
+  "confirmation_metrics_used_for_selection": false,
+  "global_fit_windows": 949823,
+  "local_fit_windows": 260804,
+  "calibration_global_windows": 129656,
+  "calibration_lebanon_windows": 28808,
+  "note": "2023-2025 source-site data are fit/calibration data for this refit, not its temporal holdout. New global 2026 is reserved. Lebanese 2026 is a repeated fixed-fold comparison, not newly independent."
+}

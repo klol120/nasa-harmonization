@@ -59,7 +59,7 @@ class SRTM:
     def __init__(self,paths):
         self.tiles={}
         for p in paths:
-            m=re.search(r'N(\d{2})E(\d{3})',p.name)
+            m=re.search(r'([NS])(\d{2})([EW])(\d{3})',p.name)
             if not m:continue
             with zipfile.ZipFile(p) as z:
                 files=[n for n in z.namelist() if n.lower().endswith('.hgt')]
@@ -67,7 +67,9 @@ class SRTM:
                 array=np.frombuffer(z.read(files[0]),dtype='>i2')
             size=int(np.sqrt(array.size))
             if size!=3601:raise ValueError('Expected one-arcsecond SRTM')
-            self.tiles[tuple(map(int,m.groups()))]=array.reshape(size,size)
+            ns,latitude,ew,longitude=m.groups()
+            key=(int(latitude)*(1 if ns=='N' else -1),int(longitude)*(1 if ew=='E' else -1))
+            self.tiles[key]=array.reshape(size,size)
 
     def sample(self,lat,lon):
         lat=np.asarray(lat);lon=np.asarray(lon);n=lat.size
@@ -158,7 +160,7 @@ def summarize_day(path,mapping,cells,expected_product="VNP14A1"):
     land=np.isin(qa&3,[1,2]);eligible=mapping['eligible']
     points=pd.DataFrame({'cell_id':mapping['cell_ids'],'processed':eligible&land&np.isin(mask,[5,7,8,9]),
       'fire':eligible&land&np.isin(mask,[7,8,9]),'nominal_fire':eligible&land&np.isin(mask,[8,9]),'low_fire':eligible&land&(mask==7),
-      'noneligible_fire':(~eligible)&np.isin(mask,[7,8,9]),
+      'noneligible_fire':((~eligible)|(~land))&np.isin(mask,[7,8,9]),
       'unknown_fire':eligible&(mask==6),'cloud':eligible&(mask==4),'missing':eligible&np.isin(mask,[0,1,2])})
     points=points[points.cell_id.isin(cells.cell_id)]
     result=points.groupby('cell_id').sum().reset_index();result['prediction_time']=day

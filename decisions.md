@@ -233,3 +233,178 @@ avoid claiming the remaining labels are certainly clean.
   separately from the earlier successful non-root/read-only container test. Do not
   claim the latest image was smoke-tested successfully. Recommend 12–16 GB free
   disk for full reproducibility including container creation.
+
+## 2026-11-14 — User-directed global pretraining and repeated transfer benchmarks
+
+* Supersede the earlier deferral of global training: the user now explicitly requests
+  global models, Lebanon adaptation, multiple algorithms and neural-network options.
+  Compare each global source model on held-out global and Lebanese observations,
+  then evaluate its adapted versions on both domains to expose forgetting.
+* Repeat development on calibration/validation years only. Existing 2023–2025
+  Lebanese outcomes are already known; reserve 2026 through October as a new
+  Lebanese confirmation set and freeze candidates before inspecting its outcomes.
+  Global 2023–2025 data are newly reserved; entire selected sites also provide a
+  geographic holdout. These observations are retrospective, not issued-forecast tests.
+* Three CPU cores, no detected GPU and roughly 587 MB spare disk require bounded
+  scientific subsetting. Use 24 predeclared 2° by 2° global panels, spanning the
+  inhabited continents and broad latitude/climate regimes, with two independently
+  date-seeded sampled days per month. Do not claim exhaustive planet-wide coverage,
+  ecological matching or a uniform probability sample of all land.
+* Retain exact unfiltered NASA source pixels, QA, raw environmental samples and
+  provenance for these scientific subsets. Record original immutable source URLs,
+  full-file hashes where full bytes are read, subset hashes and retrieval times.
+  Temporary full source containers may be read and discarded after their selected
+  raw scientific pixels are preserved; never delete the existing Lebanon archive.
+* Fit before 2021, reserve 2021 for calibration, tune on 2022, and then freeze before
+  global 2023–2025 / Lebanese 2026 confirmation. Main selection is Lebanese validation
+  average precision, with Brier as a tie-breaker; report global retention separately.
+  Keep natural class prevalence; use all qualified sampled cell-windows, not just
+  positive sites, and never convert excluded/cloud-uncertain windows to negatives.
+* Benchmark smoothed seasonality, logistic regression, random/extra forests,
+  histogram boosting and three dense neural-network architectures. CPU-sized neural
+  models are a justified experiment, not an assumption that DL must win. Distinguish
+  actual neural weight continuation from calibration, ensembling and tree score
+  transfer; do not call every adaptation method weight fine-tuning.
+
+## 2026-11-14 — User-requested conflict exclusion after 7 October 2023
+
+* The user requires southern Lebanon excluded from validation/testing from 7 October
+  2023, or an adequate strike catalogue. Define the broad southern scope as South
+  (LB6) and El Nabatieh (LB4), using CDR/OCHA COD administrative boundaries from HDX,
+  with a 1 km boundary-uncertainty buffer. Exclude the entire 0.1° cell-window when
+  its polygon intersects that region and its forecast window overlaps the period
+  beginning 2023-10-07 00:00 UTC, with no assumed conflict end date.
+* Acquire the actual OCHA/CDR GeoJSON resource and retain its archive, source API
+  response, hash, exact ADM1 layer and CC BY-IGO attribution. The user's latest
+  explicit request authorizes outside-NASA historical conflict-quality sources;
+  all environmental/fire/weather predictors remain NASA-only. Do not use this
+  retrospective review information as a model feature.
+* Search found ACLED country/access/codebook documentation and official UN reporting.
+  ACLED requires authorized access, aggregates some same-location/day events and has
+  documented limitations; no exhaustive accessible strike-to-fire dataset has been
+  established. Official reports document conflict outside the southern governorates
+  too. The broad mask does not certify the rest of Lebanon conflict-free.
+* Preserve every original label and exclusion reason/source in the audit, replace
+  affected fitting/evaluation targets with null, and never convert an excluded fire
+  to a negative. Apply the identical conflict mask to all new algorithm/adaptation
+  comparisons and 2026 confirmation. Historical 2023–2025 results from the earlier
+  unmasked run remain a separate superseded benchmark, not directly comparable.
+* The chosen boundary layer is a historical quality-review geometry, not a claim of
+  real-time 2023 availability or a legal border assertion. Inclusion in the excluded
+  region does not assert that an individual fire was caused by conflict.
+
+## 2026-11-14 — Actual global catalogue processing-version conflict
+
+NASA's h22v10 catalogue contains two VJ114A1.002 versions for 2021-01-30,
+processed in 2022 and 2023. Preserve both catalogue entries and the exact URLs;
+select the latest processing timestamp deterministically within the same collection
+and record every alternative in a version-choice audit. Never count both products
+as independent observations. This is a retrospective reconstruction, so the later
+processing version is not asserted to have existed at prediction time. A regression
+test covers repeated identical entries and the later-version selection.
+
+## 2026-11-14 — Rare-event optimizer variants fixed before benchmark fitting
+
+Include naturally weighted and class-balanced linear/forest options. For neural
+adaptation compare 5 epochs at 1e-4, 15 epochs at 1e-3, and 10 epochs at 3e-4 with
+positive optimizer weight 10. The latter changes the optimizer's effective class
+prior; always recalibrate it on the separate natural-prevalence 2021 Lebanese
+calibration period, then assess calibration/skill on 2022 validation. This is not a
+guarantee that calibration repairs all weighting effects. Do not oversample positive
+sites or select sampled dates using fire outcomes. Keep all qualified sampled
+windows and record actual family/candidate counts and selected parameters.
+
+## 2026-11-14 — Lossless inactive-cache compaction and benchmark controls
+
+* Full global source processing completed, and preparation produced 401,767 qualified
+  global fitting windows / 5,769 positive windows before 2021, alongside the existing
+  117,677 Lebanese windows / 202 positives. Calibration and selection remain separate.
+* Preserve the previous model as a fixed reference evaluated on the identical new
+  conflict-filtered population; do not attribute score changes caused by different
+  exclusions to better algorithms. A small conservative-policy seasonal/logistic/
+  boosting sensitivity suite is also fitted and frozen before primary confirmation
+  is opened. Primary policy remains strict regardless of sensitivity results.
+* Disk approached capacity while retaining all NASA source data. Losslessly pack only
+  the inactive S-NPP raw cache into verified tar.gz batches. Verify every original
+  file and provenance member hash after compression before removing its duplicate
+  unpacked copy. Keep per-archive manifests and a tested exact restore command.
+  Existing S-NPP scientific bytes are preserved; the active NOAA-20/global data and
+  model artifacts are not deleted. Restore packed originals before rerunning the old
+  S-NPP direct-file adapter.
+* Export selected transfer artifacts with their global/local fit feature support,
+  sampled-region/cell domain, label product, observed-weather validation source and
+  time-dependent conflict-filtered evaluation scope. Research inference may retain
+  a scope warning; strict production mode withholds outside reviewed conditions.
+  The service still refuses retrospective models altogether.
+
+## 2026-11-14 — Fixed recent-data refit and honest confirmation accounting
+
+* The first benchmark completed 89 validation candidates, 58 frozen stage winners
+  and nine predeclared conservative-policy controls. Source/local hyperparameters
+  were chosen on their 2022 validation sets; 2021 was separate calibration data.
+* Before manually reviewing numerical 2026 outcomes, fix one additional recipe from
+  the immutable validation selection: the 64–32 neural global/local ensemble with
+  75% local weight. Refit its unchanged source/local settings through 2024, calibrate
+  on 2025 and compare matching global/local controls. Do not choose another recipe
+  using confirmation scores. Newly acquire global 2026 sampled dates for independent
+  global temporal/geographic confirmation.
+* The original automatic benchmark had already scored the fixed Lebanese 2026 fold.
+  Its later refit use is a repeated fixed-fold comparison, not a new independent test.
+  That distinction is recorded in the protocol, frozen artifacts and final report.
+* The actual refit uses 949,823 global windows / 12,903 positives and 260,804 Lebanese
+  windows / 428 positives. Global and Lebanese 2025 calibration are separate. Compare
+  both carried 2022 thresholds and the explicitly labelled 2025 calibration-F1 rule;
+  neither rule is tuned on 2026. No numerical test result changes the selected model.
+* Fixed seasonal, prior-probability and zero-probability diagnostics are reported
+  without any new search or model selection. The selected transfer has no operational
+  release approval; 15 eligible Lebanese 2026 positive windows and zero true positives
+  at the frozen threshold are inadequate evidence for warning use.
+
+## 2026-11-14 — Final QA audit and immutable-cache safety
+
+* Audit all 5,825 original Lebanese NOAA-20 files, 4,608 original global scientific
+  subsets, 479 available new global 2026 subsets and 608 Lebanese 2026 subsets for
+  fire classes inconsistent with land QA. Two global native pixels in one Chilean
+  2023 cell-window disagree with land QA; that window already had a null target in
+  both policies. No fitted target, evaluation population or numerical result changes.
+  Tighten the generic guard so an incompatible-QA fire always quarantines the window,
+  even if the remaining clear-land fraction passes. Add a regression test preventing
+  such a detection from silently becoming a negative.
+* One of 480 requested global 2026 tile/date pairs is absent from the CMR inventory.
+  Keep missing evidence uncertain; successful acquisition means all available
+  selected sources were obtained, not that every requested observation existed.
+* Shared static scientific arrays may use hard links, while mutable manifests and
+  derived CSV metadata must be copied. A tested helper prevents regenerated target
+  metadata from corrupting the source cache. Cached NASA JSON additionally checks
+  that the recorded source URL matches the requested URL.
+* Declare SciPy directly and require sklearn >=1.7 for neural sample weights. The
+  lock preserves the fitted runtime library versions; only local project metadata
+  is rebuilt. Preserve actual training-time source hashes; reporting-only edits and
+  the zero-impact QA guard are not performance-selected retraining.
+* The Lebanese forecast view withholds the same 32 post-conflict-scope cells, while
+  the generic research artifact retains scope warnings. This is presentation/domain
+  handling, not a learned strike feature or a claim that other cells are conflict-free.
+
+## 2026-11-14 — Final measured outcome and delivery
+
+* The fixed recent-data transfer has global temporal AP 0.15719 versus 0.15868 for
+  its matching global source. Lebanese AP improves from zero-shot 0.000632 to
+  0.003091, while the matching local-only control reaches 0.003372. Do not claim a
+  transfer advantage over local fitting. Universal local calibration also worsens
+  global probability calibration. Preserve the validation selection even though
+  another model's confirmation result can look better.
+* At the selected frozen threshold, all 15 eligible Lebanese positive windows are
+  missed. A tiny Brier improvement over seasonal climatology is not practical
+  alert readiness, and the zero-probability diagnostic scores slightly lower Brier.
+  The real new release record is rejected; historical issued forecasts, independent
+  incident/calibration review and adequate local confirmation size/span are absent.
+* Notebooks 07 and 08 executed real source/subset inspection, conflict audit,
+  immutable selection checks, frozen result reproduction and the country forecast
+  with 32 withheld cells. The latest direct service smoke test with the actual
+  refitted artifact records health 200 and readiness/forecast 503. No external
+  model deployment occurred. A fresh global-extension Docker smoke test is not
+  claimed under this workspace's storage constraint.
+* Keep scientific outputs/data/models local and git-ignored. Publish code, notebooks,
+  comparative metrics/figures, licences, statecharts and limitations on the existing
+  user-requested feature branch. Provide a clearly named research-only model bundle;
+  no secret, NASA raw archive or claim of production approval belongs in that bundle.

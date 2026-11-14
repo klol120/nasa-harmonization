@@ -30,3 +30,33 @@ ACLED, DesInventar, EM-DAT and UN reports were investigated as initial review ca
 ## Comparable regions
 
 No real regional training experiment has been completed. Lebanon remains primary; no entire neighboring country is assumed ecologically equivalent. `compare_profiles` can compare pre-test rainfall, temperature, seasonality, vegetation, elevation and coverage-normalized fire profiles. Candidate strata need actual profile/coverage evidence and geographic deduplication before inclusion. Synthetic Cyprus examples do not establish transfer benefit. Global and deep-learning experiments are deferred because current labels and operational validation are more limiting than algorithm complexity.
+
+## Completed global extension and user-authorized conflict review
+
+The [latest global report](global-results.md) supersedes Lebanon-only scope for the
+new experiment. NOAA-20 VJ114A1.002, MCD12Q1.061, SRTMGL1.003 and NASA POWER were
+acquired for 24 predeclared globally distributed panels. Exact selected raw arrays
+and QA are retained with immutable source URLs, original/subset hashes and dates;
+this is scientific subsetting, not retention of every full global source container.
+New global 2026 collection has 479 available tile/date sources out of 480 requested;
+missing evidence does not become a negative label.
+
+The user's later conflict instruction explicitly authorizes historical sources
+outside NASA for exclusion review. [CDR/OCHA Lebanon COD boundaries](https://data.humdata.org/dataset/cod-ab-lbn),
+ADM1 version v02 (valid_on 2024-11-13), provide South LB6 and El Nabatieh LB4.
+The exact standard `lbn_admin1.geojson` layer is used, not the separate edge-matched
+layer. License: [CC BY-IGO 3.0](http://creativecommons.org/licenses/by/3.0/igo/legalcode).
+Credit Council for Development and Reconstruction (CDR), distributed by OCHA on HDX.
+The raw archive/API response, hash and version are cached. A 1km metric buffer and
+whole-cell temporal overlap define the user-requested broad quarantine from
+2023-10-07 00:00 UTC. These fields are historical label/evaluation quality only,
+never predictors or asserted real-time 2023 boundary availability.
+
+[ACLED access documentation](https://acleddata.com/faq/how-can-i-access-and-use-acled-data)
+requires authorized registration; its [codebook](https://acleddata.com/methodology/acled-codebook)
+and [update methodology](https://acleddata.com/methodology/keeping-acled-data-updated)
+describe aggregation/revisions and limitations. No complete accessible strike-to-fire
+inventory was established. [Official UN reporting](https://www.un.org/sg/en/content/highlight/2024-10-16.html)
+also documents activity beyond the southern governorates. The broad regional mask
+neither establishes event causation nor certifies the remainder of Lebanon clean.
+All fire/weather/vegetation/terrain predictors in this extension remain NASA-only.

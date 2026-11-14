@@ -57,7 +57,7 @@ jobs:
       - run: uv run --frozen python -m pytest -q -m "not db"
 
   forecasting:
-    name: Forecasting (synthetic leakage and label checks)
+    name: Forecasting (time, labels, transfer and release checks)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
