@@ -99,7 +99,7 @@ export function ClimatologyChart({ clim, year, yearSeries, unit, onSelectMonth }
           markArea: peaks.length
             ? {
                 silent: true,
-                itemStyle: { color: "rgba(255,255,255,0.035)" },
+                itemStyle: { color: UI.wash },
                 label: { show: true, position: "insideTop", color: UI.faint, fontSize: 10, formatter: "peak" },
                 data: contiguous(peaks).map(([a, b]) => [{ xAxis: MONTH_ABBR[a - 1] }, { xAxis: MONTH_ABBR[b - 1] }]),
               }

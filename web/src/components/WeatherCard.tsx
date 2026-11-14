@@ -249,7 +249,7 @@ function MiniChart({ field: f, title, unit, year, month, rows, normals, onSelect
           ? {
               name: String(year),
               type: "bar",
-              data: vals.map((v, k) => ({ value: v, itemStyle: { color: pointColor(k) === UI.text ? "rgba(232,235,242,0.55)" : pointColor(k), borderRadius: [3, 3, 0, 0] } })),
+              data: vals.map((v, k) => ({ value: v, itemStyle: { color: pointColor(k) === UI.text ? UI.barNeutral : pointColor(k), borderRadius: [3, 3, 0, 0] } })),
               barWidth: "58%",
               markLine: selLine(sel),
             }
@@ -299,6 +299,6 @@ const selLine = (k: number) => ({
   silent: true,
   symbol: "none",
   label: { show: false },
-  lineStyle: { color: "rgba(255,255,255,0.35)", width: 1, type: "solid" },
+  lineStyle: { color: UI.faint, width: 1, type: "solid" },
   data: [{ xAxis: k }],
 });

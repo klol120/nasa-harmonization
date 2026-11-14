@@ -734,6 +734,7 @@ export function MapView(props: Props) {
   useEffect(() => {
     const m = map.current;
     if (!m || !ready || !focus) return;
+    m.resize(); // the Overview page may have just been shown again
     const r = Math.max(focus.radius * 1.8, gridDeg * 2);
     m.fitBounds(
       [
@@ -772,6 +773,7 @@ export function MapView(props: Props) {
   useEffect(() => {
     const m = map.current;
     if (!m || !ready) return;
+    m.resize(); // the Overview page may have just been shown again
     m.fitBounds(
       [
         [area.bbox[0], area.bbox[1]],

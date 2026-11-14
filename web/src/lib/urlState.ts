@@ -1,8 +1,14 @@
 import { METRICS, type Metric, SENSORS, type Sensor, parseYm, ymKey } from "../data/contract";
 import { type Area, type Ring, areaFromBBox, areaFromRing } from "./geo";
 
-/** Shareable view state in the URL hash, e.g. #src=api:lebanon&s=harmonized&b=35.4,33.5,35.7,33.8&r=2000-11,2026-11 */
+/** Pages of the site. "explore" is the world globe; the others show one region. */
+export const PAGES = ["explore", "overview", "calendar", "trends", "weather", "methods"] as const;
+export type Page = (typeof PAGES)[number];
+const isPage = (p: string | null): p is Page => !!p && (PAGES as readonly string[]).includes(p);
+
+/** Shareable view state in the URL hash, e.g. #pg=calendar&src=api:lebanon&s=harmonized&a=all&r=2000-11,2026-11 */
 export interface UrlState {
+  page?: Page;
   source?: string;
   sensor?: Sensor;
   metric?: Metric;
@@ -14,11 +20,15 @@ export interface UrlState {
 }
 
 let reloading = false;
+/** The hash this app last put in the URL, to tell our own navigation from a hand-edited link. */
+let lastWritten = window.location.hash;
 
 export function readHash(): UrlState {
   const p = new URLSearchParams(window.location.hash.slice(1));
   const out: UrlState = {};
   try {
+    const pg = p.get("pg");
+    if (isPage(pg)) out.page = pg;
     if (p.get("src")) out.source = p.get("src")!;
     const s = p.get("s") as Sensor;
     if (SENSORS.includes(s)) out.sensor = s;
@@ -45,6 +55,7 @@ export function readHash(): UrlState {
 
 export function writeHash(s: Required<Omit<UrlState, "areaAll">> & { areaAll: boolean }) {
   const p = new URLSearchParams();
+  p.set("pg", s.page);
   p.set("src", s.source);
   p.set("s", s.sensor);
   p.set("m", s.metric);
@@ -58,12 +69,45 @@ export function writeHash(s: Required<Omit<UrlState, "areaAll">> & { areaAll: bo
   p.set("t", ymKey(s.selected));
   if (reloading) return; // a hand-edited URL is being applied; don't overwrite it
   const next = `#${p.toString()}`;
+  lastWritten = next;
   if (next !== window.location.hash) history.replaceState(null, "", next);
 }
 
-/** Reload when someone edits or pastes a different hash by hand (our own writes use replaceState and fire no event). */
-export function reloadOnManualHashChange() {
+/** The current link with another page in it (for nav hrefs, so they can be opened in a new tab). */
+export function pageHref(page: Page) {
+  const p = new URLSearchParams(window.location.hash.slice(1));
+  p.set("pg", page);
+  return `#${p.toString()}`;
+}
+
+/** Moves to another page as a new history entry, so Back returns to the previous page. */
+export function pushPage(page: Page) {
+  const next = pageHref(page);
+  lastWritten = next;
+  if (next !== window.location.hash) history.pushState(null, "", next);
+}
+
+const withoutPage = (hash: string) => {
+  const p = new URLSearchParams(hash.replace(/^#/, ""));
+  p.delete("pg");
+  return p.toString();
+};
+
+/**
+ * Back/forward between pages switches the page in place. Any other change to the hash (someone
+ * pastes or edits a link) reloads, so the new view state is applied from scratch.
+ * Our own writes use replaceState/pushState and fire no event.
+ */
+export function watchHash(onPage: (p: Page) => void) {
   const onChange = () => {
+    const hash = window.location.hash;
+    const p = new URLSearchParams(hash.slice(1));
+    const pg = p.get("pg");
+    if (!p.get("src") || withoutPage(hash) === withoutPage(lastWritten)) {
+      lastWritten = hash;
+      onPage(isPage(pg) ? pg : p.get("src") ? "overview" : "explore");
+      return;
+    }
     reloading = true;
     window.location.reload();
   };

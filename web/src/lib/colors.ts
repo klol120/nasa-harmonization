@@ -4,7 +4,7 @@ import type { Sensor } from "../data/contract";
 export const INFERNO = ["#1f0c48", "#420a68", "#6a176e", "#932667", "#bc3754", "#dd513a", "#f37819", "#fca50a", "#f6d746", "#fcffa4"];
 
 /** Diverging blue ↔ red for anomalies (RdBu family, colour-blind safe), neutral matched to the card surface. */
-export const DIVERGING = ["#2166ac", "#4393c3", "#92c5de", "#2a3140", "#f4a582", "#d6604d", "#b2182b"];
+export const DIVERGING = ["#2166ac", "#4393c3", "#92c5de", "#26262c", "#f4a582", "#d6604d", "#b2182b"];
 
 /** Okabe–Ito picks for the sensors; harmonized is the bright "truth" line. */
 export const SENSOR_COLOR: Record<Sensor, string> = {
@@ -13,15 +13,42 @@ export const SENSOR_COLOR: Record<Sensor, string> = {
   harmonized: "#F2EDE4",
 };
 
+/**
+ * Chart colours for the current theme. lib/theme.ts swaps the values in place when the theme
+ * changes, and the pages that draw charts remount, so options built from these pick them up.
+ */
 export const UI = {
-  text: "#e8ebf2",
-  muted: "#8c94a8",
-  faint: "#5a6276",
-  grid: "#232a38",
-  surface: "#131824",
-  accent: "#3d7bff",
-  noData: "#1a1f2b",
+  text: "#f5f5f7",
+  muted: "#98989d",
+  faint: "#636366",
+  grid: "rgba(84,84,88,0.42)",
+  /** Opaque stand-in for the glass the charts sit on (cell borders, PNG background). */
+  surface: "#1d1d21",
+  accent: "#ff9f0a",
+  noData: "rgba(120,120,128,0.2)",
+  /** Stripes of the "no data" hatch. */
+  hatch: "rgba(152,152,157,0.4)",
+  /** Outline of the selected cell / month. */
+  hl: "#ffffff",
+  /** Fill of the highlighted bar (selected year). */
+  hlBar: "#fcffa4",
+  /** Faint wash for bands, empty slots and axis shadows. */
+  wash: "rgba(255,255,255,0.05)",
+  /** Neutral bar fill (weather months with nothing unusual). */
+  barNeutral: "rgba(245,245,247,0.45)",
+  /** Sensor-change marker. */
+  marker: "rgba(100,210,255,0.8)",
+  markerText: "#64d2ff",
+  /** Orange text (event labels) readable on the surface. */
+  fireText: "#ffb340",
+  tooltipBg: "rgba(44,44,48,0.82)",
+  tooltipBorder: "rgba(255,255,255,0.14)",
+  tooltipShadow: "rgba(0,0,0,.45)",
 };
+
+/** Font stack for canvas and chart text: the system UI font (SF Pro on Apple devices), Inter elsewhere. */
+export const UI_FONT = `-apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", system-ui, sans-serif`;
+export const UI_MONO = `ui-monospace, "SF Mono", "Geist Mono", Menlo, Consolas, monospace`;
 
 export function interpolateRamp(ramp: string[], t: number) {
   const x = Math.min(1, Math.max(0, t)) * (ramp.length - 1);

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MONTH_ABBR, ym } from "../data/contract";
 import { type AnomalyCell, fmt, fmtPct } from "../lib/analytics";
-import { INFERNO, interpolateRamp } from "../lib/colors";
+import { DIVERGING, INFERNO, UI, UI_FONT, UI_MONO, interpolateRamp } from "../lib/colors";
 import { reducedMotion } from "../lib/motion";
 
 interface Props {
@@ -136,7 +136,7 @@ export function FireRings({ cells, unit, selected, onSelect, events, markerYear,
           if (Number.isNaN(t)) {
             if (pass === 1) {
               wedge(y, m);
-              g.fillStyle = "rgba(255,255,255,0.035)";
+              g.fillStyle = UI.wash;
               g.fill();
             }
             continue;
@@ -155,7 +155,7 @@ export function FireRings({ cells, unit, selected, onSelect, events, markerYear,
       const r = rr.get(st.markerYear!)![0];
       g.save();
       g.setLineDash([3, 4]);
-      g.strokeStyle = "rgba(170,205,255,0.75)";
+      g.strokeStyle = UI.marker;
       g.lineWidth = 1;
       g.beginPath();
       g.arc(cx, cy, r, 0, TAU);
@@ -186,26 +186,26 @@ export function FireRings({ cells, unit, selected, onSelect, events, markerYear,
       if (!rr.has(y)) return;
       g.save();
       wedge(y, (i % 12) + 1, 0);
-      g.shadowColor = "rgba(255,255,255,0.9)";
+      g.shadowColor = UI.hl;
       g.shadowBlur = glow;
       g.lineWidth = width;
       g.strokeStyle = colour;
       g.stroke();
       g.restore();
     };
-    if (st.hover !== null && st.hover !== st.selected) outline(st.hover, "rgba(255,255,255,0.75)", 1.2, 0);
-    outline(st.selected, "#ffffff", 2, 10);
+    if (st.hover !== null && st.hover !== st.selected) outline(st.hover, UI.hl, 1.2, 0);
+    outline(st.selected, UI.hl, 2, 10);
 
     // Month labels and a few year ticks along the January edge.
-    g.fillStyle = "#8c94a8";
-    g.font = "500 10.5px 'IBM Plex Sans', system-ui, sans-serif";
+    g.fillStyle = UI.muted;
+    g.font = `500 10.5px ${UI_FONT}`;
     g.textAlign = "center";
     g.textBaseline = "middle";
     MONTH_ABBR.forEach((label, k) => {
       const a = -Math.PI / 2 + ((k + 0.5) / 12) * TAU;
       g.fillText(label, cx + Math.cos(a) * (R + 13), cy + Math.sin(a) * (R + 13));
     });
-    g.font = "500 9px 'IBM Plex Mono', ui-monospace, monospace";
+    g.font = `500 9px ${UI_MONO}`;
     g.textAlign = "right";
     let lastY = -99;
     for (const y of s.years) {
@@ -224,12 +224,12 @@ export function FireRings({ cells, unit, selected, onSelect, events, markerYear,
     if (showMarker && st.markerLabel) {
       const r = rr.get(st.markerYear!)![0];
       const a = -Math.PI / 2 + (10.5 / 12) * TAU;
-      g.font = "600 9.5px 'IBM Plex Sans', system-ui, sans-serif";
+      g.font = `600 9.5px ${UI_FONT}`;
       g.textAlign = "center";
       g.fillStyle = "rgba(10,13,20,0.75)";
       const w = g.measureText(st.markerLabel).width + 8;
       g.fillRect(cx + Math.cos(a) * r - w / 2, cy + Math.sin(a) * r - 7, w, 14);
-      g.fillStyle = "#a9dcff";
+      g.fillStyle = UI.markerText;
       g.fillText(st.markerLabel, cx + Math.cos(a) * r, cy + Math.sin(a) * r);
     }
   };
@@ -312,7 +312,7 @@ export function FireRings({ cells, unit, selected, onSelect, events, markerYear,
 
   const focus = byIndex.get(hover ?? selected) ?? byIndex.get(selected);
   const { r0 } = geom();
-  const glow = focus && focus.value !== null ? interpolateRamp(INFERNO, shown.current?.t.get(focus.i) || target.t.get(focus.i) || 0) : "#2a3140";
+  const glow = focus && focus.value !== null ? interpolateRamp(INFERNO, shown.current?.t.get(focus.i) || target.t.get(focus.i) || 0) : DIVERGING[3];
 
   return (
     <div className="rings" ref={wrap}>
