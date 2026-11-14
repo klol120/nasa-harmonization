@@ -1,0 +1,1107 @@
+{
+  "contract_version": "0.5",
+  "region": "cyprus",
+  "bbox": [
+    32.22,
+    34.58,
+    34.15,
+    35.24
+  ],
+  "countries": [
+    "Cyprus"
+  ],
+  "generated_at": "2026-11-14T17:17:35Z",
+  "pipeline": {
+    "version": "0.1.0",
+    "config_hash": "sha256:2436ddaeeb1803a8"
+  },
+  "formats_status": "pending confirmation from the frontend team",
+  "units": "VIIRS-equivalent fire-days per 0.05\u00b0 cell per month",
+  "n_cells": 247,
+  "n_persistent_cells": 4,
+  "files": {
+    "calendar.csv.gz": 357330,
+    "calendar.parquet": 145760,
+    "cells.geojson": 83035,
+    "cells_series/2000.json": 3804,
+    "cells_series/2001.json": 30726,
+    "cells_series/2002.json": 30575,
+    "cells_series/2003.json": 31242,
+    "cells_series/2004.json": 30691,
+    "cells_series/2005.json": 30550,
+    "cells_series/2006.json": 30993,
+    "cells_series/2007.json": 30918,
+    "cells_series/2008.json": 30715,
+    "cells_series/2009.json": 30375,
+    "cells_series/2010.json": 31040,
+    "cells_series/2011.json": 30583,
+    "cells_series/2012.json": 9655,
+    "cells_series/2013.json": 12471,
+    "cells_series/2014.json": 12343,
+    "cells_series/2015.json": 10679,
+    "cells_series/2016.json": 11703,
+    "cells_series/2017.json": 11191,
+    "cells_series/2018.json": 8119,
+    "cells_series/2019.json": 9911,
+    "cells_series/2020.json": 8375,
+    "cells_series/2021.json": 10551,
+    "cells_series/2022.json": 7863,
+    "cells_series/2023.json": 11447,
+    "cells_series/2024.json": 10295,
+    "cells_series/2025.json": 12727,
+    "cells_series/2026.json": 7083,
+    "region_monthly.csv": 30313,
+    "region_monthly.json": 120898
+  },
+  "time": {
+    "first_month": "2000-11",
+    "last_month": "2026-12",
+    "stats_last_year": 2025,
+    "display_only_years": [
+      2026
+    ],
+    "splice_date": "2012-01-20",
+    "terra_only_until": "2002-07-04",
+    "viirs_switch_date": "2026-11-03"
+  },
+  "sources": {
+    "MODIS_SP": {
+      "satellites": [
+        "Terra",
+        "Aqua"
+      ],
+      "first_date": "2000-11-01",
+      "last_date": "2026-08-31"
+    },
+    "VIIRS_SNPP_SP": {
+      "satellites": [
+        "SNPP"
+      ],
+      "first_date": "2012-01-20",
+      "last_date": "2026-07-31"
+    },
+    "VIIRS_SNPP_NRT": {
+      "satellites": [
+        "SNPP"
+      ],
+      "first_date": "2026-08-01",
+      "last_date": "2026-11-02"
+    },
+    "VIIRS_NOAA20_SP": {
+      "satellites": [
+        "NOAA20"
+      ],
+      "first_date": "2018-04-01",
+      "last_date": "2026-07-31"
+    },
+    "VIIRS_NOAA20_NRT": {
+      "satellites": [
+        "NOAA20"
+      ],
+      "first_date": "2026-08-01",
+      "last_date": "2026-11-13"
+    }
+  },
+  "source_values": {
+    "MODIS": "estimate converted from MODIS (is_estimate)",
+    "SNPP": "observed VIIRS S-NPP",
+    "NOAA20": "VIIRS NOAA-20 calibrated to S-NPP units (calibration.continuation)",
+    "A+B": "month split between two sources at a switch date (e.g. MODIS+SNPP, SNPP+NOAA20)"
+  },
+  "calibration": {
+    "strategy": "affine_shape_single_level_pool_ex_cyprus",
+    "overlap_years": [
+      2012,
+      2020
+    ],
+    "exclude_persistent_from_fit": true,
+    "blend_k": null,
+    "factors": [
+      {
+        "month": 1,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 2,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 3,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 4,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 5,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 6,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 7,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 8,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 9,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 10,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 11,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 12,
+        "a": 3.9801,
+        "a_low": 3.6331,
+        "a_high": 4.4801,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      }
+    ],
+    "composite": {
+      "description": "monthly shape from `shape`, each year's estimated total from `level`; `factors` above are the level model's",
+      "shape": {
+        "strategy": "affine_blend:eastmed_pool_ex_cyprus",
+        "k": 10.0,
+        "factors": [
+          {
+            "month": 1,
+            "a": 2.0826,
+            "a_low": 1.1879,
+            "a_high": 2.5177,
+            "b": 1.4386,
+            "b_low": 0.8226,
+            "b_high": 3.1404,
+            "w_local": null
+          },
+          {
+            "month": 2,
+            "a": 2.9888,
+            "a_low": 1.8908,
+            "a_high": 3.9715,
+            "b": 0.6531,
+            "b_low": 0.0,
+            "b_high": 1.6254,
+            "w_local": null
+          },
+          {
+            "month": 3,
+            "a": 0.8956,
+            "a_low": 0.6492,
+            "a_high": 1.6819,
+            "b": 3.101,
+            "b_low": 2.3111,
+            "b_high": 3.6299,
+            "w_local": null
+          },
+          {
+            "month": 4,
+            "a": 3.4418,
+            "a_low": 1.0522,
+            "a_high": 7.497,
+            "b": 9.145,
+            "b_low": 4.0472,
+            "b_high": 14.1612,
+            "w_local": null
+          },
+          {
+            "month": 5,
+            "a": 1.2049,
+            "a_low": 0.974,
+            "a_high": 1.8403,
+            "b": 5.7997,
+            "b_low": 2.8306,
+            "b_high": 8.2478,
+            "w_local": null
+          },
+          {
+            "month": 6,
+            "a": 1.0062,
+            "a_low": 0.8888,
+            "a_high": 1.268,
+            "b": 4.1858,
+            "b_low": 2.852,
+            "b_high": 5.8663,
+            "w_local": null
+          },
+          {
+            "month": 7,
+            "a": 0.6356,
+            "a_low": 0.3486,
+            "a_high": 1.2796,
+            "b": 7.128,
+            "b_low": 4.2039,
+            "b_high": 8.9851,
+            "w_local": null
+          },
+          {
+            "month": 8,
+            "a": 1.8808,
+            "a_low": 1.1036,
+            "a_high": 2.5716,
+            "b": 4.1341,
+            "b_low": 1.1786,
+            "b_high": 7.7419,
+            "w_local": null
+          },
+          {
+            "month": 9,
+            "a": 1.0297,
+            "a_low": 0.5989,
+            "a_high": 1.5751,
+            "b": 6.5358,
+            "b_low": 3.6638,
+            "b_high": 9.0893,
+            "w_local": null
+          },
+          {
+            "month": 10,
+            "a": 3.3986,
+            "a_low": 1.0786,
+            "a_high": 3.9108,
+            "b": 1.9559,
+            "b_low": 0.059,
+            "b_high": 7.7727,
+            "w_local": null
+          },
+          {
+            "month": 11,
+            "a": 2.2369,
+            "a_low": 1.4158,
+            "a_high": 2.5185,
+            "b": 0.5603,
+            "b_low": 0.0553,
+            "b_high": 4.9315,
+            "w_local": null
+          },
+          {
+            "month": 12,
+            "a": 2.0022,
+            "a_low": 1.1501,
+            "a_high": 2.4104,
+            "b": 0.985,
+            "b_low": 0.2101,
+            "b_high": 2.3002,
+            "w_local": null
+          }
+        ]
+      },
+      "level": {
+        "strategy": "single",
+        "factors": [
+          {
+            "month": 1,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 2,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 3,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 4,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 5,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 6,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 7,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 8,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 9,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 10,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 11,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          },
+          {
+            "month": 12,
+            "a": 3.9801,
+            "a_low": 3.6331,
+            "a_high": 4.4801,
+            "b": 0.0,
+            "b_low": 0.0,
+            "b_high": 0.0,
+            "w_local": 1.0
+          }
+        ]
+      },
+      "bands": "level model's factor uncertainty only (shape uncertainty not propagated)"
+    },
+    "terra_strategy": "single",
+    "terra_correction": [
+      {
+        "month": 1,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 2,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 3,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 4,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 5,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 6,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 7,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 8,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 9,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 10,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 11,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      },
+      {
+        "month": 12,
+        "kT": 2.2135,
+        "kT_low": 2.0385,
+        "kT_high": 2.4519
+      }
+    ],
+    "continuation": {
+      "satellite": "NOAA20",
+      "replaces": "SNPP",
+      "switch_date": "2026-11-03",
+      "strategy": "single",
+      "overlap_years": [
+        2018,
+        2025
+      ],
+      "factors": [
+        {
+          "month": 1,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 2,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 3,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 4,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 5,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 6,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 7,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 8,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 9,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 10,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 11,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        },
+        {
+          "month": 12,
+          "c": 0.8324,
+          "c_low": 0.7605,
+          "c_high": 0.9174
+        }
+      ],
+      "holdout": [
+        {
+          "strategy": "blend:southern_turkey",
+          "k": 1000000000.0,
+          "wape": 0.3813,
+          "bias": 0.1977
+        },
+        {
+          "strategy": "single",
+          "k": null,
+          "wape": 0.3822,
+          "bias": 0.2112
+        },
+        {
+          "strategy": "blend:israel_palestine",
+          "k": 50.0,
+          "wape": 0.4006,
+          "bias": 0.2207
+        },
+        {
+          "strategy": "blend:eastmed_pool_ex_cyprus",
+          "k": 1000000000.0,
+          "wape": 0.4373,
+          "bias": 0.293
+        },
+        {
+          "strategy": "local",
+          "k": null,
+          "wape": 0.4468,
+          "bias": 0.2151
+        },
+        {
+          "strategy": "blend:syria",
+          "k": 1000000000.0,
+          "wape": 0.5249,
+          "bias": 0.405
+        }
+      ],
+      "continuity": {
+        "window": [
+          "2026-01-01",
+          "2026-11-02"
+        ],
+        "step_index": 1.222018746536228,
+        "band": [
+          0.9379017944810522,
+          1.5767061558173945
+        ],
+        "step_flagged": false,
+        "raw_ratio": 1.4680851063829787
+      }
+    },
+    "auto_strategy": {
+      "strategy": "affine_shape_single_level_pool_ex_cyprus",
+      "outcome": "thin",
+      "reason": "12/12 months thin (n < n_month 149): share 1.00 >= n_country 0.72",
+      "available": true,
+      "configured_strategy": "affine_shape_single_level_pool_ex_cyprus",
+      "agrees_with_configured": true,
+      "inputs": {
+        "overlap_years": [
+          2012,
+          2020
+        ],
+        "exclude_persistent": true,
+        "annual": 27.89,
+        "thin_share": 1.0
+      },
+      "thresholds": {
+        "n_month": 149,
+        "n_country": 0.72,
+        "n_country_annual": 132,
+        "n_min_annual": 3.6
+      },
+      "report": "docs/reports/thresholds.md",
+      "months": [
+        {
+          "month": 1,
+          "name": "Jan",
+          "n": 3,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 3 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 2,
+          "name": "Feb",
+          "n": 4,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 4 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 3,
+          "name": "Mar",
+          "n": 6,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 6 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 4,
+          "name": "Apr",
+          "n": 6,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 6 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 5,
+          "name": "May",
+          "n": 10,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 10 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 6,
+          "name": "Jun",
+          "n": 35,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 35 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 7,
+          "name": "Jul",
+          "n": 26,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 26 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 8,
+          "name": "Aug",
+          "n": 34,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 34 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 9,
+          "name": "Sep",
+          "n": 25,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 25 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 10,
+          "name": "Oct",
+          "n": 35,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 35 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 11,
+          "name": "Nov",
+          "n": 42,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 42 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        },
+        {
+          "month": 12,
+          "name": "Dec",
+          "n": 25,
+          "thin": true,
+          "rule": "thin_month",
+          "reason": "n 25 < n_month 149: monthly shape borrowed from the donor pool, level from the local single ratio"
+        }
+      ]
+    }
+  },
+  "low_confidence_rule": {
+    "min_modis_fire_days": 20,
+    "max_zero_modis_share": 0.95,
+    "months": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "by_month": [
+      {
+        "month": 1,
+        "viirs": 17,
+        "zero_modis": 17,
+        "modis": 3,
+        "zero_modis_share": 1.0,
+        "low_confidence": true
+      },
+      {
+        "month": 2,
+        "viirs": 32,
+        "zero_modis": 31,
+        "modis": 4,
+        "zero_modis_share": 0.9688,
+        "low_confidence": true
+      },
+      {
+        "month": 3,
+        "viirs": 41,
+        "zero_modis": 39,
+        "modis": 6,
+        "zero_modis_share": 0.9512,
+        "low_confidence": true
+      },
+      {
+        "month": 4,
+        "viirs": 226,
+        "zero_modis": 225,
+        "modis": 6,
+        "zero_modis_share": 0.9956,
+        "low_confidence": true
+      },
+      {
+        "month": 5,
+        "viirs": 89,
+        "zero_modis": 85,
+        "modis": 10,
+        "zero_modis_share": 0.9551,
+        "low_confidence": true
+      },
+      {
+        "month": 6,
+        "viirs": 65,
+        "zero_modis": 45,
+        "modis": 35,
+        "zero_modis_share": 0.6923,
+        "low_confidence": false
+      },
+      {
+        "month": 7,
+        "viirs": 69,
+        "zero_modis": 59,
+        "modis": 26,
+        "zero_modis_share": 0.8551,
+        "low_confidence": false
+      },
+      {
+        "month": 8,
+        "viirs": 91,
+        "zero_modis": 74,
+        "modis": 34,
+        "zero_modis_share": 0.8132,
+        "low_confidence": false
+      },
+      {
+        "month": 9,
+        "viirs": 74,
+        "zero_modis": 65,
+        "modis": 25,
+        "zero_modis_share": 0.8784,
+        "low_confidence": false
+      },
+      {
+        "month": 10,
+        "viirs": 142,
+        "zero_modis": 128,
+        "modis": 35,
+        "zero_modis_share": 0.9014,
+        "low_confidence": false
+      },
+      {
+        "month": 11,
+        "viirs": 97,
+        "zero_modis": 84,
+        "modis": 42,
+        "zero_modis_share": 0.866,
+        "low_confidence": false
+      },
+      {
+        "month": 12,
+        "viirs": 56,
+        "zero_modis": 46,
+        "modis": 25,
+        "zero_modis_share": 0.8214,
+        "low_confidence": false
+      }
+    ]
+  },
+  "validation": {
+    "variant": "persistence_excluded",
+    "holdout": {
+      "fit": [
+        2012,
+        2016
+      ],
+      "test": [
+        2017,
+        2020
+      ]
+    },
+    "strategies": [
+      {
+        "strategy": "affine_shape_single_level_pool_ex_cyprus",
+        "k": 10.0,
+        "wape": 0.5593,
+        "bias": -0.1401
+      },
+      {
+        "strategy": "affine_blend:eastmed_pool_ex_cyprus",
+        "k": 10.0,
+        "wape": 0.5872,
+        "bias": -0.0373
+      },
+      {
+        "strategy": "donor:eastmed_pool_ex_cyprus",
+        "k": null,
+        "wape": 0.6671,
+        "bias": -0.4309
+      },
+      {
+        "strategy": "pooled:eastmed_pool_ex_cyprus",
+        "k": null,
+        "wape": 0.6684,
+        "bias": -0.4285
+      },
+      {
+        "strategy": "pooled:southern_turkey",
+        "k": null,
+        "wape": 0.674,
+        "bias": -0.5106
+      },
+      {
+        "strategy": "donor:southern_turkey",
+        "k": null,
+        "wape": 0.6775,
+        "bias": -0.5154
+      },
+      {
+        "strategy": "blend:eastmed_pool_ex_cyprus",
+        "k": 20.0,
+        "wape": 0.7015,
+        "bias": -0.3482
+      },
+      {
+        "strategy": "blend:southern_turkey",
+        "k": 10.0,
+        "wape": 0.7018,
+        "bias": -0.3502
+      },
+      {
+        "strategy": "blend:syria",
+        "k": 10.0,
+        "wape": 0.7737,
+        "bias": -0.2015
+      },
+      {
+        "strategy": "pooled:syria",
+        "k": null,
+        "wape": 0.7999,
+        "bias": -0.1434
+      },
+      {
+        "strategy": "donor:syria",
+        "k": null,
+        "wape": 0.8053,
+        "bias": -0.1368
+      },
+      {
+        "strategy": "blend:israel_palestine",
+        "k": 5.0,
+        "wape": 0.8057,
+        "bias": -0.1565
+      },
+      {
+        "strategy": "single",
+        "k": null,
+        "wape": 0.8057,
+        "bias": -0.1401
+      },
+      {
+        "strategy": "local",
+        "k": null,
+        "wape": 0.814,
+        "bias": -0.1792
+      },
+      {
+        "strategy": "pooled:israel_palestine",
+        "k": null,
+        "wape": 0.8851,
+        "bias": -0.0224
+      },
+      {
+        "strategy": "donor:israel_palestine",
+        "k": null,
+        "wape": 0.9593,
+        "bias": 0.0667
+      }
+    ],
+    "continuity_2012": {
+      "step_index": 0.9711827211827212,
+      "band": [
+        0.7398283758860008,
+        1.277435243108699
+      ],
+      "step_flagged": false,
+      "band_factor_only": [
+        0.8627915647359741,
+        1.0639251075011946
+      ],
+      "step_flagged_factor_only": false
+    }
+  },
+  "anomalies": {
+    "baseline_years": [
+      2012,
+      2025
+    ],
+    "baseline_source": "anomalies.by_region",
+    "method": "z-score per cell and calendar month",
+    "sensitivity": [
+      {
+        "baseline_years": [
+          2001,
+          2025
+        ],
+        "region_corr_z": 0.8247224314114322,
+        "region_mean_abs_dz": 0.39465219902838716,
+        "cells_corr_z": 0.7635689180405792,
+        "cells_mean_abs_dz": 0.1837514658032051
+      }
+    ]
+  },
+  "outages": [
+    {
+      "satellite": "SNPP",
+      "start": "2022-07-27",
+      "end": "2022-08-10"
+    },
+    {
+      "satellite": "Terra",
+      "start": "2001-06-15",
+      "end": "2001-07-02"
+    },
+    {
+      "satellite": "Terra",
+      "start": "2016-02-19",
+      "end": "2016-02-27"
+    }
+  ],
+  "caveats": [
+    "Pre-2012 values are estimates converted from MODIS and must be labelled as such.",
+    "low_confidence marks pre-2012 months where MODIS sees almost none of the VIIRS-detected activity or the factor rests on few MODIS fire-days; show them with extra caution.",
+    "Fire-days measure burning activity, not burned area.",
+    "2026 is a partial year shown for display only.",
+    "From the VIIRS switch date (S-NPP's end) harmonized is NOAA-20 calibrated to S-NPP units per calendar month (source = NOAA20); viirs_raw stays S-NPP only, noaa20_raw is the uncalibrated NOAA-20 count.",
+    "is_persistent cells contain persistent (industrial / waste-burning) sources; they are excluded from calibration but kept in the data so the UI can show or hide them."
+  ]
+}

@@ -19,4 +19,8 @@ data/**
 !data/export/*/cells_series/*.json
 !data/export/*/region_monthly.json
 !data/export/*/cells.geojson
+# 2026-11-14 (monorepo with the backend/frontend): every region's meta.json and calendar.parquet, so the
+# backend can load any region from the repo (calendar.csv.gz stays local: same data, larger)
+!data/export/*/meta.json
+!data/export/*/calendar.parquet
 data/export/eastmed/cells.geojson
