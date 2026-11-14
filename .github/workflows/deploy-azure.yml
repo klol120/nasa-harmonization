@@ -1,0 +1,139 @@
+# Deploys the app to Azure Container Apps on every push to main.
+# Teammates work on `dev` (or feature branches) and open a pull request into main; merging it deploys.
+#
+# Only the parts that changed are rebuilt: backend/** rebuilds the API, web/** rebuilds the website
+# (a change to this file rebuilds both). "Run workflow" on the Actions tab redeploys both by hand.
+#
+# Sign-in uses GitHub's OIDC token with a federated credential on an Azure app registration, so no
+# password or key is stored in GitHub. The IDs below are identifiers, not secrets.
+# AZURE_CLIENT_ID is printed by infra/azure/setup-github-oidc.sh.
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-azure
+  cancel-in-progress: false
+
+env:
+  AZURE_CLIENT_ID: 6b937771-9d7d-44f9-b12d-9910439730e2
+  AZURE_TENANT_ID: 19c3c702-45a1-4697-919c-5e479f4a4b55
+  AZURE_SUBSCRIPTION_ID: 8834278b-93b5-4626-8e51-3de2d007ebc2
+  RESOURCE_GROUP: wel3a-rg
+  ACR_NAME: wel3abe616acr
+  API_APP: wel3a-api
+  WEB_APP: wel3a-web
+  API_URL: https://wel3a-api.blackwave-481696ae.francecentral.azurecontainerapps.io
+  WEB_URL: https://wel3a-web.blackwave-481696ae.francecentral.azurecontainerapps.io
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v7
+        if: github.event_name == 'push'
+      # Compares against the commit main pointed to before this push (the whole merged PR).
+      - id: filter
+        if: github.event_name == 'push'
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/deploy-azure.yml'
+            web:
+              - 'web/**'
+              - '.github/workflows/deploy-azure.yml'
+
+  api:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      - name: Build the API image in Azure
+        run: |
+          az acr build --registry "$ACR_NAME" --platform linux/amd64 \
+            --image "firecal-api:${GITHUB_SHA::7}" --image firecal-api:latest backend/
+      - name: Roll out the new image
+        run: |
+          az extension add --name containerapp --upgrade --only-show-errors
+          az containerapp update -n "$API_APP" -g "$RESOURCE_GROUP" \
+            --image "$ACR_NAME.azurecr.io/firecal-api:${GITHUB_SHA::7}" -o none
+      # In single-revision mode the old revision keeps serving until the new one is ready, so wait for
+      # the new revision first; otherwise the health check could pass against the old one.
+      - name: Wait for the new revision
+        run: |
+          rev=$(az containerapp show -n "$API_APP" -g "$RESOURCE_GROUP" --query properties.latestRevisionName -o tsv)
+          for _ in $(seq 1 30); do
+            ready=$(az containerapp show -n "$API_APP" -g "$RESOURCE_GROUP" --query properties.latestReadyRevisionName -o tsv)
+            if [ "$ready" = "$rev" ]; then echo "revision $rev is ready"; exit 0; fi
+            sleep 10
+          done
+          echo "revision $rev did not become ready (still serving $ready)" >&2
+          az containerapp revision show -n "$API_APP" -g "$RESOURCE_GROUP" --revision "$rev" -o jsonc || true
+          exit 1
+      - name: Check the API answers
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS -m 20 "$API_URL/health"; then echo; exit 0; fi
+            sleep 10
+          done
+          echo "API did not become healthy" >&2; exit 1
+
+  web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      - name: Build the website image in Azure
+        run: |
+          az acr build --registry "$ACR_NAME" --platform linux/amd64 \
+            --build-arg "VITE_API_URL=$API_URL" \
+            --image "firecal-web:${GITHUB_SHA::7}" --image firecal-web:latest web/
+      - name: Roll out the new image
+        run: |
+          az extension add --name containerapp --upgrade --only-show-errors
+          az containerapp update -n "$WEB_APP" -g "$RESOURCE_GROUP" \
+            --image "$ACR_NAME.azurecr.io/firecal-web:${GITHUB_SHA::7}" -o none
+      - name: Wait for the new revision
+        run: |
+          rev=$(az containerapp show -n "$WEB_APP" -g "$RESOURCE_GROUP" --query properties.latestRevisionName -o tsv)
+          for _ in $(seq 1 30); do
+            ready=$(az containerapp show -n "$WEB_APP" -g "$RESOURCE_GROUP" --query properties.latestReadyRevisionName -o tsv)
+            if [ "$ready" = "$rev" ]; then echo "revision $rev is ready"; exit 0; fi
+            sleep 10
+          done
+          echo "revision $rev did not become ready (still serving $ready)" >&2
+          az containerapp revision show -n "$WEB_APP" -g "$RESOURCE_GROUP" --revision "$rev" -o jsonc || true
+          exit 1
+      - name: Check the website answers
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS -m 20 -o /dev/null "$WEB_URL/"; then echo "website up"; exit 0; fi
+            sleep 10
+          done
+          echo "website did not come up" >&2; exit 1
