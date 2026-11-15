@@ -121,13 +121,13 @@ def pick_points(cells: list[dict], bbox: list[float], per_side: int = TILES_PER_
 async def hotspot_cells(conn: asyncpg.Connection, release_id: int) -> list[dict]:
     """Fire-days per cell over the release, leaving out persistent (industrial/waste) sources."""
     rows = await conn.fetch(
-        """select c.lat_center lat, c.lon_center lon, sum(cm.harmonized)::float8 total
-           from cell_month cm
+        """select c.lat_center lat, c.lon_center lon, sum(cm.harmonized::float8) total
+           from cell_month_data cm  -- stored rows only: the cell-months left out are all zero
            join release_cell rc on rc.release_id = cm.release_id and rc.cell_key = cm.cell_key
            join cell c on c.cell_key = cm.cell_key
            where cm.release_id = $1 and not rc.is_persistent
            group by c.cell_key, c.lat_center, c.lon_center
-           having sum(cm.harmonized) > 0""",
+           having sum(cm.harmonized::float8) > 0""",
         release_id,
     )
     return [dict(r) for r in rows]

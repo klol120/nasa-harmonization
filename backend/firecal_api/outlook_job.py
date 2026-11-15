@@ -59,7 +59,7 @@ async def load_region(conn, rel, source: InputMonths) -> O.Region:
     values[:, ok] = 0  # Stored live cell rows are sparse; covered cells without detections are zero.
 
     async for key, ym, value in conn.cursor(
-        """select cell_key, ym, harmonized from cell_month
+        """select cell_key, ym, harmonized from cell_month_data
            where release_id = $1 and ym = any($2::date[]) and harmonized > 0
            union all
            select lc.cell_key, lc.ym, lc.harmonized from live_cell_month lc

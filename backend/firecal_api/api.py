@@ -430,8 +430,8 @@ async def area_months(
         s["ym"]: s
         for s in await c.fetch(
             f"""select ym, sum(modis_raw)::int modis_raw, sum(viirs_raw)::int viirs_raw, sum(noaa20_raw)::int noaa20_raw,
-                       sum(harmonized)::float8 harmonized,
-                       sum(harmonized_low)::float8 harmonized_low, sum(harmonized_high)::float8 harmonized_high
+                       sum(harmonized::float8) harmonized,
+                       sum(harmonized_low::float8) harmonized_low, sum(harmonized_high::float8) harmonized_high
                 from {src} where release_id = $1 and cell_key = any($2::int[]) group by ym""",
             rid, keys, *extra,
         )
