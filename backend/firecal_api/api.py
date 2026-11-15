@@ -48,7 +48,7 @@ app.add_middleware(
 
 # Accounts, email list, saved areas, plans: optional extras; no data endpoint depends on them.
 app.include_router(accounts.router)
-# The assistant: off until ANTHROPIC_API_KEY is set.
+# The assistant: off until OPENROUTER_API_KEY is set.
 app.include_router(chat.router)
 
 RegionId = Annotated[str, Path(pattern=r"^[a-z0-9_-]{1,64}$")]

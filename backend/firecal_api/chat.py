@@ -1,12 +1,8 @@
 """The site's assistant: answers questions about the fire record on screen.
 
-Optional, like accounts: no data endpoint depends on it. It is off until a key is set for its
-provider (the key stays in this process and never reaches the web build):
-
-    CHAT_PROVIDER=anthropic    ANTHROPIC_API_KEY, model CHAT_MODEL
-    CHAT_PROVIDER=openrouter   OPENROUTER_API_KEY, model OPENROUTER_MODEL (free models work)
-
-With CHAT_PROVIDER empty, OpenRouter is used when only OPENROUTER_API_KEY is set, else Anthropic.
+Optional, like accounts: no data endpoint depends on it. It runs on OpenRouter and is off until
+OPENROUTER_API_KEY is set (the key stays in this process and never reaches the web build). The
+model is OPENROUTER_MODEL; free models work.
 
     GET  /chat/config   {"enabled": bool, "model": str}
     POST /chat          server-sent events: `delta` {"text"}, then `done` {"truncated"} or `error` {"message"}
@@ -28,15 +24,9 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-try:  # the API runs without the SDK installed; the Anthropic provider is then reported as disabled
-    import anthropic
-except ImportError:  # pragma: no cover
-    anthropic = None
-
 log = logging.getLogger("firecal.chat")
 router = APIRouter()
 
-DEFAULT_MODEL = "claude-haiku-5-5"
 # OpenRouter's router over its free models: it picks one that is up, so the default survives
 # individual free models being withdrawn. Pin one (e.g. google/gemma-4-31b-it:free) with OPENROUTER_MODEL.
 DEFAULT_OPENROUTER_MODEL = "openrouter/free"
@@ -84,25 +74,12 @@ def env(name: str) -> str:
     return os.environ.get(name, "").strip()
 
 
-def provider() -> str:
-    chosen = env("CHAT_PROVIDER").lower()
-    if chosen in ("anthropic", "openrouter"):
-        return chosen
-    return "openrouter" if env("OPENROUTER_API_KEY") and not env("ANTHROPIC_API_KEY") else "anthropic"
-
-
-def key_var() -> str:
-    return "OPENROUTER_API_KEY" if provider() == "openrouter" else "ANTHROPIC_API_KEY"
-
-
 def api_key() -> str:
-    return env(key_var())
+    return env("OPENROUTER_API_KEY")
 
 
 def model() -> str:
-    if provider() == "openrouter":
-        return env("OPENROUTER_MODEL") or DEFAULT_OPENROUTER_MODEL
-    return env("CHAT_MODEL") or DEFAULT_MODEL
+    return env("OPENROUTER_MODEL") or DEFAULT_OPENROUTER_MODEL
 
 
 def daily_cap() -> int:
@@ -113,25 +90,7 @@ def daily_cap() -> int:
 
 
 def enabled() -> bool:
-    if provider() == "anthropic" and anthropic is None:
-        return False
     return bool(api_key())
-
-
-_client = None
-_client_key = ""
-
-
-def client():
-    """One shared async client (rebuilt if the key changes, e.g. in tests)."""
-    global _client, _client_key
-    key = api_key()
-    if _client is None or key != _client_key:
-        # CHAT_BASE_URL points the SDK at a gateway that speaks the Anthropic API (local testing); empty = api.anthropic.com.
-        base = os.environ.get("CHAT_BASE_URL", "").strip() or "https://api.anthropic.com"
-        _client = anthropic.AsyncAnthropic(api_key=key, base_url=base, timeout=90.0, max_retries=2)
-        _client_key = key
-    return _client
 
 
 _http: httpx2.AsyncClient | None = None
@@ -184,8 +143,8 @@ class ChatBody(BaseModel):
     context: dict[str, Any] | None = None
 
 
-def system_blocks(context: dict[str, Any] | None) -> list[dict]:
-    """The fixed instructions (cacheable prefix), then the view snapshot, which changes per request."""
+def system_prompt(context: dict[str, Any] | None) -> str:
+    """The fixed instructions, then the view snapshot, which changes per request."""
     today = datetime.now(timezone.utc).date().isoformat()
     if context:
         view = json.dumps(context, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
@@ -197,31 +156,11 @@ def system_blocks(context: dict[str, Any] | None) -> list[dict]:
         )
     else:
         snapshot = f"Today is {today} (UTC).\n\nNo view snapshot was sent with this request, so you have no figures to quote."
-    return [
-        {"type": "text", "text": SYSTEM, "cache_control": {"type": "ephemeral"}},
-        {"type": "text", "text": snapshot},
-    ]
+    return f"{SYSTEM}\n\n{snapshot}"
 
 
 def sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, separators=(',', ':'), ensure_ascii=False)}\n\n"
-
-
-def failure_message(e: Exception) -> str:
-    """What the visitor is told; the detail goes to the server log."""
-    if isinstance(e, (anthropic.AuthenticationError, anthropic.PermissionDeniedError)):
-        return f"The assistant's API key was rejected. Check {key_var()} on the server."
-    if isinstance(e, anthropic.NotFoundError):
-        return f'The assistant\'s model "{model()}" was not found. Check CHAT_MODEL on the server.'
-    if isinstance(e, anthropic.RateLimitError):
-        return "The assistant is busy right now. Try again in a moment."
-    if isinstance(e, anthropic.BadRequestError):
-        return "The assistant couldn't process that message. Try rephrasing it, or start a new chat."
-    if isinstance(e, anthropic.APIStatusError):
-        return "The assistant is temporarily unavailable. Try again in a moment."
-    if isinstance(e, anthropic.APIConnectionError):
-        return "The server couldn't reach the assistant. Check its internet connection and try again."
-    return "Something went wrong. Try again."
 
 
 def openrouter_failure(status: int) -> str:
@@ -238,36 +177,14 @@ def openrouter_failure(status: int) -> str:
     return "The assistant is temporarily unavailable. Try again in a moment."
 
 
-async def anthropic_events(system: list[dict], messages: list[dict]):
-    try:
-        async with client().messages.stream(
-            model=model(),
-            max_tokens=MAX_TOKENS,
-            system=system,
-            messages=messages,
-            # Short grounded answers: keep the model quick. Thinking stays adaptive (the default).
-            output_config={"effort": "low"},
-        ) as stream:
-            async for text in stream.text_stream:
-                yield sse("delta", {"text": text})
-            final = await stream.get_final_message()
-        if final.stop_reason == "refusal":
-            yield sse("error", {"message": "The assistant can't help with that request."})
-        else:
-            yield sse("done", {"truncated": final.stop_reason == "max_tokens"})
-    except anthropic.APIError as e:
-        log.warning("chat failed: %s: %s", type(e).__name__, e)
-        yield sse("error", {"message": failure_message(e)})
-
-
-async def openrouter_events(system: list[dict], messages: list[dict], referer: str):
+async def openrouter_events(system: str, messages: list[dict], referer: str):
     """OpenRouter's OpenAI-style chat completions, streamed (SSE `data:` lines, ending in [DONE])."""
     body = {
         "model": model(),
         "max_tokens": MAX_TOKENS,
         "stream": True,
         # The instructions and the snapshot go in as one system message, as OpenAI-style models expect.
-        "messages": [{"role": "system", "content": "\n\n".join(b["text"] for b in system)}, *messages],
+        "messages": [{"role": "system", "content": system}, *messages],
     }
     headers = {"Authorization": f"Bearer {api_key()}", "X-Title": "Phoenical"}
     if referer:
@@ -316,20 +233,17 @@ async def chat_config():
 @router.post("/chat", tags=["assistant"])
 async def chat(body: ChatBody, request: Request):
     if not enabled():
-        raise HTTPException(503, f"The assistant is not configured on this server ({key_var()} is not set).")
+        raise HTTPException(503, "The assistant is not configured on this server (OPENROUTER_API_KEY is not set).")
 
     messages = [{"role": m.role, "content": m.content} for m in body.messages]
     while messages and messages[0]["role"] != "user":  # a trimmed history may start mid-exchange
         messages.pop(0)
     if not messages or messages[-1]["role"] != "user":
         raise HTTPException(422, "The last message must be the person's question.")
-    system = system_blocks(body.context)
+    system = system_prompt(body.context)
     check_limits(request.client.host if request.client else "unknown")
 
-    if provider() == "openrouter":
-        source = openrouter_events(system, messages, request.headers.get("origin", ""))
-    else:
-        source = anthropic_events(system, messages)
+    source = openrouter_events(system, messages, request.headers.get("origin", ""))
 
     async def events():
         try:
