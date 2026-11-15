@@ -89,7 +89,17 @@ export function SignInDialog() {
             <p className="warn">{config ? "Sign-in isn't set up on this server yet." : "Can't reach the server right now. Try again in a moment."}</p>
           )}
           {error && <p className="warn">{error}</p>}
-          <p className="small muted">We only store your email, name and picture from Google. You can delete your account at any time.</p>
+          <p className="small muted">
+            We only store your email, name and picture from Google. You can delete your account at any time. See the{" "}
+            <a href="./privacy.html" target="_blank" rel="noopener">
+              privacy policy
+            </a>{" "}
+            and{" "}
+            <a href="./terms.html" target="_blank" rel="noopener">
+              terms
+            </a>
+            .
+          </p>
         </div>
       </div>
     </div>

@@ -424,7 +424,10 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current, extras,
 
         {extras}
 
-        <p className="world-foot">Or click a highlighted country on the map. Data: NASA FIRMS, harmonized by the Wel3a pipeline.</p>
+        <p className="world-foot">
+          Or click a highlighted country on the map. Data: NASA FIRMS, harmonized by the Wel3a pipeline. ·{" "}
+          <a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms</a>
+        </p>
       </aside>
       {corner && <div className="world-corner">{corner}</div>}
 

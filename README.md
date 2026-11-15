@@ -7,8 +7,8 @@ MODIS sees roughly 3–6× fewer fire-days than VIIRS, so a naive record jumps w
 Wel3a converts everything to **VIIRS-equivalent fire-days**, so a change of satellite never looks like a
 fire crisis, and shows the result as a month × year burning calendar, a map, anomalies and season charts.
 
-**Live:** https://wel3a-web.blackwave-481696ae.francecentral.azurecontainerapps.io ·
-API docs: https://wel3a-api.blackwave-481696ae.francecentral.azurecontainerapps.io/docs
+**Live:** https://www.phoenical.earth ·
+API docs: https://api.phoenical.earth/docs
 
 ## How it fits together
 

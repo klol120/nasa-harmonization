@@ -492,6 +492,7 @@ button.season-row:hover { background: var(--surface-2); }
 .world-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .world-chips .chip { height: 30px; font-size: 13px; background: rgba(19, 24, 36, 0.7); }
 .world-foot { margin: auto 0 0; font-size: 12px; color: var(--faint); }
+.world-foot a, .signin a { color: var(--muted); }
 
 .world-tip { position: absolute; z-index: 4; pointer-events: none; padding: 5px 10px; border-radius: 6px; background: rgba(13, 17, 26, 0.92); border: 1px solid var(--border-2); font-size: 13px; font-weight: 500; }
 .world-flying {
