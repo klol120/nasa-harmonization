@@ -7,7 +7,6 @@ import { FireRings } from "./charts/FireRings";
 import { INFERNO } from "./lib/colors";
 import { CardHead, Kpi, PageHead, PngButton, RegionHero } from "./components/Blocks";
 import { CurrentVsMedian } from "./components/CurrentVsMedian";
-import { ImportDialog } from "./components/ImportDialog";
 import { type DrawMode, type LayerState, MapView } from "./components/MapView";
 import { MethodsPage } from "./components/MethodsPage";
 import { SeasonStrip } from "./components/SeasonStrip";
@@ -16,7 +15,7 @@ import { AppSidebar, type ExportAction, type FilterTab, PAGE_LABEL, RegionCard, 
 import { type Command, CommandPalette, MOD_KEY } from "./components/CommandPalette";
 import { YearCompare } from "./charts/YearCompare";
 import { Timeline } from "./components/Timeline";
-import { DEFAULT_METRIC, DEFAULT_SENSOR, DEFAULT_YEARS_BACK, HOTSPOT_EXPORT_LIMIT, REGION_INFO } from "./config";
+import { DEFAULT_METRIC, DEFAULT_SENSOR, DEFAULT_YEARS_BACK, REGION_INFO } from "./config";
 import {
   type AreaSeries,
   type DatasetMeta,
@@ -34,7 +33,8 @@ import {
   ymMonth,
   ymYear,
 } from "./data/contract";
-import { type RegionSummary, type RegionWeather, apiSource, getWeather, listRegions } from "./data/api";
+import { type RegionForecast, type RegionSummary, type RegionWeather, apiSource, getForecast, getWeather, listRegions } from "./data/api";
+import { ForecastPage } from "./components/ForecastPage";
 import { WeatherCard } from "./components/WeatherCard";
 import type { CellValues, DataSource } from "./data/sources";
 import { WorldPicker } from "./components/WorldPicker";
@@ -57,7 +57,6 @@ import {
   toMonthPoints,
   typicalSeason,
 } from "./lib/analytics";
-import { toCsv } from "./lib/csv";
 import { analyticsCsv, calendarCsv, chartPng, downloadDataUrl, downloadText, slug } from "./lib/exporters";
 import { type Area, areaFromBBox, pointInArea } from "./lib/geo";
 import { PAGES, type Page, pageHref, pushPage, readHash, watchHash, writeHash } from "./lib/urlState";
@@ -74,14 +73,14 @@ const DEFAULT_LAYERS: LayerState = {
   mask: { on: true },
 };
 
-/** Pages with the filters sidebar (area, dates, events). */
+/** Pages with the filters sidebar (area, dates, events). The forecast covers the whole region, so it has none. */
 const SIDEBAR_PAGES: Page[] = ["overview", "calendar", "trends", "weather"];
 /** Pages that draw ECharts (their charts can be exported as PNG). */
-const CHART_PAGES: Page[] = ["calendar", "trends", "weather"];
+const CHART_PAGES: Page[] = ["calendar", "trends", "forecast", "weather"];
 
 export default function App() {
   const initial = useRef(readHash()).current;
-  // Regions served by the API (null while loading), plus any files the user loaded.
+  // Regions served by the API (null while loading). The pipeline is the only data source.
   const [regions, setRegions] = useState<RegionSummary[] | null>(null);
   const [regionsError, setRegionsError] = useState<string | null>(null);
   const [regionsKey, setRegionsKey] = useState(0);
@@ -107,7 +106,6 @@ export default function App() {
   const [compare, setCompare] = useState(false);
   const [layers, setLayers] = useState<LayerState>(DEFAULT_LAYERS);
   const [drawMode, setDrawMode] = useState<DrawMode>("none");
-  const [importOpen, setImportOpen] = useState(false);
   const [hotspots, setHotspots] = useState<HotspotRow[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   // Sidebar: collapsed to an icon rail (remembered), and open as a drawer on phones.
@@ -183,7 +181,7 @@ export default function App() {
       .then((rs) => {
         if (!alive) return;
         setRegions(rs);
-        setSources((prev) => [...rs.map(apiSource), ...prev.filter((p) => p.kind !== "api")]);
+        setSources(rs.map(apiSource));
       })
       .catch((e) => alive && setRegionsError(e instanceof Error ? e.message : String(e)));
     return () => {
@@ -193,7 +191,7 @@ export default function App() {
 
   // A shared link to a region the server no longer has: back to the world map.
   useEffect(() => {
-    if (regions && sourceId && !source && sourceId.startsWith("api:")) {
+    if (regions && sourceId && !source) {
       setSourceId(null);
       setPage("explore");
     }
@@ -259,7 +257,7 @@ export default function App() {
   // ---- past weather at the region's hotspots (API regions only) ----
   const [weather, setWeather] = useState<RegionWeather | null>(null);
   const [weatherStatus, setWeatherStatus] = useState<"none" | "loading" | "ready" | "failed">("none");
-  const weatherRegion = source?.kind === "api" && meta && dsSource === source.id ? meta.id : null;
+  const weatherRegion = source && meta && dsSource === source.id ? meta.id : null;
   useEffect(() => {
     setWeather(null);
     setWeatherStatus(weatherRegion ? "loading" : "none");
@@ -272,6 +270,24 @@ export default function App() {
         setWeatherStatus("ready");
       })
       .catch(() => !ctl.signal.aborted && setWeatherStatus("failed"));
+    return () => ctl.abort();
+  }, [weatherRegion, reloadKey]);
+
+  // ---- burning outlook (machine-learning forecast, API regions only) ----
+  const [forecast, setForecast] = useState<RegionForecast | null>(null);
+  const [forecastStatus, setForecastStatus] = useState<"none" | "loading" | "ready" | "unpublished" | "failed">("none");
+  useEffect(() => {
+    setForecast(null);
+    setForecastStatus(weatherRegion ? "loading" : "none");
+    if (!weatherRegion) return;
+    const ctl = new AbortController();
+    getForecast(weatherRegion, ctl.signal)
+      .then((f) => {
+        if (ctl.signal.aborted) return;
+        setForecast(f);
+        setForecastStatus(f && f.months.length ? "ready" : "unpublished");
+      })
+      .catch(() => !ctl.signal.aborted && setForecastStatus("failed"));
     return () => ctl.abort();
   }, [weatherRegion, reloadKey]);
 
@@ -383,7 +399,7 @@ export default function App() {
     return undefined;
   }, [areaSeries, win, sensor, meta]);
 
-  // Individual detections (imported FIRMS files only): drawn as points / true pixel footprints,
+  // Individual detections (only if a source provides them; the API serves fire-days): points / true pixel footprints,
   // and aggregated into the ~1 km grid. Harmonized view shows both raw sensors.
   const [resolution, setResolution] = useState<"grid" | "1km">("grid");
   const [detectionsCapped, setDetectionsCapped] = useState(false);
@@ -423,8 +439,7 @@ export default function App() {
   // ---- URL sync --------------------------------------------------------
   useEffect(() => {
     // Skip while a newly picked dataset is still loading, so the URL never mixes two datasets.
-    // Imported files only live in this browser, so they are not put in the link.
-    if (!meta || !area || !range || !sourceId || dsSource !== sourceId || !sourceId.startsWith("api:")) return;
+    if (!meta || !area || !range || !sourceId || dsSource !== sourceId) return;
     writeHash({ page, source: sourceId, sensor, metric, area, areaAll: isWhole, range, selected: sel });
   }, [page, meta, dsSource, sourceId, sensor, metric, area, isWhole, range, sel]);
 
@@ -459,7 +474,6 @@ export default function App() {
 
   /** Shares a link to exactly this view: the system share sheet on phones, the clipboard elsewhere. */
   const share = async () => {
-    if (source?.kind !== "api") return flash("Files loaded in this browser can't be shared as a link");
     const url = window.location.href;
     const title = `${meta?.name ?? "Phoenical"} · burning calendar`;
     try {
@@ -488,19 +502,6 @@ export default function App() {
 
   const exportsList: ExportAction[] = [
     {
-      id: "hotspots",
-      label: "Hotspots CSV",
-      hint: source?.hotspots ? `FIRMS-style rows in area & range (max ${HOTSPOT_EXPORT_LIMIT.toLocaleString()})` : "Only for loaded FIRMS files (the server stores fire-days, not detections)",
-      disabled: !source?.hotspots,
-      run: async () => {
-        if (!meta || !area || !source?.hotspots) return;
-        const h = (await source.hotspots(r, area.bbox, HOTSPOT_EXPORT_LIMIT)).filter((p) => pointInArea(p.longitude, p.latitude, area));
-        h.sort((p, q) => p.acq_date.localeCompare(q.acq_date));
-        downloadText(`${base()}_hotspots.csv`, toCsv(h));
-        flash(`${h.length.toLocaleString()} hotspots exported${h.length >= HOTSPOT_EXPORT_LIMIT ? " (limit reached)" : ""}`);
-      },
-    },
-    {
       id: "calendar",
       label: "Calendar CSV",
       hint: "Month × year values, coverage and anomalies",
@@ -523,7 +524,7 @@ export default function App() {
     {
       id: "charts",
       label: "Charts PNG",
-      hint: CHART_PAGES.includes(page) ? "Every chart on this page as a separate image" : "Open Calendar, Trends or Weather to export their charts",
+      hint: CHART_PAGES.includes(page) ? "Every chart on this page as a separate image" : "Open Calendar, Trends, Forecast or Weather to export their charts",
       disabled: !CHART_PAGES.includes(page),
       run: () => {
         chartPng();
@@ -561,7 +562,7 @@ export default function App() {
     cmd("Regions", s.id, s.label, () => {
       setSourceId(s.id);
       navigate("overview");
-    }, { hint: s.id === sourceId ? "Open" : s.kind === "upload" ? "Your file" : undefined, keywords: `region dataset country ${s.description ?? ""}` });
+    }, { hint: s.id === sourceId ? "Open" : undefined, keywords: `region dataset country ${s.description ?? ""}` });
   if (ready) {
     const m = meta!;
     for (const pr of [defaultArea(m), ...(REGION_INFO[m.id]?.presets ?? []).map((p) => areaFromBBox(p.name, p.bbox))])
@@ -574,10 +575,9 @@ export default function App() {
     cmd("Years", "latest", "Jump to the latest month", () => setSelected(Math.min(r[1], parseYm(m.last_month))), { keywords: "now newest recent current" });
     for (const s of SENSORS.filter((s) => m.sensor_start[s]))
       cmd("Sensor", s, `Show ${SENSOR_LABEL[s]}`, () => setSensor(s), { hint: s === sensor ? "On" : undefined, keywords: "sensor satellite modis viirs harmonized" });
-    if (source?.kind === "api") cmd("Actions", "share", "Copy a link to this view", share, { keywords: "share url link" });
+    cmd("Actions", "share", "Copy a link to this view", share, { keywords: "share url link" });
     for (const x of exportsList.filter((x) => !x.disabled)) cmd("Export", x.id, `Export ${x.label}`, () => void x.run(), { hint: x.hint, keywords: "download save csv png" });
   }
-  cmd("Actions", "import", "Load your own file…", () => setImportOpen(true), { keywords: "upload firms csv import" });
   cmd("Actions", "sidebar", sidebarCollapsed ? "Expand the sidebar" : "Collapse the sidebar", () => setSidebarCollapsed(!sidebarCollapsed), { hint: `${MOD_KEY} B` });
   for (const t of ["light", "dark", "auto"] as const)
     cmd("Appearance", t, t === "auto" ? "Match the system appearance" : `${t === "light" ? "Light" : "Dark"} appearance`, () => setTheme(t), {
@@ -590,15 +590,6 @@ export default function App() {
       {/* Mounted fresh on every open, so it always starts with an empty search. */}
       {paletteOpen && <CommandPalette open onClose={() => setPaletteOpen(false)} commands={commands} />}
       <SignInDialog />
-      <ImportDialog
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-        onLoad={(src) => {
-          setSources((prev) => [src, ...prev.filter((p) => p.id !== src.id)]);
-          setSourceId(src.id);
-          flash(`Loaded ${src.label}`);
-        }}
-      />
       {loading && regionPage && <div className="loading-bar" aria-hidden />}
       {toast && (
         <div className="toast" role="status">
@@ -642,7 +633,6 @@ export default function App() {
                   sources,
                   sourceId: source.id,
                   onSource: setSourceId,
-                  onImport: () => setImportOpen(true),
                 }
               : undefined
           }
@@ -650,7 +640,7 @@ export default function App() {
           onPage={navigate}
           exports={regionPage && ready ? exportsList : null}
           onSearch={() => setPaletteOpen(true)}
-          onShare={regionPage && ready && source?.kind === "api" ? share : undefined}
+          onShare={regionPage && ready ? share : undefined}
           data={
             dataPage
               ? {
@@ -912,6 +902,19 @@ export default function App() {
           stat={an.trend ? `${fmtPct(an.trend.pctPerDecade)} per decade` : undefined}
         />
         <NextCard
+          page="forecast"
+          onGo={navigate}
+          title="Burning outlook"
+          text="The next six months from a machine-learning model, with a likely range and how accurate it has been."
+          stat={
+            forecastStatus === "ready" && forecast
+              ? `${MONTH_ABBR[ymMonth(parseYm(forecast.months[0].ym)) - 1]}: ${fmt(forecast.months[0].value)} expected`
+              : forecastStatus === "loading"
+                ? "Loading…"
+                : "Coming soon"
+          }
+        />
+        <NextCard
           page="weather"
           onGo={navigate}
           title="Weather at the fires"
@@ -1078,7 +1081,29 @@ export default function App() {
         </section>
       </>
     );
-  else if (page === "weather")
+  else if (page === "forecast") {
+    // The model forecasts whole-region harmonized fire-days (all cells), so history and the typical
+    // year are only drawn alongside it when the current view measures the same thing.
+    const comparable = isWhole && sensor === "harmonized" && metric === "cell_days" && !excludePersistent;
+    other = (
+      <ForecastPage
+        eyebrow={`${m.name} · whole region · harmonized fire-days`}
+        regionName={m.name}
+        status={forecastStatus}
+        forecast={forecast}
+        history={comparable ? an.series.filter((p) => !p.partial).slice(-24).map((p) => ({ i: p.i, value: p.value })) : undefined}
+        typical={comparable ? an.clim.map((c) => (Number.isFinite(c.median) ? c.median : null)) : undefined}
+        historyNote={
+          comparable
+            ? undefined
+            : `Recent months and the typical year are hidden: they would show ${isWhole ? "" : `${ar.name}, `}${SENSOR_LABEL[sensor]}${metric !== "cell_days" ? `, ${METRIC_LABEL[metric]}` : ""}${excludePersistent ? " without industrial sites" : ""}, not the whole region's harmonized fire-days the forecast uses.`
+        }
+        unit="fire-days"
+        onRetry={() => setReloadKey((k) => k + 1)}
+        backLink={pageLink("overview", "Back to the overview")}
+      />
+    );
+  } else if (page === "weather")
     other = (
       <>
         <PageHead eyebrow={eyebrow} title="Weather at the fires" lede="Past conditions at the region's fire hotspots for the selected year, against the normal for each month." />
@@ -1129,7 +1154,13 @@ export default function App() {
                 }}
                 excludePersistent={excludePersistent}
                 onExcludePersistent={setExcludePersistent}
+                mapTools={onOverview}
               />
+              {!onOverview && (
+                <p className="muted small sb-hint">
+                  To draw your own area, open the {pageLink("overview", "Overview map")}.
+                </p>
+              )}
               <MyAreasPanel region={m.id} area={ar} isWhole={isWhole} excludePersistent={excludePersistent} onOpen={onArea} onFlash={flash} />
             </>
           ),
@@ -1156,12 +1187,21 @@ export default function App() {
             </>
           ),
         },
-        ...(onOverview ? [{ id: "layers", label: "Layers", content: <LayersPanel layers={layers} setLayers={setLayers} detections={hasDetections} /> }] : []),
-        {
-          id: "display",
-          label: "Display",
-          content: <PerformancePanel animations={animations} onAnimations={setAnimationsState} showData={showData} onShowData={setShowData} />,
-        },
+        // Map settings only where the map is.
+        ...(onOverview
+          ? [
+              {
+                id: "map",
+                label: "Map",
+                content: (
+                  <>
+                    <LayersPanel layers={layers} setLayers={setLayers} detections={hasDetections} />
+                    <PerformancePanel animations={animations} onAnimations={setAnimationsState} showData={showData} onShowData={setShowData} />
+                  </>
+                ),
+              },
+            ]
+          : []),
       ]
     : undefined;
 

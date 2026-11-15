@@ -2,7 +2,7 @@ import { METRICS, type Metric, SENSORS, type Sensor, parseYm, ymKey } from "../d
 import { type Area, type Ring, areaFromBBox, areaFromRing } from "./geo";
 
 /** Pages of the site. "explore" is the world globe; the others show one region. */
-export const PAGES = ["explore", "overview", "calendar", "trends", "weather", "methods"] as const;
+export const PAGES = ["explore", "overview", "calendar", "trends", "forecast", "weather", "methods"] as const;
 export type Page = (typeof PAGES)[number];
 const isPage = (p: string | null): p is Page => !!p && (PAGES as readonly string[]).includes(p);
 

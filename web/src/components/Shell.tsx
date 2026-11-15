@@ -20,6 +20,7 @@ export const PAGE_LABEL: Record<Page, string> = {
   overview: "Overview",
   calendar: "Calendar",
   trends: "Trends",
+  forecast: "Forecast",
   weather: "Weather",
   methods: "Methods",
 };
@@ -39,6 +40,13 @@ const ICON: Record<Page, React.ReactNode> = {
     </>
   ),
   trends: <path d="M3 15.5 7.5 10l3 3L17 5.5M12.5 5.5H17V10" />,
+  forecast: (
+    <>
+      <path d="M3 14.5 6.5 11l2.5 2.5L12 10.5" />
+      <path d="M12 10.5 17 5.5" strokeDasharray="1.6 2" />
+      <circle cx="15.5" cy="13.5" r="2.2" />
+    </>
+  ),
   weather: <path d="M6 15.5h8a3.5 3.5 0 0 0 .4-7A4.5 4.5 0 0 0 5.8 9 3.3 3.3 0 0 0 6 15.5z" />,
   methods: (
     <>
@@ -51,7 +59,7 @@ const ICON: Record<Page, React.ReactNode> = {
 /** Navigation entries, grouped: the world, then the pages of the open region. */
 const NAV: { label: string; pages: Page[] }[] = [
   { label: "Discover", pages: ["explore"] },
-  { label: "Region", pages: ["overview", "calendar", "trends", "weather"] },
+  { label: "Region", pages: ["overview", "calendar", "trends", "forecast", "weather"] },
   { label: "Reference", pages: ["methods"] },
 ];
 
@@ -229,14 +237,13 @@ export interface DatasetSwitchProps {
   sources: DataSource[];
   sourceId: string;
   onSource: (id: string) => void;
-  onImport: () => void;
 }
 
-/** The open region's name in the top bar, doubling as the dataset switcher. */
+/** The open region's name in the top bar, doubling as the region switcher. */
 function DatasetSwitch(p: DatasetSwitchProps) {
   return (
-    <label className="ds-switch" title="Switch dataset">
-      <span className="sr-only">Dataset</span>
+    <label className="ds-switch" title="Switch region">
+      <span className="sr-only">Region</span>
       <span className="ds-switch-mark" aria-hidden>
         {p.name.charAt(0)}
       </span>
@@ -244,14 +251,12 @@ function DatasetSwitch(p: DatasetSwitchProps) {
       <svg viewBox="0 0 20 20" width="13" height="13" aria-hidden>
         <path d="m6 8 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <select value={p.sourceId} onChange={(e) => (e.target.value === "__import" ? p.onImport() : p.onSource(e.target.value))}>
+      <select value={p.sourceId} onChange={(e) => p.onSource(e.target.value)}>
         {p.sources.map((s) => (
           <option key={s.id} value={s.id}>
-            {s.kind === "upload" ? "File · " : ""}
             {s.label}
           </option>
         ))}
-        <option value="__import">Load your own file…</option>
       </select>
     </label>
   );

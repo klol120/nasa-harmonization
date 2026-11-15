@@ -73,6 +73,62 @@ export interface RegionWeather {
 
 export const getWeather = (region: string, signal?: AbortSignal) => getJson<RegionWeather>(`/regions/${encodeURIComponent(region)}/weather`, { signal });
 
+/** Name of the burning-outlook model (backend/firecal_api/outlook.py). */
+export const OUTLOOK_MODEL = "outlook-hgb";
+
+/** Region-level errors of one evaluation (outlook.summarize). `wape` = summed |error| / summed actual. */
+export interface OutlookScore {
+  n: number;
+  actual_mean: number;
+  model: { mae: number; wape: number };
+  seasonal_5y: { mae: number; wape: number };
+  typical_year: { mae: number; wape: number };
+  last_year: { mae: number; wape: number };
+  best_baseline: "seasonal_5y" | "typical_year" | "last_year";
+  skill_vs_best: number;
+  beats_baselines: boolean;
+  within_25pct: number;
+  months?: string[];
+}
+
+export interface ModelRun {
+  run_id: number;
+  model_name: string;
+  model_version: string;
+  release_id: number;
+  target: string;
+  params: Record<string, unknown>;
+  metrics: { test?: OutlookScore; confirmation?: OutlookScore; issued_after?: string };
+  notes: string | null;
+  created_at: string;
+  is_current: boolean;
+}
+
+export interface ForecastMonth {
+  ym: string;
+  value: number;
+  value_low: number | null;
+  value_high: number | null;
+}
+
+export interface RegionForecast {
+  run: ModelRun;
+  months: ForecastMonth[];
+}
+
+/**
+ * The newest outlook for a region's current release, or null when none has been published
+ * (the model has not been run against this release yet).
+ */
+export async function getForecast(region: string, signal?: AbortSignal): Promise<RegionForecast | null> {
+  const r = encodeURIComponent(region);
+  const runs = await getJson<ModelRun[]>(`/regions/${r}/model-runs`, { signal });
+  const run = runs.find((x) => x.model_name === OUTLOOK_MODEL && x.is_current);
+  if (!run) return null;
+  const p = await getJson<{ months: ForecastMonth[] }>(`/regions/${r}/predictions?run_id=${run.run_id}&level=region`, { signal });
+  return { run, months: p.months };
+}
+
 /** A region_monthly / aggregate row (contract field names). */
 interface MonthRow {
   ym: string;
@@ -160,7 +216,6 @@ export function apiSource(summary: RegionSummary): DataSource {
   return {
     id: `api:${id}`,
     label: info.name,
-    kind: "api",
     description: info.blurb,
 
     async load(): Promise<DatasetMeta> {

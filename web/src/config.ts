@@ -14,7 +14,6 @@ export const DEFAULT_METRIC: Metric = "cell_days";
 /** Default analysis window in years back from the latest data. 0 = everything. */
 export const DEFAULT_YEARS_BACK = 0;
 
-export const HOTSPOT_EXPORT_LIMIT = 50_000;
 
 /**
  * Display details for the regions the API serves (keyed by the export's region id).
@@ -201,36 +200,3 @@ export const REGION_INFO: Record<string, RegionInfo> = {
 };
 
 export const regionInfo = (id: string): RegionInfo => REGION_INFO[id] ?? { name: id.charAt(0).toUpperCase() + id.slice(1) };
-
-/**
- * Header aliases for imported CSVs. Keys are contract fields; values are
- * accepted header names (case-insensitive).
- */
-export const COLUMN_ALIASES: Record<string, string[]> = {
-  cell_id: ["cell_id", "cell", "id", "grid_id"],
-  lat: ["lat", "latitude", "cell_lat", "y", "lat_center"],
-  lon: ["lon", "lng", "longitude", "cell_lon", "x", "lon_center"],
-  year: ["year", "yr"],
-  month: ["month", "mon", "mm"],
-  date: ["date", "ym", "year_month", "acq_month"],
-  sensor: ["sensor", "source", "instrument", "product"],
-  cell_days: ["cell_days", "fire_days", "active_cell_days", "celldays"],
-  fire_count: ["fire_count", "count", "hotspots", "detections", "n"],
-  sum_frp: ["sum_frp", "frp", "frp_sum", "total_frp"],
-};
-
-/** Accepted sensor values in imported data and the contract sensor they map to. */
-export const SENSOR_ALIASES: Record<string, Sensor> = {
-  modis_raw: "modis_raw",
-  modis: "modis_raw",
-  modis_sp: "modis_raw",
-  modis_nrt: "modis_raw",
-  viirs_raw: "viirs_raw",
-  viirs: "viirs_raw",
-  viirs_snpp_sp: "viirs_raw",
-  viirs_noaa20_nrt: "viirs_raw",
-  viirs_noaa21_nrt: "viirs_raw",
-  harmonized: "harmonized",
-  harmonised: "harmonized",
-  harmonized_modis_eq: "harmonized",
-};

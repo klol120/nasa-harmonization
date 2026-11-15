@@ -30,9 +30,11 @@ interface AreaProps {
   setDrawMode: (m: DrawMode) => void;
   excludePersistent: boolean;
   onExcludePersistent: (v: boolean) => void;
+  /** Drawing and coordinate entry act on the map, so they are only offered on the map page. */
+  mapTools?: boolean;
 }
 
-export function AreaPanel({ meta, whole, area, cellCount, onArea, drawMode, setDrawMode, excludePersistent, onExcludePersistent }: AreaProps) {
+export function AreaPanel({ meta, whole, area, cellCount, onArea, drawMode, setDrawMode, excludePersistent, onExcludePersistent, mapTools = true }: AreaProps) {
   const [tab, setTab] = useState<"bbox" | "point">("bbox");
   const [bbox, setBbox] = useState<string[]>(area.bbox.map((v) => v.toFixed(3)));
   const [pt, setPt] = useState({ lat: "", lon: "", km: "25" });
@@ -96,6 +98,8 @@ export function AreaPanel({ meta, whole, area, cellCount, onArea, drawMode, setD
         ))}
       </div>
 
+      {mapTools && (
+      <>
       <div className="draw-row">
         <button className={`btn btn-ghost${drawMode === "rect" ? " is-on" : ""}`} onClick={() => setDrawMode(drawMode === "rect" ? "none" : "rect")}>
           Draw box
@@ -160,6 +164,8 @@ export function AreaPanel({ meta, whole, area, cellCount, onArea, drawMode, setD
           </form>
         )}
       </details>
+      </>
+      )}
       {err && <div className="warn">{err}</div>}
     </Section>
   );
@@ -263,7 +269,7 @@ export function LayersPanel({ layers, setLayers, detections }: { layers: LayerSt
     { key: "mask", label: "Dim outside area", hint: "" },
     { key: "extent", label: "Dataset extent", hint: "" },
   ];
-  // Individual detections exist only for loaded FIRMS files.
+  // Individual detections only when the source serves them (the API does not yet).
   const rows = all.filter((r) => r.key !== "hotspots" || detections);
   return (
     <Section title="Map layers">

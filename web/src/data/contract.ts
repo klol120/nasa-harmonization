@@ -12,7 +12,7 @@ export const SENSOR_LABEL: Record<Sensor, string> = {
   harmonized: "Harmonized",
 };
 
-/** Value columns a source can chart. The API provides fire-days only; FIRMS files also give counts and FRP. */
+/** Value columns a source can chart. The API provides fire-days only. */
 export type Metric = "cell_days" | "fire_count" | "sum_frp";
 export const METRICS: Metric[] = ["cell_days", "fire_count", "sum_frp"];
 
@@ -34,19 +34,6 @@ export const METRIC_SHORT: Record<Metric, string> = {
  */
 export const unitFor = (sensor: Sensor, metric: Metric) =>
   metric === "cell_days" && sensor === "modis_raw" ? "MODIS fire-days" : METRIC_SHORT[metric];
-
-/** One row of an imported cells_monthly file: one grid cell, one month, one sensor. */
-export interface CellMonthlyRow {
-  cell_id: string;
-  lat: number; // cell centre
-  lon: number;
-  year: number;
-  month: number; // 1-12
-  sensor: Sensor;
-  cell_days: number;
-  fire_count: number;
-  sum_frp: number;
-}
 
 /** [west, south, east, north] in degrees. */
 export type BBox = [number, number, number, number];
@@ -161,7 +148,7 @@ export interface AreaSeries {
   months: AreaMonth[];
 }
 
-/** Hotspot-level row (FIRMS-like columns), available from imported FIRMS files. */
+/** Hotspot-level row (FIRMS-like columns). Not served by the API yet. */
 export interface HotspotRow {
   latitude: number;
   longitude: number;

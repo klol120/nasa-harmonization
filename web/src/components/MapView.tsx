@@ -42,7 +42,7 @@ interface Props {
   /** "grid" = the dataset's analysis grid, "1km" = detections re-gridded at ~1 km. */
   resolution: "grid" | "1km";
   onResolution: (r: "grid" | "1km") => void;
-  /** Individual detections are available (loaded FIRMS files); otherwise the 1 km view is hidden. */
+  /** Individual detections are available from the source; otherwise the 1 km view is hidden. */
   detections: boolean;
   gridLabel: string;
   /** Extra line under the legend (what the cells mean). */
