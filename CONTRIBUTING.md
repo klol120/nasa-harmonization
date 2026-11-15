@@ -13,8 +13,8 @@
   Each job builds the image in Azure, rolls it out, waits for the new revision and then checks the site
   answers. A red job means the new version is not live; the previous one keeps serving.
 - **Live URLs**
-  - Website: https://wel3a-web.blackwave-481696ae.francecentral.azurecontainerapps.io
-  - API: https://wel3a-api.blackwave-481696ae.francecentral.azurecontainerapps.io
+  - Website: https://www.phoenical.earth
+  - API: https://api.phoenical.earth
     (health: `/health`, docs: `/docs`)
 - **Redeploy by hand:** Actions → **Deploy to Azure** → **Run workflow** → branch `main` → **Run workflow**.
   This rebuilds and redeploys both the API and the website from the current `main`.

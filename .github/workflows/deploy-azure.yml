@@ -32,8 +32,8 @@ env:
   API_APP: wel3a-api
   WEB_APP: wel3a-web
   LIVE_APP: wel3a-live-be616
-  API_URL: https://wel3a-api.blackwave-481696ae.francecentral.azurecontainerapps.io
-  WEB_URL: https://wel3a-web.blackwave-481696ae.francecentral.azurecontainerapps.io
+  API_URL: https://api.phoenical.earth
+  WEB_URL: https://www.phoenical.earth
 
 jobs:
   changes:
