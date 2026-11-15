@@ -327,6 +327,10 @@ interface TopBarProps {
     selected: number;
     canStep: [boolean, boolean];
     onStep: (d: number) => void;
+    /** What one arrow click moves by (a year when the Overview map shows a whole year). */
+    stepUnit: "month" | "year";
+    /** The map's time window (Overview only), set next to the arrows so one control decides what they step. */
+    period?: { mode: "month" | "year" | "range"; setMode: (m: "month" | "year" | "range") => void };
   };
 }
 
@@ -382,16 +386,33 @@ export function TopBar(p: TopBarProps) {
               </select>
             </label>
           )}
-          <div className="stepper" role="group" aria-label="Selected month">
-            <button className="icon-btn" disabled={!d.canStep[0]} onClick={() => d.onStep(-1)} aria-label="Previous month">
+          {d.period && (
+            <div className="seg period-seg" role="radiogroup" aria-label="Map time window">
+              {(["month", "year", "range"] as const).map((m) => (
+                <button key={m} role="radio" aria-checked={d.period!.mode === m} className={d.period!.mode === m ? "is-on" : ""} onClick={() => d.period!.setMode(m)}>
+                  {m === "month" ? "Month" : m === "year" ? "Year" : "All"}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="stepper" role="group" aria-label={d.stepUnit === "year" ? "Selected year" : "Selected month"}>
+            <button className="icon-btn" disabled={!d.canStep[0]} onClick={() => d.onStep(-1)} aria-label={`Previous ${d.stepUnit}`} title={`Previous ${d.stepUnit}`}>
               <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden>
                 <path d="m12 5-5 5 5 5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             <output aria-live="polite">
-              {MONTH_ABBR[ymMonth(d.selected) - 1]} {ymYear(d.selected)}
+              {d.period?.mode === "year" ? (
+                <>
+                  {ymYear(d.selected)} <small className="muted">{MONTH_ABBR[ymMonth(d.selected) - 1]}</small>
+                </>
+              ) : (
+                <>
+                  {MONTH_ABBR[ymMonth(d.selected) - 1]} {ymYear(d.selected)}
+                </>
+              )}
             </output>
-            <button className="icon-btn" disabled={!d.canStep[1]} onClick={() => d.onStep(1)} aria-label="Next month">
+            <button className="icon-btn" disabled={!d.canStep[1]} onClick={() => d.onStep(1)} aria-label={`Next ${d.stepUnit}`} title={`Next ${d.stepUnit}`}>
               <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden>
                 <path d="m8 5 5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

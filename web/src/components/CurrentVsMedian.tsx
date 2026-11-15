@@ -8,6 +8,8 @@ interface Props {
   unit: string;
   onStep: (delta: number) => void;
   onLatest: () => void;
+  /** What one arrow click moves by. */
+  stepUnit?: "month" | "year";
 }
 
 const ordinal = (n: number) => {
@@ -24,7 +26,7 @@ function verdict(z: number, pct: number) {
 }
 
 /** "Is this month above or below normal?" for the selected month. */
-export function CurrentVsMedian({ cvm, series, selected, unit, onStep, onLatest }: Props) {
+export function CurrentVsMedian({ cvm, series, selected, unit, onStep, onLatest, stepUnit = "month" }: Props) {
   const month = ymMonth(selected);
   const year = ymYear(selected);
   const same = series.filter((p) => p.month === month && p.value !== null && !p.partial);
@@ -33,14 +35,14 @@ export function CurrentVsMedian({ cvm, series, selected, unit, onStep, onLatest 
   return (
     <div className="cvm">
       <div className="cvm-head">
-        <button className="icon-btn" onClick={() => onStep(-1)} aria-label="Previous month">‹</button>
+        <button className="icon-btn" onClick={() => onStep(-1)} aria-label={`Previous ${stepUnit}`} title={`Previous ${stepUnit}`}>‹</button>
         <div className="cvm-title">
           <span className="eyebrow">Selected month</span>
           <strong>
             {MONTH_ABBR[month - 1]} {year}
           </strong>
         </div>
-        <button className="icon-btn" onClick={() => onStep(1)} aria-label="Next month">›</button>
+        <button className="icon-btn" onClick={() => onStep(1)} aria-label={`Next ${stepUnit}`} title={`Next ${stepUnit}`}>›</button>
         <button className="chip" onClick={onLatest}>Latest</button>
       </div>
 

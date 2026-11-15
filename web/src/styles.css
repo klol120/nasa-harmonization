@@ -308,6 +308,10 @@ code { font-family: var(--mono); font-size: 0.86em; background: var(--fill); pad
 .topbar-controls .stepper { margin-left: 2px; padding-left: 4px; border-left: 0.5px solid var(--sep); border-radius: 0 999px 999px 0; }
 .stepper output { min-width: 72px; text-align: center; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .stepper .icon-btn { width: 28px; height: 28px; border-radius: 999px; }
+/* Overview: the map's Month / Year / All window sits right before the arrows, as one control. */
+.topbar-controls .period-seg { margin-left: 2px; padding-left: 4px; border-left: 0.5px solid var(--sep); }
+.topbar-controls .period-seg + .stepper { margin-left: 0; padding-left: 0; border-left: 0; }
+.stepper output small { font-size: 11px; font-weight: 500; }
 
 .page-wrap { width: 100%; max-width: 1480px; margin: 0 auto; padding: 8px 24px 0 22px; display: flex; flex-direction: column; }
 .main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -1192,6 +1196,11 @@ kbd {
 .disclosure[open] > summary::before { transform: rotate(45deg); }
 .disclosure[open] { display: flex; flex-direction: column; gap: 10px; }
 
+/* The period switch makes the bar wider: fold the search label earlier so the breadcrumb keeps its room. */
+@media (max-width: 1600px) {
+  .topbar:has(.period-seg) .search-pill span, .topbar:has(.period-seg) .search-pill kbd { display: none; }
+  .topbar:has(.period-seg) .search-pill { width: 38px; padding: 0; justify-content: center; }
+}
 @media (max-width: 1280px) {
   .search-pill span, .search-pill kbd { display: none; }
   .search-pill { width: 38px; padding: 0; justify-content: center; }
