@@ -327,9 +327,14 @@ async def ingest_region(
                or year::int <> left(ym, 4)::int or month::int <> right(ym, 2)::int""", "bad cell_id/ym/year/month")
         if errors:
             raise ContractError(_summary(errors))
+        # The calendar is loaded and checked as a dense temporary table; afterwards only the rows the
+        # cell_month view cannot rebuild (cells with fire, mostly) are stored (sql/007_sparse_cells.sql).
+        await conn.execute(
+            "create temp table _dense (like cell_month_data including defaults, primary key (release_id, cell_key, ym)) on commit drop"
+        )
         try:
             n = await conn.execute(
-                """insert into cell_month
+                """insert into _dense
                    select $1, split_part(cell_id, '_', 1)::int * 7200 + split_part(cell_id, '_', 2)::int,
                           (ym || '-01')::date, modis_raw::smallint, viirs_raw::smallint, harmonized::real,
                           harmonized_low::real, harmonized_high::real, anomaly_z::real, {noaa20}
@@ -342,31 +347,31 @@ async def ingest_region(
         log(f"[{region}] {rep.n_cell_months:,} cell-months loaded; checking invariants...")
         # Fresh statistics before the checks: otherwise the planner still thinks these tables are small
         # and picks nested-loop joins over millions of rows (minutes instead of seconds).
-        await conn.execute("analyze cell_month; analyze release_cell; analyze region_month")
+        await conn.execute("analyze _dense; analyze release_cell; analyze region_month")
 
         R = release_id
         n_expected = len(cells) * len(months)
         if rep.n_cell_months != n_expected:
             errors.append(f"calendar has {rep.n_cell_months:,} rows; {len(cells)} cells × {len(months)} months = {n_expected:,}")
         errors += await _check(conn, """
-            select cm.cell_key, cm.ym from cell_month cm
+            select cm.cell_key, cm.ym from _dense cm
             left join release_cell rc on rc.release_id = cm.release_id and rc.cell_key = cm.cell_key
             left join region_month rm on rm.release_id = cm.release_id and rm.ym = cm.ym
             where cm.release_id = $1 and (rc.cell_key is null or rm.ym is null)""",
             "calendar row for a cell or month not in cells.geojson / region_monthly", R)
         errors += await _check(conn, """
-            select cell_key, ym, harmonized_low, harmonized, harmonized_high from cell_month
+            select cell_key, ym, harmonized_low, harmonized, harmonized_high from _dense
             where release_id = $1 and (
                 (harmonized is null) <> (harmonized_low is null) or (harmonized is null) <> (harmonized_high is null)
                 or harmonized_low > harmonized + 1e-4 or harmonized > harmonized_high + 1e-4)""",
             "harmonized_low <= harmonized <= harmonized_high", R)
         errors += await _check(conn, """
-            select cm.cell_key, cm.ym, cm.harmonized, rm.data_available from cell_month cm
+            select cm.cell_key, cm.ym, cm.harmonized, rm.data_available from _dense cm
             join region_month rm using (release_id, ym)
             where cm.release_id = $1 and (cm.harmonized is null) = rm.data_available""",
             "harmonized is null iff data_available is false", R)
         errors += await _check(conn, """
-            select cm.cell_key, cm.ym, cm.harmonized, cm.viirs_raw from cell_month cm
+            select cm.cell_key, cm.ym, cm.harmonized, cm.viirs_raw from _dense cm
             join region_month rm using (release_id, ym)
             where cm.release_id = $1 and rm.data_available
               and (rm.source = $2 or (rm.source is null and not rm.is_estimate))
@@ -379,22 +384,22 @@ async def ingest_region(
             for f in cont:
                 c_by_month[f["month"] - 1] = f["c"]
             errors += await _check(conn, """
-                select cm.cell_key, cm.ym, cm.harmonized, cm.noaa20_raw from cell_month cm
+                select cm.cell_key, cm.ym, cm.harmonized, cm.noaa20_raw from _dense cm
                 join region_month rm using (release_id, ym)
                 where cm.release_id = $1 and rm.source = $2
                   and (cm.noaa20_raw is null
                        or abs(cm.harmonized - ($3::float8[])[extract(month from cm.ym)::int] * cm.noaa20_raw) > 1e-3)""",
                 "NOAA-20 months: harmonized == c_m * noaa20_raw", R, C.SOURCE_NOAA20, c_by_month)
         errors += await _check(conn, """
-            select cell_key, ym, viirs_raw from cell_month
+            select cell_key, ym, viirs_raw from _dense
             where release_id = $1 and ym < date '2012-01-01' and viirs_raw is not null""",
             "viirs_raw must be null before 2012-01", R)
         # Region totals are sums over all cells (persistent included). Cell values are rounded in the
         # CSV, so allow a rounding tolerance that grows with the number of cells.
         errors += await _check(conn, """
             select rm.ym, rm.harmonized, s.h, rm.modis_raw, s.m, rm.viirs_raw, s.v, rm.noaa20_raw, s.n from region_month rm
-            join (select ym, sum(harmonized) h, sum(modis_raw) m, sum(viirs_raw) v, sum(noaa20_raw) n
-                  from cell_month where release_id = $1 group by ym) s using (ym)
+            join (select ym, sum(harmonized::float8) h, sum(modis_raw) m, sum(viirs_raw) v, sum(noaa20_raw) n
+                  from _dense where release_id = $1 group by ym) s using (ym)
             where rm.release_id = $1 and (
                 abs(coalesce(rm.harmonized, 0) - coalesce(s.h, 0)) > 0.01 + 1e-4 * $2
                 or rm.modis_raw is distinct from s.m::int or rm.viirs_raw is distinct from s.v::int
@@ -412,14 +417,14 @@ async def ingest_region(
             rep.n_series_files = len(listed)
             errors += await _check(conn, """
                 select s.cell_key, s.ym, s.h, cm.harmonized, s.m, cm.modis_raw, s.v, cm.viirs_raw from _series s
-                left join cell_month cm on cm.release_id = $1 and cm.cell_key = s.cell_key and cm.ym = s.ym
+                left join _dense cm on cm.release_id = $1 and cm.cell_key = s.cell_key and cm.ym = s.ym
                 where cm.cell_key is null
                    or (s.h is null) <> (cm.harmonized is null) or abs(s.h - cm.harmonized) > 0.006
                    or s.m is distinct from cm.modis_raw or s.v is distinct from cm.viirs_raw""",
                 "series files equal the calendar", R)
             # Cells left out of a year's file must have had no fire-days that year.
             errors += await _check(conn, """
-                select cm.cell_key, cm.ym, cm.harmonized, cm.modis_raw, cm.viirs_raw from cell_month cm
+                select cm.cell_key, cm.ym, cm.harmonized, cm.modis_raw, cm.viirs_raw from _dense cm
                 join region_month rm using (release_id, ym)
                 where cm.release_id = $1
                   and extract(year from cm.ym)::int = any($2::int[])
@@ -427,6 +432,20 @@ async def ingest_region(
                   and (coalesce(cm.modis_raw, 0) <> 0 or coalesce(cm.viirs_raw, 0) <> 0
                        or (rm.data_available and cm.harmonized <> 0))""",
                 "cells omitted from a series file must have no fire-days", R, list(listed))
+        if errors:
+            raise ContractError(_summary(errors))
+
+        stored = await conn.fetchval("select sparsify_cells('_dense', $1)", release_id)
+        log(f"[{region}] stored {stored:,} of {rep.n_cell_months:,} cell-months (the rest are rebuilt as zeros)")
+        # The view must give back exactly the calendar that was checked, nulls included.
+        cols = "cell_key, ym, modis_raw, viirs_raw, harmonized, harmonized_low, harmonized_high, anomaly_z, noaa20_raw"
+        errors = await _check(conn, f"""
+            select * from ((select {cols} from cell_month where release_id = $1
+                            except all select {cols} from _dense)
+                           union all
+                           (select {cols} from _dense
+                            except all select {cols} from cell_month where release_id = $1)) x""",
+            "sparse storage rebuilds the calendar exactly", release_id)
         if errors:
             raise ContractError(_summary(errors))
 
