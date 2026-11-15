@@ -26,7 +26,7 @@ container's restart policy "on failure" the container then stops, and so does it
 
     python tools/world_batch.py              # run / resume
     python tools/world_batch.py --status
-    python tools/world_batch.py --retry-failed
+    python tools/world_batch.py --retry-failed      # failed countries again (only those in WORLD_ONLY, if set)
 
 Settings (environment): FIRMS_MAP_KEY; WORLD_PAUSE_S (default 60) between countries; WORLD_ONLY, a
 comma-separated list of countries to limit a run to.
@@ -142,6 +142,16 @@ def resume(state: dict, max_tries: int = MAX_TRIES) -> list[str]:
     return failed
 
 
+def clear_missing(country: str) -> int:
+    """Remove the downloader's "not in the archive" markers of a country, so a retry asks FIRMS again (after a
+    fix to the archive name, say). Returns how many were removed."""
+    n = 0
+    for f in (DATA / "raw" / "archive").glob(f"*/{country}_*.missing"):
+        f.unlink()
+        n += 1
+    return n
+
+
 def bootstrap(state: dict) -> bool | None:
     """True: ready. False: failed, try again after a restart. None: gave up."""
     b = state.get("_bootstrap", {})
@@ -199,7 +209,12 @@ def main() -> None:
     if "--status" in sys.argv:
         return status(state)
     if "--retry-failed" in sys.argv:
-        state = {c: s for c, s in state.items() if s.get("ok")}
+        only = set(countries()) if os.environ.get("WORLD_ONLY") else None
+        for c in [c for c, s in state.items() if not c.startswith("_") and s.get("ok") is False]:
+            if only is None or c in only:
+                del state[c]
+                n = clear_missing(c)
+                say(f"retrying {c}" + (f" (cleared {n} not-found markers)" if n else ""))
     for c in resume(state):
         say(f"FAILED {c}: {state[c]['why']}")
     write_state(state)

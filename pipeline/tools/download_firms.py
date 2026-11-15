@@ -117,6 +117,12 @@ def archive_path(source: str, country: str, year: int) -> Path:
     return RAW / "archive" / source / f"{country}_{year}.csv"
 
 
+def archive_name(country: str) -> str:
+    """The country's name in FIRMS archive file names: spaces become underscores, a few are spelled differently
+    (config download.archive_names, checked against the archive on 2026-11-20)."""
+    return (DL.get("archive_names") or {}).get(country, country.replace(" ", "_"))
+
+
 def download_archives(regions: list[str] | None = None):
     regions = regions or list(CFG["regions"])
     countries = sorted({c for r in regions for c in CFG["regions"][r]["countries"]})
@@ -128,7 +134,7 @@ def download_archives(regions: list[str] | None = None):
                 missing = path.with_suffix(".missing")
                 if path.exists() or missing.exists():
                     continue
-                url = f"{BASE}/data/country/{p}/{year}/{p}_{year}_{c}.csv"
+                url = f"{BASE}/data/country/{p}/{year}/{p}_{year}_{archive_name(c)}.csv"
                 body = fetch(url, DL["archive_pause_s"], ok_404=True)
                 if body is None:
                     write_atomic(missing, f"404 {url}\n")

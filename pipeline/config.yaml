@@ -207,6 +207,24 @@ download:
     VIIRS_SNPP_NRT: {}               # area API only (no country archives); S-NPP's last data 2026-11-02
     VIIRS_NOAA20_NRT: {}             # area API only; fills NOAA-20 after its SP max_date
   archive_last_year: 2025            # last full year published as country archives
+  # FIRMS archive file names use underscores for spaces; these countries are also spelled differently there
+  # (Natural Earth ADMIN name: archive name). Checked against the archive on 2026-11-20.
+  archive_names:
+    "Brunei": Brunei_Darussalam
+    "Cabo Verde": Cape_Verde
+    "Curaçao": Curacao
+    "Czechia": Czech_Republic
+    "East Timor": Timor-Leste
+    "Gambia": The_Gambia
+    "Hong Kong S.A.R.": Hong_Kong
+    "Ivory Coast": Cote_d_Ivoire
+    "Laos": Lao_PDR
+    "Republic of Serbia": Serbia
+    "São Tomé and Principe": Sao_Tome_and_Principe
+    "The Bahamas": Bahamas
+    "United Republic of Tanzania": Tanzania
+    "United States of America": United_States
+    "eSwatini": Swaziland
   api_year: 2026                     # pulled via area API up to the SP max_date
   api_day_range: 5                   # API rejects >5
   archive_pause_s: 0.5
