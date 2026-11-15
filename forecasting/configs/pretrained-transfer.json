@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "seed": 20261115,
+  "mode": "retrospective",
+  "source_commit": "250d8c0fa3bb5a82cc2eefadf809dbf749de5eb2",
+  "models": [
+    {"id": "prithvi-v1-100m", "repository": "ibm-nasa-geospatial/Prithvi-EO-1.0-100M", "revision": "f3a9ea7a1723621b0aeceb4de993093704d712c5", "file": "Prithvi_EO_V1_100M.pt", "sha256": "7fac0c8a8693198e32a055e0c5a967f8b005f382182b63df1b29fdcd5c880731", "bytes": 453671052, "license": "Apache-2.0"},
+    {"id": "prithvi-v2-tiny-tl", "repository": "ibm-nasa-geospatial/Prithvi-EO-2.0-tiny-TL", "revision": "335eadc2c45ad5abe7bd307223e1c48c5b60c41b", "file": "Prithvi_EO_V2_tiny_TL.pt", "sha256": "d47326db9bad502b611f73e3e3f3a0e68b7b82640d67c22c795417f7209f8d70", "bytes": 129258736, "license": "Apache-2.0"},
+    {"id": "prithvi-v2-100m-tl", "repository": "ibm-nasa-geospatial/Prithvi-EO-2.0-100M-TL", "revision": "2c84e383194986040f883cc43d7869002c425e1b", "file": "Prithvi_EO_V2_100M_TL.pt", "sha256": "d45406d5fc51af1d9657d48f2e2c3ff077408a2e1113f9a242889a4fe4469b17", "bytes": 454660610, "license": "Apache-2.0"}
+  ],
+  "head_epochs": 12,
+  "batch_size": 2048,
+  "learning_rate": 0.001,
+  "layernorm_learning_rate": 0.0001,
+  "hidden_width": 32,
+  "threads": 3,
+  "strategies": ["frozen_encoder", "final_layernorm_tuning"],
+  "train_years": [2018, 2020],
+  "calibration_year": 2021,
+  "validation_year": 2022,
+  "embargo_days": 14,
+  "selection": "Lebanese validation average precision with Brier tie break; thresholds selected on validation only",
+  "evaluation": "Previously viewed 2023-2025 and Jan-Oct 2026 Lebanese outcomes; diagnostic, not fresh confirmation",
+  "hls_policy": "One QA-screened 32x32 native 30m Landsat HLS crop at the recorded cell vegetation centroid, observed June-October 2017; no fire-outcome selection",
+  "limitations": [
+    "These are NASA-pretrained image encoders, not pretrained fire-occurrence predictors",
+    "Static 2017 imagery is a limited landscape proxy, not current fuel condition",
+    "Modern pretrained weights and reprocessing were unavailable at historical prediction times",
+    "EO2 pretraining is global and Lebanese image overlap cannot be ruled out",
+    "Observed historical weather remains a perfect-weather forecast proxy",
+    "Previously viewed tests and repeated validation searches cannot establish fresh independent improvement"
+  ],
+  "production_approved": false
+}

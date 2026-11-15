@@ -61,7 +61,7 @@
     "Full time-varying vegetation and authoritative non-target incident/facility adjudication"
   ],
   "publication_status_note": "This validation snapshot predates the user-requested branch publication; github_pushed describes the snapshot time.",
-  "historical_note": "Earlier local-only and global validation snapshots are retained; greek_temporal_extension is the latest completed stage.",
+  "historical_note": "Earlier local/global/Greek validation snapshots are retained; external_pretrained_extension is the latest completed experiment.",
   "global_extension": {
     "completed": true,
     "model_architecture_groups": 8,
@@ -115,5 +115,34 @@
     "github_ci_executed": false,
     "fresh_container_build_executed": false,
     "report": "greek-experiment-results.md"
+  },
+  "external_pretrained_extension": {
+    "external_checkpoints": 3,
+    "adaptation_strategies": [
+      "frozen_encoder_new_head",
+      "pretrained_final_layernorm_and_new_head"
+    ],
+    "new_comparison_candidates": 10,
+    "hls_cells_obtained": 115,
+    "hls_cells_requested": 124,
+    "fit_windows": 102055,
+    "fit_positive_windows": 165,
+    "validation_windows": 32591,
+    "validation_positive_windows": 29,
+    "known_test_2023_2025_positive_windows": 113,
+    "known_test_2026_positive_windows": 14,
+    "selected_external": "prithvi-v2-100m-tl-frozen_encoder",
+    "selected_known_2023_2025_ap": 0.016956280384046805,
+    "selected_known_2026_detected_positive_windows": 0,
+    "production_approved": false,
+    "historical_asof_pretraining_verified": false,
+    "fresh_independent_confirmation": false,
+    "project_primary_model_replaced": false,
+    "full_tests_passed": 93,
+    "notebook_11_executed": true,
+    "github_ci_executed": false,
+    "fresh_container_build_executed": false,
+    "report": "pretrained-results.md",
+    "statecharts": "pretrained-statecharts.md"
   }
 }

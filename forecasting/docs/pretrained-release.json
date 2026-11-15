@@ -1,0 +1,13 @@
+{
+  "approved": false,
+  "selected_overall": "prithvi-v2-100m-tl-frozen_encoder",
+  "selected_pretrained": "prithvi-v2-100m-tl-frozen_encoder",
+  "mode": "retrospective",
+  "failed_requirements": [
+    "issued_forecast_backtest",
+    "historical_pretraining_and_input_availability",
+    "fresh_independent_incident_confirmation",
+    "useful_calibrated_alert_skill"
+  ],
+  "source_selection_sha256": "3ee9053f629827d932aea11a6df2807e119d4d5fbc703c726ba3c7b734c72867"
+}

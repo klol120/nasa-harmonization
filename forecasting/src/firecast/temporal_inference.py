@@ -38,6 +38,17 @@ def predict(artifact, inputs, metadata, research_only=False):
     for i, row in enumerate(m.itertuples()):
         flags[i] = ['RETROSPECTIVE_MODEL_NOT_OPERATIONALLY_VALIDATED', 'COVERAGE_CONDITIONAL_RESEARCH_ESTIMATE', 'WEATHER_SOURCE_TRANSFER_REQUIRES_VALIDATION']
         if not valid[i]: flags[i].append('missing_input')
+        if 'required_image_cell_ids' in artifact:
+            if row.cell_id not in artifact['required_image_cell_ids']:
+                valid[i] = False; flags[i].append('missing_hls_or_outside_image_qualified_domain')
+            else:
+                image = artifact['image_provenance'][row.cell_id]
+                dates = [pd.Timestamp(value) for value in [image['observation_time'], image['retrieved_at'], artifact['source_checkpoint_retrieved_at']]]
+                if any(pd.isna(value) or value.tzinfo is None for value in dates):
+                    valid[i] = False; flags[i].append('missing_or_naive_pretrained_image_timestamp')
+                elif any(value > row.prediction_time for value in dates):
+                    valid[i] = False; flags[i].append('pretrained_image_or_weights_unavailable_at_prediction')
+            flags[i].append('STATIC_2017_HLS_LANDSCAPE_PROXY_NOT_CURRENT_FUEL')
         if row.cell_id in artifact.get('conflict_excluded_cell_ids', []) and (pd.isna(row.forecast_valid_end) or row.forecast_valid_end > pd.Timestamp(artifact.get('conflict_start', '2023-10-07T00:00:00Z'))):
             valid[i] = False; flags[i].append('outside_evaluated_southern_conflict_scope')
         if missing_timestamp[i]:
@@ -64,6 +75,7 @@ def predict(artifact, inputs, metadata, research_only=False):
     if valid.any():
         data = {'sequence': inputs['sequence'][valid], 'static': inputs['static'][valid],
                 'time': m.prediction_time.to_numpy(dtype='datetime64[D]')[valid].astype('int64'),
+                'cell_id': np.asarray(m.cell_id, dtype='U32')[valid],
                 'region': np.asarray(m.region, dtype='U32')[valid]}
         values[valid] = artifact['model'].predict(data)
     result = []
@@ -80,6 +92,10 @@ def predict(artifact, inputs, metadata, research_only=False):
                        'static_available_at': timestamp(row.static_available_at),
                        'vegetation_composite_end': timestamp(row.vegetation_composite_end),
                        'production_approved': False, 'flags': flags[i]})
+        if 'required_image_cell_ids' in artifact:
+            image = artifact['image_provenance'].get(row.cell_id, {})
+            result[-1].update(hls_observation_time=image.get('observation_time'), hls_retrieved_at=image.get('retrieved_at'),
+                              hls_subset_sha256=image.get('sha256'), pretrained_weights_retrieved_at=artifact['source_checkpoint_retrieved_at'])
     return result
 
 

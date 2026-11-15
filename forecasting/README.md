@@ -1,6 +1,6 @@
 # Lebanon satellite-detected vegetation-fire occurrence
 
-**Completed: global NASA pretraining, Greek/Lebanese adaptation, temporal LSTM benchmarks and southern-conflict exclusions. Production release remains blocked.** Read the [latest measured results](docs/greek-experiment-results.md), [pipeline statecharts](docs/greek-temporal-statecharts.md), [source ledger](docs/sources.md) and [decisions](../decisions.md). The [earlier global results](docs/global-results.md) and [Lebanon-only results](docs/current-results.md) remain historical baselines.
+**Completed: global NASA pretraining, Greek/Lebanese adaptation, temporal LSTMs, external NASA-pretrained encoder comparisons and southern-conflict exclusions. Production release remains blocked.** Read the [latest experiment](docs/pretrained-results.md), [adaptation statecharts](docs/pretrained-statecharts.md), [Greek temporal results](docs/greek-experiment-results.md), [source ledger](docs/sources.md) and [decisions](../decisions.md). The [earlier global results](docs/global-results.md) and [Lebanon-only results](docs/current-results.md) remain historical baselines.
 
 The [literature review](docs/literature-review.md) compares six published fire-model
 studies and explains high reported scores, task/sampling differences and proposed
@@ -15,6 +15,12 @@ explicit differences from the paper's target, sampling and forecast assumptions.
 The [Greek-inspired temporal experiment](docs/greek-experiment-results.md) now fits
 actual LSTM models, tree/linear controls, daily Greek labels, NASA NDVI/wetness
 histories and frozen transfer stages. Read its [statecharts](docs/greek-temporal-statecharts.md).
+
+The [external-pretrained encoder experiment](docs/pretrained-results.md) compares
+three published IBM/NASA Prithvi checkpoints adapted to Lebanese occurrence labels.
+Read the [source/license review](docs/pretrained-sources.md) and
+[adaptation statecharts](docs/pretrained-statecharts.md). These are image encoders
+with new occurrence heads; their historical tests remain retrospective diagnostics.
 
 Estimate whether vegetation-associated fire will be **detected by the configured satellite product** in an eligible Lebanese grid cell during the next 24-hour UTC window. This includes continuing fires and agricultural burning. It does not predict fire spread, damage or whether fire will reach infrastructure. It is not an emergency warning system.
 
@@ -285,3 +291,51 @@ If the managed environment's home cache is read-only, set `UV_CACHE_DIR` to a
 writable directory before `uv lock` / `uv sync`. The lock was updated only to
 declare SciPy directly and require neural sample-weight support; fitted runtime
 library versions were preserved.
+
+## External pretrained encoders
+
+All commands here run from `forecasting/`, after reproducing the Greek temporal
+and known-year tensors above. Install the existing optional CPU requirements
+without synchronizing them away:
+
+```sh
+uv pip install --python .venv/bin/python -r requirements-temporal-cpu.txt
+uv run --no-sync python -m firecast.pretrained_encoder discover
+/usr/bin/python3 scripts/acquire_hls_patches.py \
+  --cells outputs/noaa20-real/cells.csv \
+  --catalog data/pretrained-models/hls-catalog.json \
+  --out data/pretrained-models/hls-patches \
+  --token-file "$EARTHDATA_TOKEN_FILE"
+uv run --no-sync python -m firecast.pretrained_encoder extract
+uv run --no-sync python -m firecast.benchmark_pretrained fit
+uv run --no-sync python -m firecast.benchmark_pretrained score
+uv run --no-sync python -m firecast.publish_pretrained --live
+```
+
+The HLS reader requires a system Python with GDAL and numpy (`python3-gdal` and
+`python3-numpy` packages on Debian/Ubuntu). It reads authenticated NASA COG windows
+without full tile downloads. Runtime used GDAL 3.10.3 and system numpy 2.2.4; model
+work uses the existing Python 3.12 CPU environment. Credentials stay outside the
+repo. No timm/TerraTorch or remote repository code execution is required.
+
+Allow several GB of RAM. The three source checkpoint files total about 1.04 GB of
+network transfer, processed one at a time in RAM and verified against pinned
+SHA256/size. Full source weights are not retained locally: exact HLS crops,
+pre-normalization tokens, original final LayerNorm parameters, adapted heads and
+provenance are retained. Re-extraction for new imagery downloads the pinned
+checkpoint again. Local retained data can be used offline for fitting/evaluation;
+a full-checkpoint mirror must provide exactly the pinned bytes.
+
+`configs/pretrained-transfer.json` records immutable revisions, seed, fine-tuning
+settings, splits and limitations. `fit` refuses to overwrite frozen selections.
+`score` verifies frozen artifact hashes and never reselects on tests. Notebook 11
+calls the same modules, checks actual pretrained parameter updates and reproduces
+a frozen result with labels removed from the prediction input. The research ZIP
+is under `outputs/delivery/`; models retain cached-cell landscape tokens and do
+not support arbitrary new locations without a compatible image extraction.
+
+Use the committed [measured report](docs/pretrained-results.md), [JSON](docs/pretrained-results.json),
+[CSV](docs/pretrained-results.csv) and [statecharts](docs/pretrained-statecharts.md).
+Modern encoder availability, potential EO2 image overlap, reprocessing availability,
+old small landscape crops, already-viewed tests, sparse independent fires and
+observed-weather proxies prevent production approval. No API deployment is made.

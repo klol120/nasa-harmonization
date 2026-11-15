@@ -1,5 +1,24 @@
 # NASA source ledger: actual acquisition, 14–15 November 2026
 
+The external-checkpoint experiment additionally acquired NASA HLS Landsat L30 v2
+six-band 30m reflectance/Fmask crops observed June–October 2017, for 115/124
+Lebanese grid cells. Each crop is a native 32x32 window, not full-cell coverage.
+CMR `C2021957657-LPCLOUD` supplies discovery and protected NASA LP DAAC COGs supply
+the pixels. Exact crops, QA, windows, source URLs, observation/retrieval metadata
+and SHA256 are retained. HLS follows NASA open Earth-science data policy; Earthdata
+authentication is required. Initial CMR-query retrieval time was not captured;
+its file timestamp is explicitly retained as weaker evidence. Pixel retrieval
+times are recorded directly. Reprocessed acquisition dates do not establish
+historical dissemination availability.
+
+Three externally hosted IBM/NASA Prithvi checkpoints use NASA HLS pretraining;
+their Apache-2.0 licenses, pinned revisions/full-byte hashes, task/feature checks,
+and rejected alternatives are documented in [the pretrained-source review](pretrained-sources.md).
+Checkpoints are software/model artifacts, not an added non-NASA predictor source.
+They were verified in RAM; full files are not cached. Cached tokens and final
+normalization parameters are retained with provenance. These modern image encoders
+are not historical fire forecasts and may overlap Lebanese imagery in EO2 pretraining.
+
 The Greek-inspired temporal extension adds the following actual NASA acquisitions.
 Its raw subset and API manifests carry exact URLs, versions, download timestamps
 and hashes; totals do not count retained full source containers that were transient.

@@ -1,0 +1,15 @@
+{
+  "model": "prithvi-v2-100m-tl-frozen_encoder",
+  "model_sha256": "417e65f89f06f52b65e07dc2fd92bd4ef386c8053d828ef6fb516a0d06a7480d",
+  "selection": "pretrained arm selected on validation only",
+  "cells": 124,
+  "probabilities_returned": 84,
+  "withheld_conflict_scope": 32,
+  "withheld_image_scope": 9,
+  "prediction_time": "2026-11-16T00:00:00+00:00",
+  "window_end": "2026-11-17T00:00:00+00:00",
+  "source_forecast_report_sha256": "84f1c0de1632a7a3b0998387bf55a52bbc488d292375bf319d2eb695dbb63cd4",
+  "production_approved": false,
+  "actual_issued_forecast_inputs": true,
+  "note": "Retrospective model, old limited landscape sample and weather-source transfer; no operational skill demonstrated"
+}

@@ -546,3 +546,80 @@ windows and record actual family/candidate counts and selected parameters.
   frozen-artifact hashes and research-bundle member hashes passed. No fresh Docker
   build or remote GitHub CI result is claimed. Post-fit changes add reporting and
   safer label-free inference; frozen weights/calibrators/thresholds never change.
+
+## 15 November 2026 — external pretrained checkpoints
+
+* Interpret the new request as adapting external published weights, separately
+  from our own previously fitted global/Greek models. Preserve NASA-only training
+  and predictor provenance. Software/checkpoints may come from their authors'
+  public hosts; this does not add another environmental data provider.
+* Review actual Greek uncertainty-aware checkpoints, Mesogeos/Greek temporal
+  implementations, ECMWF Probability-of-Fire and spread models. Their mixed data,
+  unresolved checkpoint reuse rights or different task/input contracts prevent
+  silently presenting them as compatible NASA-only occurrence forecasters.
+* Select three distinct Apache-2.0 NASA-pretrained Prithvi checkpoints: EO1
+  100M, EO2 Tiny TL and EO2 100M TL. Pin immutable revisions, complete file sizes
+  and SHA256. The current Tiny and Tiny TL aliases resolve to identical weights
+  and are counted once. These are self-supervised image encoders, not already
+  trained fire-occurrence classifiers.
+* Obtain NASA HLS Landsat L30 v2 COG crops and Fmask using outcome-independent
+  2017 scenes. Use the recorded vegetation centroid, one 32x32 native 30m crop per
+  cell. This 960m sample is a limited old landscape proxy within a roughly 10km
+  forecast cell; do not imply complete cell coverage or current fuel condition.
+* Require at least 95% clear valid pixels, excluding cirrus/cloud/adjacency,
+  shadow, snow, water, fill and high aerosol. Retain native bands and QA, masks,
+  observation/source/retrieval metadata and checksums. Residual invalid pixels
+  are mean-filled under each checkpoint's original normalization. Missing-image
+  rows preserve positive exclusion counts. Original label/cloud/conflict
+  quarantines carry through unchanged.
+* Stream large source checkpoint bytes to RAM and verify them before strict
+  encoder loading. Retain exact cached pre-final-LayerNorm tokens and original
+  final-normalization parameters, not complete source checkpoint files. New-image
+  extraction must re-download the pinned source. This fits the small disk without
+  deleting the original NASA science archives. Do not execute remote model code.
+* Compare frozen-encoder heads and actual fine-tuning of the pretrained final
+  LayerNorm scale/bias plus a new head. Earlier attention blocks stay frozen.
+  This is limited encoder fine-tuning, not full-backbone training. Retain
+  seasonal/weather/environment logistic and no-image MLP controls on identical
+  image-qualified cohorts, with twelve fixed head epochs and recorded weight
+  changes. Use 2018–2020 fit, 2021 calibration, 2022 validation and fourteen-day gaps.
+* Freeze candidates and validation thresholds before known-year scoring. The
+  2023–2025 and Jan–Oct 2026 Lebanese folds were already viewed; do not call them
+  fresh independent confirmation or select from them. Modern pretraining weights
+  were unavailable at historical issue times; EO2 Lebanese image exposure cannot
+  be ruled out, and reprocessed HLS availability is unverified. Keep the
+  retrospective-weather limitation and production approval false.
+* Acquisition completed with 115/124 image-qualified cells, with no failed granule
+  requests. Missing-image exclusions remove 32/197 fitting positives, 3/32
+  validation positives and 20/133 known 2023–2025 positives. Report this changed
+  population and score previous frozen references on exactly the same test rows;
+  do not compare directly with their earlier all-qualified-cell scores.
+* Ten new candidates were fitted. All three actual pretrained final-normalization
+  tuning arms changed weights (L2 changes approximately 1.514, 0.754 and 1.423);
+  frozen arms changed none. Neural head fitting took 137.43 seconds in total.
+  The new comparison selects the EO2 100M TL frozen encoder plus Lebanese head,
+  not its tuned-normalization arm. It has matched validation AP 0.002994, below
+  the earlier local LSTM reference's 0.003072; do not replace project selection.
+* On already-known 2023–2025 rows, selected external AP is 0.016956 versus matched
+  old local LSTM 0.006683. Its threshold detects only 5/113 with 160 false alerts.
+  Known 2026 has zero of 14 detected with 33 false alerts. Retain these failures.
+  The nonselected normalization-tuned arm's slightly higher older-test AP does
+  not cause promotion or a new threshold. No production skill is established.
+* Cross-module delivery exposed __main__ class names in initial CLI serialization.
+  Fix future CLI fitting to instantiate canonical module classes. Preserve original
+  frozen file bytes/selection/results in a verified ZIP, canonicalize seven class
+  references, verify complete deserialized object-state hashes unchanged, and
+  record old/new artifact hashes in the selection receipt. No learned parameter,
+  calibration, threshold or validation choice changes; re-score all tests to verify
+  identical metrics. This is a packaging migration, not retraining.
+* Reuse the actual issued GEOS forecast tensors for the 16–17 November UTC example.
+  Shared inference now passes cell IDs without labels and separately checks HLS
+  observation/retrieval and checkpoint retrieval timestamps. Missing/future source
+  timestamps and missing-image cells withhold predictions. The new external arm
+  produces 84 research estimates over 124 cells; all 32 southern-scope cells are
+  withheld, with overlapping missing HLS/NDVI reasons preserved. Old 2017 HLS is
+  explicitly flagged, never represented as current fuel imagery.
+* Full suite: 93 passed and one existing Starlette warning. Fifteen focused checks
+  passed for temporal/external contracts. Notebook 11 executed actual model loading,
+  label-free prediction and AP reproduction. Production approval and deployment
+  remain false; fresh container and remote CI checks were not run for this stage.
