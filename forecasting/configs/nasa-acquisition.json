@@ -1,0 +1,39 @@
+{
+  "countries": [
+    "Lebanon"
+  ],
+  "fire_start_year": 2000,
+  "fire_end_year": 2025,
+  "fire_products": [
+    "modis",
+    "viirs-snpp",
+    "viirs-jpss1"
+  ],
+  "weather_start": "20120101",
+  "weather_end": "20251231",
+  "weather_latitudes": [
+    33.25,
+    33.75,
+    34.25,
+    34.75
+  ],
+  "weather_longitudes": [
+    35.3125,
+    35.9375,
+    36.5625
+  ],
+  "weather_parameters": [
+    "T2M",
+    "T2M_MAX",
+    "RH2M",
+    "PRECTOTCORR",
+    "WS10M",
+    "WD10M"
+  ],
+  "weather_time_standard": "UTC",
+  "notes": "NASA-only acquisition. POWER sample points cover Lebanon's bounding rectangle at coarse meteorological spacing; they are not a national mask and do not establish independent weather cells. No forecast or negative-label coverage is implied.",
+  "download_geos_snapshot": false,
+  "geos_issue": "20261114_00",
+  "geos_valid": "20261115_0030",
+  "forecast_note": "The complete genuine issued-window collector is firecast.forecast_acquire; do not require an expired rolling snapshot for historical FIRMS/POWER reproduction."
+}

@@ -1,0 +1,445 @@
+{
+  "reviewed_at": "2026-11-14T18:46:52.340805+00:00",
+  "selected": "strict-lebanon-environment",
+  "model_version": "strict-lebanon-environment-90b572f8ac587bab",
+  "split_counts": {
+    "train": {
+      "observations": 117677,
+      "positive_windows": 202,
+      "start": "2018-01-05 00:00:00+00:00",
+      "window_end": "2020-12-24 00:00:00+00:00"
+    },
+    "validation": {
+      "observations": 78769,
+      "positive_windows": 130,
+      "start": "2021-01-08 00:00:00+00:00",
+      "window_end": "2022-12-24 00:00:00+00:00"
+    },
+    "test": {
+      "observations": 120155,
+      "positive_windows": 280,
+      "start": "2023-01-08 00:00:00+00:00",
+      "window_end": "2026-01-01 00:00:00+00:00"
+    }
+  },
+  "test_prevalence": 0.002330323332362365,
+  "test_mean_probability": 0.0018067425539919245,
+  "quantile_reliability": [
+    {
+      "n": 12016,
+      "positive_windows": 1,
+      "min_probability": 2.9726002891484987e-10,
+      "max_probability": 7.12942272094413e-05,
+      "mean_probability": 3.9378142479655855e-05,
+      "observed_fraction": 8.322237017310254e-05
+    },
+    {
+      "n": 12015,
+      "positive_windows": 0,
+      "min_probability": 7.129479067958993e-05,
+      "max_probability": 0.0001521871776284903,
+      "mean_probability": 0.00011002959404329707,
+      "observed_fraction": 0.0
+    },
+    {
+      "n": 12016,
+      "positive_windows": 0,
+      "min_probability": 0.00015219820580333066,
+      "max_probability": 0.00026478388175178074,
+      "mean_probability": 0.00020450760946344655,
+      "observed_fraction": 0.0
+    },
+    {
+      "n": 12015,
+      "positive_windows": 5,
+      "min_probability": 0.0002647933200617613,
+      "max_probability": 0.0004360615062098678,
+      "mean_probability": 0.0003446919118712581,
+      "observed_fraction": 0.0004161464835622139
+    },
+    {
+      "n": 12015,
+      "positive_windows": 6,
+      "min_probability": 0.0004360734811542759,
+      "max_probability": 0.0006898839260799259,
+      "mean_probability": 0.0005545969337162676,
+      "observed_fraction": 0.0004993757802746567
+    },
+    {
+      "n": 12016,
+      "positive_windows": 10,
+      "min_probability": 0.0006898863948982425,
+      "max_probability": 0.0010899174163093604,
+      "mean_probability": 0.000875054323484749,
+      "observed_fraction": 0.0008322237017310253
+    },
+    {
+      "n": 12015,
+      "positive_windows": 19,
+      "min_probability": 0.0010899514503373102,
+      "max_probability": 0.0017615516525893431,
+      "mean_probability": 0.0013962637811309082,
+      "observed_fraction": 0.001581356637536413
+    },
+    {
+      "n": 12016,
+      "positive_windows": 51,
+      "min_probability": 0.0017616684331143305,
+      "max_probability": 0.002864183621473043,
+      "mean_probability": 0.0022650657704221585,
+      "observed_fraction": 0.004244340878828229
+    },
+    {
+      "n": 12015,
+      "positive_windows": 86,
+      "min_probability": 0.002864304660268984,
+      "max_probability": 0.004958684249689935,
+      "mean_probability": 0.0037774231533983117,
+      "observed_fraction": 0.007157719517270079
+    },
+    {
+      "n": 12016,
+      "positive_windows": 102,
+      "min_probability": 0.00495875841576552,
+      "max_probability": 0.052679221081938045,
+      "mean_probability": 0.008500177077283046,
+      "observed_fraction": 0.008488681757656458
+    }
+  ],
+  "release": {
+    "approved": false,
+    "checks": {
+      "real_data": true,
+      "operational_forecast_mode": false,
+      "compatible_observation_coverage": true,
+      "national_vegetation_grid": true,
+      "historical_feature_availability": false,
+      "issued_forecast_backtest": false,
+      "independent_incident_split_review": false,
+      "calibration_review": false,
+      "current_sensor_transition_review": true,
+      "test_sample_size": true,
+      "test_span": true,
+      "better_pr_auc": true,
+      "better_brier": true,
+      "validated_domain": true
+    },
+    "failures": [
+      "operational_forecast_mode",
+      "historical_feature_availability",
+      "issued_forecast_backtest",
+      "independent_incident_split_review",
+      "calibration_review"
+    ],
+    "note": "Passing these checks is a minimum research-to-deployment gate, not a guarantee of emergency-warning reliability",
+    "model_sha256": "fb142a799ff036b3d5b481b0f0f7376df701a9e132dd9196841ed78f3e789fe2",
+    "evaluation_sha256": "a2a38354e56e7003e276492daa1654fa456dd0f6beaec0f625bfbb96726725ca",
+    "generated_at": "2026-11-14T18:46:52.340635+00:00",
+    "validated_cells": [
+      "1230_2151",
+      "1230_2152",
+      "1230_2153",
+      "1230_2154",
+      "1231_2151",
+      "1231_2152",
+      "1231_2153",
+      "1231_2154",
+      "1231_2155",
+      "1232_2152",
+      "1232_2153",
+      "1232_2154",
+      "1232_2155",
+      "1232_2156",
+      "1233_2152",
+      "1233_2153",
+      "1233_2154",
+      "1233_2155",
+      "1233_2156",
+      "1233_2157",
+      "1234_2152",
+      "1234_2153",
+      "1234_2154",
+      "1234_2155",
+      "1234_2156",
+      "1234_2157",
+      "1234_2158",
+      "1234_2159",
+      "1235_2153",
+      "1235_2154",
+      "1235_2155",
+      "1235_2156",
+      "1235_2157",
+      "1235_2158",
+      "1235_2159",
+      "1235_2160",
+      "1236_2154",
+      "1236_2155",
+      "1236_2156",
+      "1236_2157",
+      "1236_2158",
+      "1236_2159",
+      "1237_2154",
+      "1237_2155",
+      "1237_2156",
+      "1237_2157",
+      "1237_2158",
+      "1237_2159",
+      "1237_2160",
+      "1238_2155",
+      "1238_2156",
+      "1238_2157",
+      "1238_2158",
+      "1238_2159",
+      "1238_2160",
+      "1238_2161",
+      "1238_2162",
+      "1238_2163",
+      "1239_2156",
+      "1239_2157",
+      "1239_2158",
+      "1239_2159",
+      "1239_2160",
+      "1239_2161",
+      "1239_2162",
+      "1239_2163",
+      "1240_2156",
+      "1240_2157",
+      "1240_2158",
+      "1240_2159",
+      "1240_2160",
+      "1240_2161",
+      "1240_2162",
+      "1240_2163",
+      "1240_2164",
+      "1241_2156",
+      "1241_2157",
+      "1241_2158",
+      "1241_2159",
+      "1241_2160",
+      "1241_2161",
+      "1241_2162",
+      "1241_2163",
+      "1241_2164",
+      "1241_2165",
+      "1242_2156",
+      "1242_2157",
+      "1242_2158",
+      "1242_2159",
+      "1242_2160",
+      "1242_2161",
+      "1242_2162",
+      "1242_2163",
+      "1242_2164",
+      "1242_2165",
+      "1243_2156",
+      "1243_2157",
+      "1243_2158",
+      "1243_2159",
+      "1243_2160",
+      "1243_2161",
+      "1243_2162",
+      "1243_2163",
+      "1243_2164",
+      "1243_2165",
+      "1244_2158",
+      "1244_2159",
+      "1244_2160",
+      "1244_2161",
+      "1244_2162",
+      "1244_2163",
+      "1244_2164",
+      "1245_2159",
+      "1245_2160",
+      "1245_2161",
+      "1245_2162",
+      "1245_2163",
+      "1245_2164",
+      "1246_2159",
+      "1246_2160",
+      "1246_2161",
+      "1246_2162",
+      "1246_2163",
+      "1246_2164"
+    ],
+    "validated_products": [
+      "VJ114A1.002"
+    ],
+    "validated_weather_sources": [
+      "NASA_POWER_HISTORICAL"
+    ]
+  },
+  "split_manifest_sha256": "c20f1e6ec3530c5ce7979d588495b0ec0cc253a3ff2a17c2e13c3c430728f560",
+  "note": "Post-fit review only. No fitting, threshold changes or model selection occurs in this command.",
+  "dataset": {
+    "generated_at": "2026-11-14T18:26:47.807989+00:00",
+    "mode": "retrospective",
+    "synthetic": false,
+    "decoded_daily_files": 5825,
+    "cells": 124,
+    "policies": {
+      "conservative": {
+        "windows": 362328,
+        "statuses": {
+          "negative": 320645,
+          "uncertain": 40830,
+          "positive": 809,
+          "excluded": 41,
+          "positive_low_coverage": 3
+        },
+        "qualified_rows_with_missing_features": 0
+      },
+      "strict": {
+        "windows": 362328,
+        "statuses": {
+          "negative": 319311,
+          "uncertain": 40793,
+          "excluded": 1609,
+          "positive": 612,
+          "positive_low_coverage": 3
+        },
+        "qualified_rows_with_missing_features": 0
+      }
+    },
+    "provenance": {
+      "fire_inventory": {
+        "sha256": "a6c99df011287bd951e2dd8c79aaec62305aa1c9cadcef20b975c21de1754b6d"
+      },
+      "weather": {
+        "sha256": "f4f0d4299c003672b63b588cc7f32948a2ed55ef78b8d27a2d7e4a195d85be40"
+      },
+      "static": {
+        "sha256": "f16c331ba22c4551c46f1b2bf8494e84b467abbd13d1eda833e73d021e46ef63"
+      },
+      "raw_fire_manifests": {
+        "sha256": "eee33c6f6ed69fb3cd0f5e07aaf3efd4bec6e4b1c35e4c7abd0e4482c48a5f12"
+      },
+      "configuration": {
+        "sha256": "87899aae556a3b10afb3653147eea9067412ef4a19b91b3959b6ab12f8c06109"
+      }
+    },
+    "label_product": "VJ114A1.002 daily 1km; not FIRMS 375m",
+    "limitations": [
+      "Both fitted classes require processed fraction threshold; probabilities are conditional on this observable population",
+      "Positive detections below coverage threshold are retained as positive_low_coverage, never zero",
+      "Processed clear-land fraction is daily-composite evidence, not continuous fire observability",
+      "Labels describe satellite detections, not complete ground incidents",
+      "Observed target-window POWER weather is a retrospective stand-in, not issued forecast performance",
+      "Static inputs are reprocessed pre-target observations, not verified historically available versions",
+      "No complete NDVI history was invented"
+    ]
+  },
+  "selected_test": {
+    "observations": 120155,
+    "positive_windows": 280,
+    "pr_auc_average_precision": 0.009085918718832705,
+    "precision": 0.013119533527696793,
+    "recall": 0.09642857142857143,
+    "f1": 0.023096663815226688,
+    "brier": 0.0023171977727958737,
+    "threshold": 0.010946538595884738,
+    "confusion_matrix_tn_fp_fn_tp": [
+      117844,
+      2031,
+      253,
+      27
+    ],
+    "calibration": [
+      {
+        "lower": 0.0,
+        "n": 120155,
+        "mean_probability": 0.0018067425539919245,
+        "observed_fraction": 0.002330323332362365
+      }
+    ],
+    "at_threshold_0_5": {
+      "observations": 120155,
+      "positive_windows": 280,
+      "pr_auc_average_precision": 0.009085918718832705,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "brier": 0.0023171977727958737,
+      "threshold": 0.5,
+      "confusion_matrix_tn_fp_fn_tp": [
+        119875,
+        0,
+        280,
+        0
+      ],
+      "calibration": [
+        {
+          "lower": 0.0,
+          "n": 120155,
+          "mean_probability": 0.0018067425539919245,
+          "observed_fraction": 0.002330323332362365
+        }
+      ]
+    },
+    "weekly_bootstrap_pr_auc_95pct": [
+      0.006892484532146005,
+      0.013933439484065334
+    ]
+  },
+  "baseline_test": {
+    "observations": 120155,
+    "positive_windows": 280,
+    "pr_auc_average_precision": 0.004096446719508922,
+    "precision": 0.004131012097964001,
+    "recall": 0.8,
+    "f1": 0.008219580214296198,
+    "brier": 0.002321849121224142,
+    "threshold": 0.001817998182001818,
+    "confusion_matrix_tn_fp_fn_tp": [
+      65875,
+      54000,
+      56,
+      224
+    ],
+    "calibration": [
+      {
+        "lower": 0.0,
+        "n": 120155,
+        "mean_probability": 0.0017902594578305968,
+        "observed_fraction": 0.002330323332362365
+      }
+    ],
+    "at_threshold_0_5": {
+      "observations": 120155,
+      "positive_windows": 280,
+      "pr_auc_average_precision": 0.004096446719508922,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "brier": 0.002321849121224142,
+      "threshold": 0.5,
+      "confusion_matrix_tn_fp_fn_tp": [
+        119875,
+        0,
+        280,
+        0
+      ],
+      "calibration": [
+        {
+          "lower": 0.0,
+          "n": 120155,
+          "mean_probability": 0.0017902594578305968,
+          "observed_fraction": 0.002330323332362365
+        }
+      ]
+    },
+    "weekly_bootstrap_pr_auc_95pct": [
+      0.0030725452340507617,
+      0.006223979896827713
+    ]
+  },
+  "policy_removals": {
+    "conservative": {
+      "excluded_windows": 41,
+      "excluded_fire_bearing_windows": 16
+    },
+    "strict": {
+      "excluded_windows": 1609,
+      "excluded_fire_bearing_windows": 213
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "grid_deg": 0.1,
+  "bbox": [35.0, 33.0, 36.7, 34.75],
+  "start": "2012-01-01T00:00:00Z",
+  "end_exclusive": "2026-01-01T00:00:00Z",
+  "horizon_hours": 24,
+  "primary_product": "viirs-snpp",
+  "recurrence_fit_end_exclusive": "2021-01-01T00:00:00Z",
+  "recurrence_round_degrees": 0.01,
+  "recurrence_min_active_days": 30,
+  "recurrence_min_years": 3,
+  "train_end_exclusive": "2021-01-01T00:00:00Z",
+  "validation_end_exclusive": "2023-01-01T00:00:00Z",
+  "embargo_days": 7,
+  "scope": "bounding_rectangle_pending_verified_national_and_vegetation_mask",
+  "coverage_status": "missing",
+  "weather_mode": "historical_observed_retrospective_only"
+}

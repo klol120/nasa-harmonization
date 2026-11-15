@@ -5,15 +5,17 @@ import { type CalendarMode, CalendarHeatmap } from "./charts/CalendarHeatmap";
 import { ClimatologyChart } from "./charts/ClimatologyChart";
 import { FireRings } from "./charts/FireRings";
 import { INFERNO } from "./lib/colors";
+import { CardHead, Kpi, PageHead, PngButton, RegionHero } from "./components/Blocks";
 import { CurrentVsMedian } from "./components/CurrentVsMedian";
-import { ImportDialog } from "./components/ImportDialog";
 import { type DrawMode, type LayerState, MapView } from "./components/MapView";
-import { MethodsDrawer } from "./components/MethodsDrawer";
+import { MethodsPage } from "./components/MethodsPage";
 import { SeasonStrip } from "./components/SeasonStrip";
 import { AreaPanel, DatePanel, EventsPanel, LayersPanel, PerformancePanel } from "./components/SidePanels";
+import { AppSidebar, type ExportAction, type FilterTab, PAGE_LABEL, RegionCard, TopBar } from "./components/Shell";
+import { type Command, CommandPalette, MOD_KEY } from "./components/CommandPalette";
+import { YearCompare } from "./charts/YearCompare";
 import { Timeline } from "./components/Timeline";
-import { type ExportAction, TopBar } from "./components/TopBar";
-import { DEFAULT_METRIC, DEFAULT_SENSOR, DEFAULT_YEARS_BACK, HOTSPOT_EXPORT_LIMIT } from "./config";
+import { DEFAULT_METRIC, DEFAULT_SENSOR, DEFAULT_YEARS_BACK, REGION_INFO } from "./config";
 import {
   type AreaSeries,
   type DatasetMeta,
@@ -31,7 +33,9 @@ import {
   ymMonth,
   ymYear,
 } from "./data/contract";
-import { type RegionSummary, type RegionWeather, apiSource, getWeather, listRegions } from "./data/api";
+import { type RegionForecast, type RegionSummary, type RegionWeather, apiSource, getForecast, getWeather, listRegions } from "./data/api";
+import { ForecastPage } from "./components/ForecastPage";
+import { LiveBadge } from "./components/LiveBadge";
 import { WeatherCard } from "./components/WeatherCard";
 import type { CellValues, DataSource } from "./data/sources";
 import { WorldPicker } from "./components/WorldPicker";
@@ -39,6 +43,8 @@ import { AccountMenu } from "./account/AccountMenu";
 import { MyAreasPanel } from "./account/MyAreasPanel";
 import { NewsletterForm } from "./account/NewsletterForm";
 import { SignInDialog } from "./account/SignInDialog";
+import { ChatWidget } from "./chat/ChatWidget";
+import { type ViewState, buildChatContext, suggestionsFor } from "./chat/context";
 import {
   anomalies,
   annualTotals,
@@ -54,11 +60,11 @@ import {
   toMonthPoints,
   typicalSeason,
 } from "./lib/analytics";
-import { toCsv } from "./lib/csv";
 import { analyticsCsv, calendarCsv, chartPng, downloadDataUrl, downloadText, slug } from "./lib/exporters";
 import { type Area, areaFromBBox, pointInArea } from "./lib/geo";
-import { readHash, reloadOnManualHashChange, writeHash } from "./lib/urlState";
-import { animationsEnabled, fireCellsEnabled, reducedMotion, setAnimations, setFireCells } from "./lib/motion";
+import { PAGES, type Page, pageHref, pushPage, readHash, shareUrl, watchHash, writeHash } from "./lib/urlState";
+import { animationsEnabled, fireCellsEnabled, setAnimations, setFireCells } from "./lib/motion";
+import { useTheme } from "./lib/theme";
 
 const DEFAULT_LAYERS: LayerState = {
   basemap: "satellite",
@@ -70,9 +76,14 @@ const DEFAULT_LAYERS: LayerState = {
   mask: { on: true },
 };
 
+/** Pages with the filters sidebar (area, dates, events). The forecast covers the whole region, so it has none. */
+const SIDEBAR_PAGES: Page[] = ["overview", "calendar", "trends", "weather"];
+/** Pages that draw ECharts (their charts can be exported as PNG). */
+const CHART_PAGES: Page[] = ["calendar", "trends", "forecast", "weather"];
+
 export default function App() {
   const initial = useRef(readHash()).current;
-  // Regions served by the API (null while loading), plus any files the user loaded.
+  // Regions served by the API (null while loading). The pipeline is the only data source.
   const [regions, setRegions] = useState<RegionSummary[] | null>(null);
   const [regionsError, setRegionsError] = useState<string | null>(null);
   const [regionsKey, setRegionsKey] = useState(0);
@@ -83,6 +94,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  // Bumped when the live pipeline delivered new data: reloads the numbers without resetting the view.
+  const [liveKey, setLiveKey] = useState(0);
+  const [demo, setDemo] = useState(false);
   const [areaSeries, setAreaSeries] = useState<AreaSeries | null>(null);
   const [seriesError, setSeriesError] = useState<string | null>(null);
   const [excludePersistent, setExcludePersistent] = useState(false);
@@ -98,11 +112,45 @@ export default function App() {
   const [compare, setCompare] = useState(false);
   const [layers, setLayers] = useState<LayerState>(DEFAULT_LAYERS);
   const [drawMode, setDrawMode] = useState<DrawMode>("none");
-  const [methodsOpen, setMethodsOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
   const [hotspots, setHotspots] = useState<HotspotRow[]>([]);
   const [toast, setToast] = useState<string | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Sidebar: collapsed to an icon rail (remembered), and open as a drawer on phones.
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readPref("wel3a.sidebar") === "collapsed");
+  const [mobileNav, setMobileNav] = useState(false);
+  useEffect(() => savePref("wel3a.sidebar", sidebarCollapsed ? "collapsed" : "open"), [sidebarCollapsed]);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  // What the global shortcuts act on; refreshed every render so the listener never goes stale.
+  const keys = useRef<{ step?: (months: number) => void }>({});
+  useEffect(() => {
+    const typing = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName));
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setSidebarCollapsed((c) => !c);
+        return;
+      }
+      if (e.key === "Escape") setMobileNav(false);
+      // Arrows step through time, unless something else already used the key (rings, map, inputs).
+      if (e.defaultPrevented || mod || e.altKey || typing(e.target)) return;
+      if (e.target instanceof Element && e.target.closest(".maplibregl-map, [role=dialog]")) return;
+      if (e.key === "/" && !e.shiftKey) {
+        e.preventDefault();
+        setPaletteOpen(true);
+      } else if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && keys.current.step) {
+        e.preventDefault();
+        keys.current.step((e.key === "ArrowLeft" ? -1 : 1) * (e.shiftKey ? 12 : 1));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   // Performance switches, remembered between visits.
   const [animations, setAnimationsState] = useState(animationsEnabled);
   const [showData, setShowData] = useState(fireCellsEnabled);
@@ -110,10 +158,35 @@ export default function App() {
   useEffect(() => setFireCells(showData), [showData]);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const firstLoad = useRef(true);
-  // Without a shared link the app opens on the world view.
-  const [view, setView] = useState<"world" | "dash">(initial.source ? "dash" : "world");
+  const [theme, setTheme, themeChoice] = useTheme();
+
+  // Which page is showing. Without a shared link the site opens on the world map.
+  const [page, setPage] = useState<Page>(() => (initial.source ? (initial.page ?? "overview") : "explore"));
+  const navigate = useCallback((p: Page) => {
+    setPage(p);
+    pushPage(p);
+    setMobileNav(false);
+    window.scrollTo({ top: 0 });
+  }, []);
+  // Back / forward between pages.
+  useEffect(
+    () =>
+      watchHash((p) => {
+        setPage(p);
+        window.scrollTo({ top: 0 });
+      }),
+    [],
+  );
 
   const source = sources.find((s) => s.id === sourceId);
+  // The demo replay is a per-visit choice: leaving a region switches it off again.
+  useEffect(
+    () => () => {
+      source?.refresh?.({ demo: false });
+      setDemo(false);
+    },
+    [source],
+  );
 
   // ---- regions on the data server ---------------------------------------
   useEffect(() => {
@@ -123,7 +196,7 @@ export default function App() {
       .then((rs) => {
         if (!alive) return;
         setRegions(rs);
-        setSources((prev) => [...rs.map(apiSource), ...prev.filter((p) => p.kind !== "api")]);
+        setSources(rs.map(apiSource));
       })
       .catch((e) => alive && setRegionsError(e instanceof Error ? e.message : String(e)));
     return () => {
@@ -131,18 +204,21 @@ export default function App() {
     };
   }, [regionsKey]);
 
-  // A shared link to a region the server no longer has: back to the world view.
+  // A shared link to a region the server no longer has: back to the world map.
   useEffect(() => {
-    if (regions && sourceId && !source && sourceId.startsWith("api:")) {
+    if (regions && sourceId && !source) {
       setSourceId(null);
-      setView("world");
+      setPage("explore");
     }
   }, [regions, sourceId, source]);
 
-  const enterRegion = useCallback((regionId: string) => {
-    setSourceId(`api:${regionId}`);
-    setView("dash");
-  }, []);
+  const enterRegion = useCallback(
+    (regionId: string) => {
+      setSourceId(`api:${regionId}`);
+      navigate("overview");
+    },
+    [navigate],
+  );
 
   // ---- load the dataset description ---------------------------------------
   useEffect(() => {
@@ -191,18 +267,42 @@ export default function App() {
       .then((s) => !ctl.signal.aborted && setAreaSeries(s))
       .catch((e) => !ctl.signal.aborted && (e as Error).name !== "AbortError" && setSeriesError(e instanceof Error ? e.message : String(e)));
     return () => ctl.abort();
-  }, [source, meta, dsSource, area, isWhole, metric, excludePersistent, reloadKey]);
+  }, [source, meta, dsSource, area, isWhole, metric, excludePersistent, reloadKey, liveKey]);
 
-  // ---- past weather at the region's hotspots (API regions only; the card hides on failure) ----
+  // ---- past weather at the region's hotspots (API regions only) ----
   const [weather, setWeather] = useState<RegionWeather | null>(null);
-  const weatherRegion = source?.kind === "api" && meta && dsSource === source.id ? meta.id : null;
+  const [weatherStatus, setWeatherStatus] = useState<"none" | "loading" | "ready" | "failed">("none");
+  const weatherRegion = source && meta && dsSource === source.id ? meta.id : null;
   useEffect(() => {
     setWeather(null);
+    setWeatherStatus(weatherRegion ? "loading" : "none");
     if (!weatherRegion) return;
     const ctl = new AbortController();
     getWeather(weatherRegion, ctl.signal)
-      .then((w) => !ctl.signal.aborted && setWeather(w))
-      .catch(() => {});
+      .then((w) => {
+        if (ctl.signal.aborted) return;
+        setWeather(w);
+        setWeatherStatus("ready");
+      })
+      .catch(() => !ctl.signal.aborted && setWeatherStatus("failed"));
+    return () => ctl.abort();
+  }, [weatherRegion, reloadKey]);
+
+  // ---- burning outlook (machine-learning forecast, API regions only) ----
+  const [forecast, setForecast] = useState<RegionForecast | null>(null);
+  const [forecastStatus, setForecastStatus] = useState<"none" | "loading" | "ready" | "unpublished" | "failed">("none");
+  useEffect(() => {
+    setForecast(null);
+    setForecastStatus(weatherRegion ? "loading" : "none");
+    if (!weatherRegion) return;
+    const ctl = new AbortController();
+    getForecast(weatherRegion, ctl.signal)
+      .then((f) => {
+        if (ctl.signal.aborted) return;
+        setForecast(f);
+        setForecastStatus(f && f.months.length ? "ready" : "unpublished");
+      })
+      .catch(() => !ctl.signal.aborted && setForecastStatus("failed"));
     return () => ctl.abort();
   }, [weatherRegion, reloadKey]);
 
@@ -271,7 +371,7 @@ export default function App() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, meta, dsSource, sensor, metric, win[0], win[1], excludePersistent]);
+  }, [source, meta, dsSource, sensor, metric, win[0], win[1], excludePersistent, liveKey]);
 
   // One colour/height scale for every month (or year) of the range, so the map can be compared
   // through time: the largest per-window 98th-percentile cell value. Without it each window would
@@ -299,7 +399,7 @@ export default function App() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, meta, dsSource, sensor, metric, r[0], r[1], windowMode, excludePersistent]);
+  }, [source, meta, dsSource, sensor, metric, r[0], r[1], windowMode, excludePersistent, liveKey]);
 
   // What the map is showing, in words: estimates must never pass for detections (data contract).
   const mapNote = useMemo(() => {
@@ -314,7 +414,7 @@ export default function App() {
     return undefined;
   }, [areaSeries, win, sensor, meta]);
 
-  // Individual detections (imported FIRMS files only): drawn as points / true pixel footprints,
+  // Individual detections (only if a source provides them; the API serves fire-days): points / true pixel footprints,
   // and aggregated into the ~1 km grid. Harmonized view shows both raw sensors.
   const [resolution, setResolution] = useState<"grid" | "1km">("grid");
   const [detectionsCapped, setDetectionsCapped] = useState(false);
@@ -341,33 +441,22 @@ export default function App() {
 
   const fineCells = useMemo(() => (resolution === "1km" ? detectionGrid(hotspots, FINE_GRID, metric) : null), [resolution, hotspots, metric]);
 
-  // Sections fade up as they scroll into view.
-  useEffect(() => {
-    if (view !== "dash" || !meta || !animations || !("IntersectionObserver" in window)) return;
-    const main = document.querySelector(".main");
-    if (!main) return;
-    main.classList.add("reveal");
-    const io = new IntersectionObserver((entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("in")), { rootMargin: "0px 0px -8% 0px" });
-    [...main.children].forEach((c) => io.observe(c));
-    // Sections that mount later (the weather card arrives after its own request) must be watched too,
-    // or they stay invisible while still taking up space.
-    const mo = new MutationObserver((records) => records.forEach((rec) => rec.addedNodes.forEach((n) => n instanceof Element && io.observe(n))));
-    mo.observe(main, { childList: true });
-    return () => {
-      mo.disconnect();
-      io.disconnect();
-      main.classList.remove("reveal");
-    };
-  }, [view, meta, dsSource, sourceId, animations, !!areaSeries]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The Overview map stays mounted while other pages show (no reload when coming back). Camera
+  // moves asked for meanwhile are held until it is visible again, so it measures itself first.
+  const onOverview = page === "overview";
+  const shownFit = useRef(fitKey);
+  const shownFocus = useRef(focus);
+  if (onOverview) {
+    shownFit.current = fitKey;
+    shownFocus.current = focus;
+  }
 
   // ---- URL sync --------------------------------------------------------
-  useEffect(reloadOnManualHashChange, []);
   useEffect(() => {
     // Skip while a newly picked dataset is still loading, so the URL never mixes two datasets.
-    // Imported files only live in this browser, so they are not put in the link.
-    if (view !== "dash" || !meta || !area || !range || !sourceId || dsSource !== sourceId || !sourceId.startsWith("api:")) return;
-    writeHash({ source: sourceId, sensor, metric, area, areaAll: isWhole, range, selected: sel });
-  }, [view, meta, dsSource, sourceId, sensor, metric, area, isWhole, range, sel]);
+    if (!meta || !area || !range || !sourceId || dsSource !== sourceId) return;
+    writeHash({ page, source: sourceId, sensor, metric, area, areaAll: isWhole, range, selected: sel });
+  }, [page, meta, dsSource, sourceId, sensor, metric, area, isWhole, range, sel]);
 
   // ---- actions ---------------------------------------------------------
   const flash = useCallback((msg: string) => {
@@ -389,6 +478,33 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [selected, r[0], r[1]],
   );
+  const selectMonth = (i: number) => {
+    setSelected(Math.max(r[0], Math.min(r[1], i)));
+    setWindowMode("month");
+  };
+  // The arrows (top bar, "This month vs normal" card, keyboard) step by what the map shows: a year
+  // when the Overview map shows a whole year, otherwise a month. The month of the year is kept.
+  const stepUnit: "month" | "year" = onOverview && windowMode === "year" ? "year" : "month";
+  const stepPeriod = (d: number) => setSelected(Math.max(r[0], Math.min(r[1], sel + d * (stepUnit === "year" ? 12 : 1))));
+  const canStep: [boolean, boolean] = stepUnit === "year" ? [ymYear(sel) > ymYear(r[0]), ymYear(sel) < ymYear(r[1])] : [sel > r[0], sel < r[1]];
+
+  // Two years side by side on the Trends page; until picked, the selected year and the one before it.
+  const [compareYears, setCompareYears] = useState<[number, number] | null>(null);
+
+  /** Shares a link to exactly this view: the system share sheet on phones, the clipboard elsewhere. */
+  const share = async () => {
+    const url = shareUrl();
+    const title = `${meta?.name ?? "Phoenical"} · burning calendar`;
+    try {
+      if (navigator.share && window.matchMedia("(pointer: coarse)").matches) await navigator.share({ title, url });
+      else {
+        await navigator.clipboard.writeText(url);
+        flash("Link copied");
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") flash("Couldn't copy the link: copy it from the address bar");
+    }
+  };
 
   const header = () => ({
     dataset: meta?.name ?? "",
@@ -401,22 +517,9 @@ export default function App() {
     estimates: meta?.estimate_until ? `harmonized values up to ${meta.estimate_until} are modelled from MODIS, not detections` : "",
     exported: new Date().toISOString(),
   });
-  const base = () => `wel3a_${slug(meta?.id ?? "data")}_${slug(area?.name ?? "area")}_${ymKey(r[0])}_${ymKey(r[1])}`;
+  const base = () => `phoenical_${slug(meta?.id ?? "data")}_${slug(area?.name ?? "area")}_${ymKey(r[0])}_${ymKey(r[1])}`;
 
   const exportsList: ExportAction[] = [
-    {
-      id: "hotspots",
-      label: "Hotspots CSV",
-      hint: source?.hotspots ? `FIRMS-style rows in area & range (max ${HOTSPOT_EXPORT_LIMIT.toLocaleString()})` : "Only for loaded FIRMS files (the server stores fire-days, not detections)",
-      disabled: !source?.hotspots,
-      run: async () => {
-        if (!meta || !area || !source?.hotspots) return;
-        const h = (await source.hotspots(r, area.bbox, HOTSPOT_EXPORT_LIMIT)).filter((p) => pointInArea(p.longitude, p.latitude, area));
-        h.sort((p, q) => p.acq_date.localeCompare(q.acq_date));
-        downloadText(`${base()}_hotspots.csv`, toCsv(h));
-        flash(`${h.length.toLocaleString()} hotspots exported${h.length >= HOTSPOT_EXPORT_LIMIT ? " (limit reached)" : ""}`);
-      },
-    },
     {
       id: "calendar",
       label: "Calendar CSV",
@@ -440,7 +543,8 @@ export default function App() {
     {
       id: "charts",
       label: "Charts PNG",
-      hint: "Every chart as a separate image",
+      hint: CHART_PAGES.includes(page) ? "Every chart on this page as a separate image" : "Open Calendar, Trends, Forecast or Weather to export their charts",
+      disabled: !CHART_PAGES.includes(page),
       run: () => {
         chartPng();
         flash("Charts saved as PNG");
@@ -449,7 +553,8 @@ export default function App() {
     {
       id: "map",
       label: "Map PNG",
-      hint: "Current map view",
+      hint: onOverview ? "Current map view" : "Open Overview to export the map",
+      disabled: !onOverview,
       run: () => {
         const m = mapRef.current;
         if (!m) return;
@@ -460,8 +565,187 @@ export default function App() {
   ];
 
   // ---- render ----------------------------------------------------------
-  if (view === "world" || !sourceId)
-    return (
+  const ready = !!(meta && area && a && dsSource === sourceId);
+  const failure = error ?? (meta && dsSource === sourceId ? seriesError : null) ?? (!source && regionsError ? regionsError : null);
+  const regionPage = page !== "explore" && !!sourceId;
+  const shownPage: Page = regionPage ? page : "explore";
+  const dataPage = regionPage && ready && page !== "methods";
+  keys.current.step = dataPage ? (d) => stepPeriod(Math.sign(d) * (Math.abs(d) === 12 && stepUnit === "month" ? 12 : 1)) : undefined;
+
+  // ---- assistant -------------------------------------------------------
+  // What the assistant is told about the view. Kept in a ref and read when a question is sent,
+  // so the answer always matches what is on screen at that moment.
+  const chatView: ViewState = {
+    pageLabel: shownPage === "explore" ? "World map" : PAGE_LABEL[shownPage],
+    regions,
+    region:
+      regionPage && ready
+        ? {
+            meta: meta!,
+            area: area!,
+            isWhole,
+            cellCount,
+            sensor,
+            metric,
+            unit,
+            range: r,
+            selected: sel,
+            excludePersistent,
+            series: a!.series,
+            clim: a!.clim,
+            anoms: a!.anoms,
+            totals: a!.totals,
+            trend: a!.trend,
+            seasons: a!.seasons,
+            total: a!.total,
+            cvm,
+            documented,
+            forecast,
+            forecastStatus,
+            weather,
+          }
+        : undefined,
+  };
+  const chatViewRef = useRef(chatView);
+  chatViewRef.current = chatView;
+  const getChatContext = useCallback(() => buildChatContext(chatViewRef.current), []);
+  const chatScope = chatView.region ? `${isWhole ? meta!.name : area!.name} · ${MONTH_ABBR[ymMonth(sel) - 1]} ${ymYear(sel)}` : "the world map";
+
+  // ---- command palette -------------------------------------------------
+  const commands: Command[] = [];
+  const cmd = (group: string, id: string, label: string, run: () => void, extra: Partial<Command> = {}) => commands.push({ group, id: `${group}:${id}`, label, run, ...extra });
+  for (const p of PAGES)
+    if (p === "explore" || sourceId) cmd("Pages", p, p === "explore" ? "World map" : PAGE_LABEL[p], () => navigate(p), { hint: p === shownPage ? "Current page" : undefined, keywords: `go open ${p}` });
+  for (const s of sources)
+    cmd("Regions", s.id, s.label, () => {
+      setSourceId(s.id);
+      navigate("overview");
+    }, { hint: s.id === sourceId ? "Open" : undefined, keywords: `region dataset country ${s.description ?? ""}` });
+  if (ready) {
+    const m = meta!;
+    for (const pr of [defaultArea(m), ...(REGION_INFO[m.id]?.presets ?? []).map((p) => areaFromBBox(p.name, p.bbox))])
+      cmd("Areas", pr.name, pr.name, () => onArea(pr), { hint: pr.name === area!.name ? "Showing" : undefined, keywords: "area zone district place" });
+    for (let y = ymYear(r[1]); y >= ymYear(r[0]); y--)
+      cmd("Years", String(y), `Jump to ${y}`, () => {
+        selectYear(y);
+        if (page === "methods") navigate("overview");
+      }, { searchOnly: true, keywords: "year" });
+    cmd("Years", "latest", "Jump to the latest month", () => setSelected(Math.min(r[1], parseYm(m.last_month))), { keywords: "now newest recent current" });
+    for (const s of SENSORS.filter((s) => m.sensor_start[s]))
+      cmd("Sensor", s, `Show ${SENSOR_LABEL[s]}`, () => setSensor(s), { hint: s === sensor ? "On" : undefined, keywords: "sensor satellite modis viirs harmonized" });
+    cmd("Actions", "share", "Copy a link to this view", share, { keywords: "share url link" });
+    for (const x of exportsList.filter((x) => !x.disabled)) cmd("Export", x.id, `Export ${x.label}`, () => void x.run(), { hint: x.hint, keywords: "download save csv png" });
+  }
+  cmd("Actions", "assistant", "Ask the assistant", () => setChatOpen(true), { keywords: "chat ai bot question help explain phoenical" });
+  cmd("Actions", "sidebar", sidebarCollapsed ? "Expand the sidebar" : "Collapse the sidebar", () => setSidebarCollapsed(!sidebarCollapsed), { hint: `${MOD_KEY} B` });
+  for (const t of ["light", "dark", "auto"] as const)
+    cmd("Appearance", t, t === "auto" ? "Match the system appearance" : `${t === "light" ? "Light" : "Dark"} appearance`, () => setTheme(t), {
+      hint: themeChoice === t ? "On" : undefined,
+      keywords: "theme mode colour color dark light",
+    });
+
+  const overlays = (
+    <>
+      {/* Mounted fresh on every open, so it always starts with an empty search. */}
+      {paletteOpen && <CommandPalette open onClose={() => setPaletteOpen(false)} commands={commands} />}
+      <SignInDialog />
+      <ChatWidget open={chatOpen} onOpenChange={setChatOpen} getContext={getChatContext} scope={chatScope} suggestions={suggestionsFor(chatView)} />
+      {loading && regionPage && <div className="loading-bar" aria-hidden />}
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
+    </>
+  );
+
+  /** Sidebar + top bar around a page's content. */
+  const shell = (content: React.ReactNode, filters?: FilterTab[]) => (
+    <div className={`app${sidebarCollapsed ? " sb-collapsed" : ""}`}>
+      <AppSidebar
+        page={shownPage}
+        onPage={navigate}
+        hasRegion={!!sourceId}
+        regionCard={
+          source ? (
+            <RegionCard
+              pulse={a && ready ? a.series.filter((p) => p.i <= r[1]).slice(-36).map((p) => ({ i: p.i, value: p.value })) : undefined}
+              selected={sel}
+              onSelect={selectMonth}
+              unit={unit}
+            />
+          ) : undefined
+        }
+        filters={filters}
+        account={<AccountMenu onFlash={flash} />}
+        collapsed={sidebarCollapsed}
+        onCollapse={setSidebarCollapsed}
+        mobileOpen={mobileNav}
+        onMobileClose={() => setMobileNav(false)}
+      />
+      <div className={`shell-main${shownPage === "explore" ? " is-explore" : ""}`}>
+        <TopBar
+          page={shownPage}
+          dataset={
+            source
+              ? {
+                  name: meta && dsSource === sourceId ? meta.name : source.label,
+                  sources,
+                  sourceId: source.id,
+                  onSource: setSourceId,
+                }
+              : undefined
+          }
+          onMenu={() => setMobileNav(true)}
+          onPage={navigate}
+          exports={regionPage && ready ? exportsList : null}
+          onSearch={() => setPaletteOpen(true)}
+          onShare={regionPage && ready ? share : undefined}
+          live={
+            regionPage && ready && meta && source?.refresh ? (
+              <LiveBadge
+                region={meta.id}
+                demo={demo}
+                onDemo={(on) => {
+                  source.refresh?.({ demo: on });
+                  setDemo(on);
+                  setLiveKey((k) => k + 1);
+                  flash(on ? "Demo replay on: simulated detections are included" : "Demo replay off");
+                }}
+                onChange={(fromYear) => {
+                  source.refresh?.({ fromYear });
+                  setLiveKey((k) => k + 1);
+                  flash("New satellite detections: figures updated");
+                }}
+              />
+            ) : undefined
+          }
+          data={
+            dataPage
+              ? {
+                  sensor,
+                  onSensor: setSensor,
+                  sensors: SENSORS.filter((s) => meta!.sensor_start[s]),
+                  metric,
+                  metrics: meta!.metrics,
+                  onMetric: setMetric,
+                  selected: sel,
+                  canStep,
+                  onStep: stepPeriod,
+                  stepUnit,
+                  period: onOverview ? { mode: windowMode, setMode: setWindowMode } : undefined,
+                }
+              : undefined
+          }
+        />
+        {content}
+      </div>
+      {overlays}
+    </div>
+  );
+
+  if (!regionPage)
+    return shell(
       <WorldPicker
         regions={regions}
         error={regionsError}
@@ -474,412 +758,581 @@ export default function App() {
             <NewsletterForm source="landing" />
           </div>
         }
-        corner={
-          <>
-            <AccountMenu onFlash={flash} />
-            <SignInDialog />
-            {toast && (
-              <div className="toast" role="status">
-                {toast}
-              </div>
-            )}
-          </>
-        }
-      />
+      />,
     );
 
-  const failure = error ?? (meta && dsSource === sourceId ? seriesError : null) ?? (!source && regionsError ? regionsError : null);
-  if (!meta || !area || !a || dsSource !== sourceId || failure) {
-    return (
+  if (failure)
+    return shell(
       <div className="boot">
         <div className="boot-orb" aria-hidden>
-          <img src="./emblem.png" alt="" width={72} height={72} />
+          <img src="./emblem.png" alt="" width={64} height={64} />
         </div>
-        {failure ? (
-          <>
-            <p className="warn">Could not load data: {failure}</p>
-            <div className="boot-actions">
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setError(null);
-                  setSeriesError(null);
-                  if (!source) setRegionsKey((k) => k + 1);
-                  else setReloadKey((k) => k + 1);
-                }}
-              >
-                Try again
-              </button>
-              <button className="btn btn-ghost" onClick={() => setView("world")}>
-                Back to the world map
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="boot-title">Loading the fire record{source ? ` for ${source.label}` : ""}</p>
-            <p className="muted small">Reading the harmonized calendar from the data server</p>
-          </>
-        )}
-      </div>
-    );
-  }
-
-  const viirsStart = meta.sensor_start.viirs_raw ? ymYear(parseYm(meta.sensor_start.viirs_raw)) : undefined;
-  const peakMonth = a.clim.reduce((p, c) => (Number.isFinite(c.median) && c.median > (p?.median ?? -1) ? c : p), a.clim[0]);
-  const record = a.completeYears.length ? a.completeYears.reduce((p, c) => (c.total > p.total ? c : p)) : null;
-  const selYearSeries = a.series.filter((p) => p.year === ymYear(sel));
-  const coveredFrom = a.series.find((p) => p.value !== null)?.year;
-
-  return (
-    <div className="app">
-      <TopBar
-        sources={sources}
-        sourceId={sourceId}
-        onSource={setSourceId}
-        onImport={() => setImportOpen(true)}
-        sensor={sensor}
-        onSensor={setSensor}
-        metric={metric}
-        metrics={meta.metrics}
-        onMetric={setMetric}
-        exports={exportsList}
-        onMethods={() => setMethodsOpen(true)}
-        onWorld={() => setView("world")}
-        account={<AccountMenu onFlash={flash} />}
-      />
-
-      <div className="layout">
-        <button className="filters-bar" aria-expanded={filtersOpen} aria-controls="filters" onClick={() => setFiltersOpen(!filtersOpen)}>
-          <span>
-            <b>{area.name}</b>
-            <small>
-              {ymKey(r[0])} → {ymKey(r[1])} · {SENSOR_LABEL[sensor]}
-            </small>
-          </span>
-          <span className="filters-bar-action">{filtersOpen ? "Hide filters" : "Edit filters"}</span>
-        </button>
-        <aside id="filters" className={`sidebar${filtersOpen ? " is-open" : ""}`} aria-label="Filters">
-          <PerformancePanel animations={animations} onAnimations={setAnimationsState} showData={showData} onShowData={setShowData} />
-          <MyAreasPanel region={meta.id} area={area} isWhole={isWhole} excludePersistent={excludePersistent} onOpen={onArea} onFlash={flash} />
-          <AreaPanel
-            meta={meta}
-            whole={whole!}
-            area={area}
-            cellCount={cellCount}
-            onArea={onArea}
-            drawMode={drawMode}
-            setDrawMode={setDrawMode}
-            excludePersistent={excludePersistent}
-            onExcludePersistent={setExcludePersistent}
-          />
-          <DatePanel meta={meta} range={r} onRange={setRange} bounds={bounds} />
-          <EventsPanel
-            documented={documented}
-            activeId={activeEvent}
-            // Spikes that are already explained by a documented event are not listed twice.
-            events={a.events.filter((e) => !(e.id.startsWith("anom-") && documented.some((d) => d.i === e.i)))}
-            onJump={(e) => {
-              if (e.i === undefined) return;
-              setSelected(e.i);
-              setWindowMode(e.year !== undefined ? "year" : "month");
-              setActiveEvent(e.id);
-              setFocus(e.loc ? { ...e.loc, key: `${e.id}-${Date.now()}` } : null);
+        <p className="boot-title">The fire record didn't load</p>
+        <p className="warn">{failure}</p>
+        <div className="boot-actions">
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setError(null);
+              setSeriesError(null);
+              if (!source) setRegionsKey((k) => k + 1);
+              else setReloadKey((k) => k + 1);
             }}
-          />
-          <LayersPanel layers={layers} setLayers={setLayers} detections={hasDetections} />
-          <section className="panel">
-            <header className="panel-head">
-              <h2>Monthly digest</h2>
-            </header>
-            <p className="small muted">One short email a month with each region's newest month. No account needed.</p>
-            <NewsletterForm source="dashboard" compact />
-          </section>
-        </aside>
+          >
+            Try again
+          </button>
+          <button className="btn" onClick={() => navigate("explore")}>
+            Back to the world map
+          </button>
+        </div>
+      </div>,
+    );
 
-        <main className="main">
-          {sensor !== "harmonized" && (
-            <div className="banner">
-              <b>Raw {SENSOR_LABEL[sensor].replace(" raw", "")} view.</b>{" "}
-              {sensor === "viirs_raw"
-                ? `VIIRS starts in ${meta.sensor_start.viirs_raw ?? "2012"} and detects many more, smaller fires, so it has no record before then.`
-                : "MODIS sees roughly 3–6× fewer fire-days than VIIRS for the same activity, so its values use their own scale. Switch to Harmonized for one consistent record."}{" "}
-              <button className="link" onClick={() => setSensor("harmonized")}>
-                Show harmonized
-              </button>
-            </div>
-          )}
-          {sensor === "harmonized" && meta.estimate_until && r[0] <= parseYm(meta.estimate_until) && (
-            <div className="banner banner-soft">
-              <b>Before {meta.splice_date?.slice(0, 7) ?? "2012"}, values are modelled estimates.</b> They are converted from MODIS, not VIIRS detections
-              {a.series.some((p) => p.lowConfidence) ? ", and months marked low confidence should be read with extra caution" : ""}.
-            </div>
-          )}
-
-          <section className="hero stage">
-            <div className="card map-card">
-              <MapView
-                area={area}
-                extent={meta.bbox}
-                gridDeg={fineCells ? FINE_GRID : meta.grid_deg}
-                cells={fineCells ?? cells}
-                scaleMax={fineCells ? undefined : cellScale}
-                resolution={resolution}
-                onResolution={setResolution}
-                detections={hasDetections}
-                gridLabel={`${meta.grid_deg}° (~${Math.round(meta.grid_deg * 111)} km)`}
-                note={
-                  fineCells
-                    ? `~1 km cells from individual ${sensor === "harmonized" ? "MODIS + VIIRS" : SENSOR_LABEL[sensor]} detections (not calibrated)${detectionsCapped ? ` · first ${DETECTION_LIMIT.toLocaleString()} detections` : ""}`
-                    : mapNote
-                }
-                hotspots={hotspots}
-                outline={meta.outline}
-                focus={focus}
-                areaIsRegion={isWhole}
-                layers={layers}
-                showData={showData}
-                animate={animations}
-                unit={unit}
-                windowLabel={windowLabel}
-                drawMode={drawMode}
-                setDrawMode={setDrawMode}
-                onArea={onArea}
-                fitKey={fitKey}
-                mapRef={mapRef}
-              />
-              <Timeline series={a.series} selected={sel} onSelect={setSelected} windowMode={windowMode} setWindowMode={setWindowMode} unit={unit} />
-            </div>
-            <div className="stage-title glass">
-              <RegionHero
-                name={meta.name}
-                areaName={area.name}
-                blurb={source?.description}
-                sensor={SENSOR_LABEL[sensor]}
-                years={`${coveredFrom ?? ymYear(r[0])}–${ymYear(r[1])}`}
-                grid={meta.grid_deg}
-                cells={cellCount}
-                season={typicalSeason(a.seasons)}
-                peakMonth={peakMonth && Number.isFinite(peakMonth.median) ? peakMonth.month : undefined}
-                record={record?.year}
-                trend={a.trend?.pctPerDecade}
-                localName={meta.local_name}
-              />
-            </div>
-            <div className="card cvm-card glass">
-              <CardHead title="This month vs normal" subtitle={`${SENSOR_LABEL[sensor]} · ${METRIC_LABEL[metric]}`} />
-              <CurrentVsMedian
-                cvm={cvm}
-                series={a.series}
-                selected={sel}
-                unit={unit}
-                onStep={(d) => setSelected(Math.max(r[0], Math.min(r[1], sel + d)))}
-                onLatest={() => setSelected(Math.min(r[1], parseYm(meta.last_month)))}
-              />
-            </div>
-          </section>
-
-          <section className="kpis" aria-label="Summary">
-            <Kpi
-              label={`Total ${unit}`}
-              value={fmt(a.total)}
-              num={a.total}
-              sub={`${coveredFrom ?? ymYear(r[0])}–${ymYear(r[1])} · ${SENSOR_LABEL[sensor]}`}
-              spark={{ values: a.totals.map((t) => (t.coveredMonths ? t.total : 0)), highlight: a.totals.findIndex((t) => t.year === ymYear(sel)) }}
-            />
-            <Kpi label="Average per year" value={fmt(a.completeYears.length ? a.completeYears.reduce((s, t) => s + t.total, 0) / a.completeYears.length : NaN)} sub={`${a.completeYears.length} complete years`} />
-            <Kpi
-              label="Peak month"
-              value={peakMonth && Number.isFinite(peakMonth.median) ? MONTH_ABBR[peakMonth.month - 1] : "–"}
-              sub={peakMonth ? `median ${fmt(peakMonth.median)} ${unit}` : ""}
-              spark={{ values: a.clim.map((c) => (Number.isFinite(c.median) ? c.median : 0)), highlight: peakMonth ? peakMonth.month - 1 : -1 }}
-            />
-            <Kpi
-              label="Record year"
-              value={record ? String(record.year) : "–"}
-              sub={record ? `${fmt(record.total)} ${unit}` : ""}
-              spark={{ values: a.totals.map((t) => (t.coveredMonths ? t.total : 0)), highlight: record ? a.totals.findIndex((t) => t.year === record.year) : -1 }}
-            />
-            <Kpi
-              label="Trend"
-              value={a.trend ? `${fmtPct(a.trend.pctPerDecade)}` : "–"}
-              sub={a.trend ? `per decade, ${a.trend.from}–${a.trend.to}` : "needs 3+ complete years"}
-              tone={a.trend ? (a.trend.pctPerDecade > 5 ? "warm" : a.trend.pctPerDecade < -5 ? "cool" : undefined) : undefined}
-            />
-          </section>
-
-          <section className="card rings-card">
-            <FireRings
-              cells={a.anoms}
-              unit={unit}
-              selected={sel}
-              onSelect={(i) => {
-                setSelected(i);
-                setWindowMode("month");
-              }}
-              events={eventMarks}
-              markerYear={sensor !== "modis_raw" ? viirsStart : undefined}
-              markerLabel="VIIRS joins"
-            />
-            <div className="rings-aside">
-              <span className="eyebrow">Signature view</span>
-              <h2>Fire rings</h2>
-              <p className="rings-lede">
-                {meta.name}'s fire record, read like the rings of a tree. Each ring is a year, starting from <b>{coveredFrom ?? ymYear(r[0])}</b> at the core. A{" "}
-                <b>thicker ring</b> is a year with more fire, and the twelve sectors are the months, coloured by activity.
-              </p>
-              <div className="rings-try">
-                <span className="field-label">See what harmonizing does</span>
-                <div className="seg seg-full sensor-seg" role="radiogroup" aria-label="Sensor for the rings">
-                  {SENSORS.filter((s) => meta.sensor_start[s]).map((s) => (
-                    <button key={s} role="radio" aria-checked={sensor === s} className={sensor === s ? "is-on" : ""} onClick={() => setSensor(s)}>
-                      {SENSOR_LABEL[s]}
-                    </button>
-                  ))}
-                </div>
-                <p className="rings-note">
-                  {sensor === "viirs_raw"
-                    ? "Raw VIIRS: the rings only start in 2012 and are swollen, because VIIRS sees many more small fires."
-                    : sensor === "modis_raw"
-                      ? "Raw MODIS: one sensor all the way through, but it misses many small fires, so its rings are thin and on their own scale."
-                      : "Harmonized: one VIIRS-equivalent scale throughout (modelled from MODIS before 2012), so ring thickness means fire, not which satellite was looking."}
-                </p>
-              </div>
-              <ul className="rings-key">
-                <li>
-                  <span className="rk rk-ramp" style={{ background: `linear-gradient(90deg, ${INFERNO.join(",")})` }} /> quiet month → intense month
-                </li>
-                <li>
-                  <span className="rk rk-ember" /> documented fire
-                </li>
-                <li>
-                  <span className="rk rk-dash" /> a new sensor joins
-                </li>
-              </ul>
-              <p className="muted small">Hover a month to read it, click to select it. Arrow keys move through time.</p>
-            </div>
-          </section>
-
-          <section className="card">
-            <CardHead
-              title="Burning calendar"
-              subtitle={
-                calendarMode === "value"
-                  ? `${METRIC_LABEL[metric]} per month · ${SENSOR_LABEL[sensor]} · click a cell to select it`
-                  : "Each month vs its own historical median (z-score) · blue = quieter, red = more active"
-              }
-              actions={
-                <>
-                  <div className="seg seg-sm" role="radiogroup" aria-label="Calendar colouring">
-                    <button role="radio" aria-checked={calendarMode === "value"} className={calendarMode === "value" ? "is-on" : ""} onClick={() => setCalendarMode("value")}>
-                      Values
-                    </button>
-                    <button role="radio" aria-checked={calendarMode === "anomaly"} className={calendarMode === "anomaly" ? "is-on" : ""} onClick={() => setCalendarMode("anomaly")}>
-                      Anomaly
-                    </button>
-                  </div>
-                  <PngButton id="calendar" />
-                </>
-              }
-            />
-            <CalendarHeatmap
-              cells={a.anoms}
-              mode={calendarMode}
-              unit={unit}
-              selected={sel}
-              onSelect={(i) => {
-                setSelected(i);
-                setWindowMode("month");
-              }}
-              markers={sensor !== "modis_raw" && viirsStart ? [{ year: viirsStart, label: "VIIRS" }] : []}
-              events={eventMarks}
-            />
-            <p className="legend-line">
-              <span className="lg lg-hatch" /> no data (not zero) <span className="lg lg-dash" /> partial year, not in medians
-              {a.series.some((p) => p.lowConfidence) && (
-                <>
-                  <span className="lg lg-dots" /> low-confidence estimate
-                </>
-              )}
-              <span className="lg lg-sel" /> selected
-            </p>
-          </section>
-
-          <div className="grid-2">
-            <section className="card">
-              <CardHead
-                title="Typical year"
-                subtitle={`Median and spread per month · line = ${ymYear(sel)} · not a forecast`}
-                actions={<PngButton id="climatology" />}
-              />
-              <ClimatologyChart clim={a.clim} year={ymYear(sel)} yearSeries={selYearSeries} unit={unit} onSelectMonth={(m) => setSelected(Math.max(r[0], Math.min(r[1], ym(ymYear(sel), m))))} />
-            </section>
-            <section className="card">
-              <CardHead
-                title="Annual totals"
-                subtitle={compare ? "Raw sensors vs harmonized: the 2012 jump is the sensor, not the fires" : `${SENSOR_LABEL[sensor]} per year · dashed = trend`}
-                actions={
-                  <>
-                    <label className="toggle toggle-sm">
-                      <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} />
-                      <span className="toggle-ui" aria-hidden />
-                      <span className="toggle-text">Compare sensors</span>
-                    </label>
-                    <PngButton id="annual" />
-                  </>
-                }
-              />
-              <AnnualChart totals={a.totalsBy} sensor={sensor} compare={compare} unit={unit} selectedYear={ymYear(sel)} viirsStartYear={viirsStart} events={eventMarks} onSelectYear={selectYear} />
-            </section>
+  // While loading, the page's own layout in placeholder glass, so nothing jumps when the data lands.
+  if (!ready)
+    return shell(
+      <div className="page-wrap" aria-busy="true" aria-label={`Loading the fire record${source ? ` for ${source.label}` : ""}`}>
+        <div className={`skeleton-page is-${page}`}>
+          <div className="skeleton-head">
+            <i className="sk sk-line" style={{ width: 180 }} />
+            <i className="sk sk-title" />
+            <i className="sk sk-line" style={{ width: "46%" }} />
           </div>
-
-          {weather && (
-            <WeatherCard
-              weather={weather}
-              selected={sel}
-              onSelect={(i) => {
-                setSelected(Math.max(r[0], Math.min(r[1], i)));
-                setWindowMode("month");
-              }}
-              subArea={!isWhole}
-            />
+          {page === "overview" ? (
+            <>
+              <i className="sk sk-card sk-stage" />
+              <div className="sk-row">
+                {[0, 1, 2, 3, 4].map((k) => (
+                  <i key={k} className="sk sk-card sk-kpi" />
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <i className="sk sk-card sk-tall" />
+              <div className="sk-row">
+                <i className="sk sk-card sk-mid" />
+                <i className="sk sk-card sk-mid" />
+              </div>
+            </>
           )}
+        </div>
+      </div>,
+    );
 
-          <section className="card">
-            <CardHead title="Fire season by year" subtitle="When each year's season started, peaked and ended · click a year to select it" />
-            <SeasonStrip peakMonth={peakMonth && Number.isFinite(peakMonth.median) ? peakMonth.month : undefined} seasons={a.seasons} selectedYear={ymYear(sel)} unit={unit} onSelectYear={selectYear} />
-          </section>
+  // Narrowed by `ready` above.
+  const m = meta!;
+  const ar = area!;
+  const an = a!;
 
-          <footer className="foot">
-            <span>
-              Source data: NASA FIRMS (MODIS, VIIRS 375 m), harmonized by the Wel3a pipeline{meta.generated_at ? ` (export of ${meta.generated_at.slice(0, 10)})` : ""}. Fire-days measure
-              burning activity, not burned area or individual fires.
-            </span>
-            <button className="link" onClick={() => setMethodsOpen(true)}>
-              Methods &amp; limitations
-            </button>
-          </footer>
-        </main>
-      </div>
+  const viirsStart = m.sensor_start.viirs_raw ? ymYear(parseYm(m.sensor_start.viirs_raw)) : undefined;
+  const peakMonth = an.clim.reduce((p, c) => (Number.isFinite(c.median) && c.median > (p?.median ?? -1) ? c : p), an.clim[0]);
+  const hasPeak = !!peakMonth && Number.isFinite(peakMonth.median);
+  const record = an.completeYears.length ? an.completeYears.reduce((p, c) => (c.total > p.total ? c : p)) : null;
+  const selYearSeries = an.series.filter((p) => p.year === ymYear(sel));
+  const coveredFrom = an.series.find((p) => p.value !== null)?.year;
+  const years = `${coveredFrom ?? ymYear(r[0])}–${ymYear(r[1])}`;
+  const eyebrow = `${m.name}${isWhole ? "" : ` / ${ar.name}`} · ${SENSOR_LABEL[sensor]} · ${years}`;
+  const withSidebar = SIDEBAR_PAGES.includes(page);
+  // Years for the comparison: those with any data, newest default first.
+  const dataYears = [...new Set(an.series.filter((p) => p.value !== null).map((p) => p.year))];
+  const fallbackB = dataYears.includes(ymYear(sel) - 1) ? ymYear(sel) - 1 : (record?.year ?? dataYears[0]);
+  const [cmpA, cmpB] = compareYears && compareYears.every((y) => dataYears.includes(y)) ? compareYears : [ymYear(sel), fallbackB];
 
-      <SignInDialog />
-      <MethodsDrawer open={methodsOpen} onClose={() => setMethodsOpen(false)} meta={meta} sourceLabel={source?.label ?? ""} />
-      <ImportDialog
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-        onLoad={(src) => {
-          setSources((prev) => [src, ...prev.filter((p) => p.id !== src.id)]);
-          setSourceId(src.id);
-          flash(`Loaded ${src.label}`);
-        }}
-      />
-      {loading && <div className="loading-bar" aria-hidden />}
-      {toast && (
-        <div className="toast" role="status">
-          {toast}
+  const banners = (
+    <>
+      {sensor !== "harmonized" && (
+        <div className="banner">
+          <b>Raw {SENSOR_LABEL[sensor].replace(" raw", "")} view.</b>{" "}
+          {sensor === "viirs_raw"
+            ? `VIIRS starts in ${m.sensor_start.viirs_raw ?? "2012"} and detects many more, smaller fires, so it has no record before then.`
+            : "MODIS sees roughly 3–6× fewer fire-days than VIIRS for the same activity, so its values use their own scale. Switch to Harmonized for one consistent record."}{" "}
+          <button className="link" onClick={() => setSensor("harmonized")}>
+            Show harmonized
+          </button>
         </div>
       )}
-    </div>
+      {sensor === "harmonized" && m.estimate_until && r[0] <= parseYm(m.estimate_until) && (
+        <div className="banner banner-soft">
+          <b>Before {m.splice_date?.slice(0, 7) ?? "2012"}, values are modelled estimates.</b> They are converted from MODIS, not VIIRS detections
+          {an.series.some((p) => p.lowConfidence) ? ", and months marked low confidence should be read with extra caution" : ""}.
+        </div>
+      )}
+    </>
+  );
+
+  const pageLink = (p: Page, label: string) => (
+    <a
+      className="link"
+      href={pageHref(p)}
+      onClick={(e) => {
+        e.preventDefault();
+        navigate(p);
+      }}
+    >
+      {label}
+    </a>
+  );
+
+  const overview = (
+    <main className="main page page-overview" hidden={!onOverview} aria-label="Overview">
+      {banners}
+
+      <section className="hero stage">
+        <div className="card map-card">
+          <MapView
+            // The street map and lighting differ per theme, so the map is rebuilt when the theme changes.
+            key={theme}
+            theme={theme}
+            area={ar}
+            extent={m.bbox}
+            gridDeg={fineCells ? FINE_GRID : m.grid_deg}
+            cells={fineCells ?? cells}
+            scaleMax={fineCells ? undefined : cellScale}
+            resolution={resolution}
+            onResolution={setResolution}
+            detections={hasDetections}
+            gridLabel={`${m.grid_deg}° (~${Math.round(m.grid_deg * 111)} km)`}
+            note={
+              fineCells
+                ? `~1 km cells from individual ${sensor === "harmonized" ? "MODIS + VIIRS" : SENSOR_LABEL[sensor]} detections (not calibrated)${detectionsCapped ? ` · first ${DETECTION_LIMIT.toLocaleString()} detections` : ""}`
+                : mapNote
+            }
+            hotspots={hotspots}
+            outline={m.outline}
+            focus={shownFocus.current}
+            areaIsRegion={isWhole}
+            layers={layers}
+            showData={showData}
+            animate={animations && onOverview}
+            unit={unit}
+            windowLabel={windowLabel}
+            drawMode={drawMode}
+            setDrawMode={setDrawMode}
+            onArea={onArea}
+            fitKey={shownFit.current}
+            mapRef={mapRef}
+          />
+          <Timeline series={an.series} selected={sel} onSelect={setSelected} windowMode={windowMode} unit={unit} />
+        </div>
+        <div className="stage-title glass">
+          <RegionHero
+            name={m.name}
+            areaName={ar.name}
+            blurb={source?.description}
+            sensor={SENSOR_LABEL[sensor]}
+            years={years}
+            grid={m.grid_deg}
+            cells={cellCount}
+            season={typicalSeason(an.seasons)}
+            peakMonth={hasPeak ? peakMonth.month : undefined}
+            record={record?.year}
+            trend={an.trend?.pctPerDecade}
+            localName={m.local_name}
+          />
+        </div>
+        <div className="card cvm-card glass">
+          <CardHead title="This month vs normal" subtitle={`${SENSOR_LABEL[sensor]} · ${METRIC_LABEL[metric]}`} />
+          <CurrentVsMedian
+            cvm={cvm}
+            series={an.series}
+            selected={sel}
+            unit={unit}
+            onStep={stepPeriod}
+            stepUnit={stepUnit}
+            onLatest={() => setSelected(Math.min(r[1], parseYm(m.last_month)))}
+          />
+        </div>
+      </section>
+
+      <section className="kpis" aria-label="Summary">
+        <Kpi
+          label={`Total ${unit}`}
+          value={fmt(an.total)}
+          num={an.total}
+          sub={`${years} · ${SENSOR_LABEL[sensor]}`}
+          spark={{ values: an.totals.map((t) => (t.coveredMonths ? t.total : 0)), highlight: an.totals.findIndex((t) => t.year === ymYear(sel)) }}
+        />
+        <Kpi label="Average per year" value={fmt(an.completeYears.length ? an.completeYears.reduce((s, t) => s + t.total, 0) / an.completeYears.length : NaN)} sub={`${an.completeYears.length} complete years`} />
+        <Kpi
+          label="Peak month"
+          value={hasPeak ? MONTH_ABBR[peakMonth.month - 1] : "–"}
+          sub={peakMonth ? `median ${fmt(peakMonth.median)} ${unit}` : ""}
+          spark={{ values: an.clim.map((c) => (Number.isFinite(c.median) ? c.median : 0)), highlight: peakMonth ? peakMonth.month - 1 : -1 }}
+        />
+        <Kpi
+          label="Record year"
+          value={record ? String(record.year) : "–"}
+          sub={record ? `${fmt(record.total)} ${unit}` : ""}
+          spark={{ values: an.totals.map((t) => (t.coveredMonths ? t.total : 0)), highlight: record ? an.totals.findIndex((t) => t.year === record.year) : -1 }}
+        />
+        <Kpi
+          label="Trend"
+          value={an.trend ? `${fmtPct(an.trend.pctPerDecade)}` : "–"}
+          sub={an.trend ? `per decade, ${an.trend.from}–${an.trend.to}` : "needs 3+ complete years"}
+          tone={an.trend ? (an.trend.pctPerDecade > 5 ? "warm" : an.trend.pctPerDecade < -5 ? "cool" : undefined) : undefined}
+        />
+      </section>
+
+      <nav className="next-grid" aria-label="Explore this region">
+        <NextCard page="calendar" onGo={navigate} title="Burning calendar" text="Every month of the record as a grid and as fire rings, with anomalies against the normal." stat={hasPeak ? `Peaks in ${MONTH_ABBR[peakMonth.month - 1]}` : undefined} />
+        <NextCard
+          page="trends"
+          onGo={navigate}
+          title="Trends & seasons"
+          text="The typical year, annual totals across sensors, and when each fire season started and ended."
+          stat={an.trend ? `${fmtPct(an.trend.pctPerDecade)} per decade` : undefined}
+        />
+        <NextCard
+          page="forecast"
+          onGo={navigate}
+          title="Burning outlook"
+          text="The next six months from a machine-learning model, with a likely range and how accurate it has been."
+          stat={
+            forecastStatus === "ready" && forecast
+              ? `${MONTH_ABBR[ymMonth(parseYm(forecast.months[0].ym)) - 1]}: ${fmt(forecast.months[0].value)} expected`
+              : forecastStatus === "loading"
+                ? "Loading…"
+                : "Coming soon"
+          }
+        />
+        <NextCard
+          page="weather"
+          onGo={navigate}
+          title="Weather at the fires"
+          text="Temperature, rain, humidity and wind at the hotspots, month by month against normal."
+          stat={weatherStatus === "ready" ? "Available" : weatherStatus === "loading" ? "Loading…" : "Not for this dataset"}
+        />
+      </nav>
+    </main>
+  );
+
+  let other: React.ReactNode = null;
+  if (page === "calendar")
+    other = (
+      <>
+        <PageHead eyebrow={eyebrow} title="Burning calendar" lede="Each month of the record, read two ways: as the rings of a tree, and as a month-by-year grid. Click any month to select it." />
+        {banners}
+        <section className="card rings-card">
+          <FireRings
+            cells={an.anoms}
+            unit={unit}
+            selected={sel}
+            onSelect={selectMonth}
+            events={eventMarks}
+            markerYear={sensor !== "modis_raw" ? viirsStart : undefined}
+            markerLabel="VIIRS joins"
+          />
+          <div className="rings-aside">
+            <span className="eyebrow">Signature view</span>
+            <h2>Fire rings</h2>
+            <p className="rings-lede">
+              {m.name}'s fire record, read like the rings of a tree. Each ring is a year, starting from <b>{coveredFrom ?? ymYear(r[0])}</b> at the core. A{" "}
+              <b>thicker ring</b> is a year with more fire, and the twelve sectors are the months, coloured by activity.
+            </p>
+            <div className="rings-try">
+              <span className="field-label">See what harmonizing does</span>
+              <div className="seg seg-full sensor-seg" role="radiogroup" aria-label="Sensor for the rings">
+                {SENSORS.filter((s) => m.sensor_start[s]).map((s) => (
+                  <button key={s} role="radio" aria-checked={sensor === s} className={sensor === s ? "is-on" : ""} onClick={() => setSensor(s)}>
+                    {SENSOR_LABEL[s]}
+                  </button>
+                ))}
+              </div>
+              <p className="rings-note">
+                {sensor === "viirs_raw"
+                  ? "Raw VIIRS: the rings only start in 2012 and are swollen, because VIIRS sees many more small fires."
+                  : sensor === "modis_raw"
+                    ? "Raw MODIS: one sensor all the way through, but it misses many small fires, so its rings are thin and on their own scale."
+                    : "Harmonized: one VIIRS-equivalent scale throughout (modelled from MODIS before 2012), so ring thickness means fire, not which satellite was looking."}
+              </p>
+            </div>
+            <ul className="rings-key">
+              <li>
+                <span className="rk rk-ramp" style={{ background: `linear-gradient(90deg, ${INFERNO.join(",")})` }} /> quiet month → intense month
+              </li>
+              <li>
+                <span className="rk rk-ember" /> documented fire
+              </li>
+              <li>
+                <span className="rk rk-dash" /> a new sensor joins
+              </li>
+            </ul>
+            <p className="muted small">Hover a month to read it, click to select it. Arrow keys move through time.</p>
+          </div>
+        </section>
+
+        <section className="card">
+          <CardHead
+            title="Month × year grid"
+            subtitle={
+              calendarMode === "value"
+                ? `${METRIC_LABEL[metric]} per month · ${SENSOR_LABEL[sensor]} · click a cell to select it`
+                : "Each month vs its own historical median (z-score) · blue = quieter, red = more active"
+            }
+            actions={
+              <>
+                <div className="seg seg-sm" role="radiogroup" aria-label="Calendar colouring">
+                  <button role="radio" aria-checked={calendarMode === "value"} className={calendarMode === "value" ? "is-on" : ""} onClick={() => setCalendarMode("value")}>
+                    Values
+                  </button>
+                  <button role="radio" aria-checked={calendarMode === "anomaly"} className={calendarMode === "anomaly" ? "is-on" : ""} onClick={() => setCalendarMode("anomaly")}>
+                    Anomaly
+                  </button>
+                </div>
+                <PngButton id="calendar" />
+              </>
+            }
+          />
+          <CalendarHeatmap
+            cells={an.anoms}
+            mode={calendarMode}
+            unit={unit}
+            selected={sel}
+            onSelect={selectMonth}
+            markers={sensor !== "modis_raw" && viirsStart ? [{ year: viirsStart, label: "VIIRS" }] : []}
+            events={eventMarks}
+          />
+          <p className="legend-line">
+            <span className="lg lg-hatch" /> no data (not zero) <span className="lg lg-dash" /> partial year, not in medians
+            {an.series.some((p) => p.lowConfidence) && (
+              <>
+                <span className="lg lg-dots" /> low-confidence estimate
+              </>
+            )}
+            <span className="lg lg-sel" /> selected
+          </p>
+        </section>
+      </>
+    );
+  else if (page === "trends")
+    other = (
+      <>
+        <PageHead
+          eyebrow={eyebrow}
+          title="Trends & seasons"
+          lede={
+            <>
+              What a normal year looks like, how the years compare, and when each season ran.
+              {an.trend ? (
+                <>
+                  {" "}
+                  Activity is changing by <b>{fmtPct(an.trend.pctPerDecade)}</b> per decade ({an.trend.from}–{an.trend.to}).
+                </>
+              ) : null}
+            </>
+          }
+        />
+        {banners}
+        <div className="grid-2">
+          <section className="card">
+            <CardHead title="Typical year" subtitle={`Median and spread per month · line = ${ymYear(sel)} · not a forecast`} actions={<PngButton id="climatology" />} />
+            <ClimatologyChart clim={an.clim} year={ymYear(sel)} yearSeries={selYearSeries} unit={unit} onSelectMonth={(mo) => setSelected(Math.max(r[0], Math.min(r[1], ym(ymYear(sel), mo))))} />
+          </section>
+          <section className="card">
+            <CardHead
+              title="Annual totals"
+              subtitle={compare ? "Raw sensors vs harmonized: the 2012 jump is the sensor, not the fires" : `${SENSOR_LABEL[sensor]} per year · dashed = trend`}
+              actions={
+                <>
+                  <label className="toggle toggle-sm">
+                    <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} />
+                    <span className="toggle-ui" aria-hidden />
+                    <span className="toggle-text">Compare sensors</span>
+                  </label>
+                  <PngButton id="annual" />
+                </>
+              }
+            />
+            <AnnualChart totals={an.totalsBy} sensor={sensor} compare={compare} unit={unit} selectedYear={ymYear(sel)} viirsStartYear={viirsStart} events={eventMarks} onSelectYear={selectYear} />
+          </section>
+        </div>
+        <YearCompare
+          series={an.series}
+          clim={an.clim}
+          years={dataYears}
+          a={cmpA}
+          b={cmpB}
+          onChange={(x, y) => setCompareYears([x, y])}
+          unit={unit}
+          onSelectMonth={(y, mo) => selectMonth(ym(y, mo))}
+        />
+        <section className="card">
+          <CardHead title="Fire season by year" subtitle="When each year's season started, peaked and ended · click a year to select it" />
+          <SeasonStrip peakMonth={hasPeak ? peakMonth.month : undefined} seasons={an.seasons} selectedYear={ymYear(sel)} unit={unit} onSelectYear={selectYear} />
+        </section>
+      </>
+    );
+  else if (page === "forecast") {
+    // The model forecasts whole-region harmonized fire-days (all cells), so history and the typical
+    // year are only drawn alongside it when the current view measures the same thing.
+    const comparable = isWhole && sensor === "harmonized" && metric === "cell_days" && !excludePersistent;
+    other = (
+      <ForecastPage
+        eyebrow={`${m.name} · whole region · harmonized fire-days`}
+        regionName={m.name}
+        status={forecastStatus}
+        forecast={forecast}
+        history={comparable ? an.series.filter((p) => !p.partial).slice(-24).map((p) => ({ i: p.i, value: p.value })) : undefined}
+        typical={comparable ? an.clim.map((c) => (Number.isFinite(c.median) ? c.median : null)) : undefined}
+        historyNote={
+          comparable
+            ? undefined
+            : `Recent months and the typical year are hidden: they would show ${isWhole ? "" : `${ar.name}, `}${SENSOR_LABEL[sensor]}${metric !== "cell_days" ? `, ${METRIC_LABEL[metric]}` : ""}${excludePersistent ? " without industrial sites" : ""}, not the whole region's harmonized fire-days the forecast uses.`
+        }
+        unit="fire-days"
+        onRetry={() => setReloadKey((k) => k + 1)}
+        backLink={pageLink("overview", "Back to the overview")}
+      />
+    );
+  } else if (page === "weather")
+    other = (
+      <>
+        <PageHead eyebrow={eyebrow} title="Weather at the fires" lede="Past conditions at the region's fire hotspots for the selected year, against the normal for each month." />
+        {weather ? (
+          <WeatherCard weather={weather} selected={sel} onSelect={selectMonth} subArea={!isWhole} />
+        ) : (
+          <section className="card empty">
+            {weatherStatus === "loading" ? (
+              <p>
+                <span className="spinner" aria-hidden /> Loading weather for {m.name}…
+              </p>
+            ) : (
+              <>
+                <h3>No weather for this dataset</h3>
+                <p className="muted">
+                  {weatherStatus === "failed"
+                    ? "The data server has no weather stored for this region yet."
+                    : "Weather comes from the data server, so it is only shown for regions opened from the world map, not for files loaded in the browser."}
+                </p>
+                <p>{pageLink("overview", "Back to the overview")}</p>
+              </>
+            )}
+          </section>
+        )}
+      </>
+    );
+  else if (page === "methods") other = <MethodsPage meta={m} sourceLabel={source?.label ?? ""} />;
+
+  const filters: FilterTab[] | undefined = withSidebar
+    ? [
+        {
+          id: "area",
+          label: "Area",
+          content: (
+            <>
+              <AreaPanel
+                meta={m}
+                whole={whole!}
+                area={ar}
+                cellCount={cellCount}
+                onArea={onArea}
+                drawMode={drawMode}
+                setDrawMode={(dm) => {
+                  // Drawing happens on the map.
+                  if (dm !== "none" && !onOverview) navigate("overview");
+                  setMobileNav(false);
+                  setDrawMode(dm);
+                }}
+                excludePersistent={excludePersistent}
+                onExcludePersistent={setExcludePersistent}
+                mapTools={onOverview}
+              />
+              {!onOverview && (
+                <p className="muted small sb-hint">
+                  To draw your own area, open the {pageLink("overview", "Overview map")}.
+                </p>
+              )}
+              <MyAreasPanel region={m.id} area={ar} isWhole={isWhole} excludePersistent={excludePersistent} onOpen={onArea} onFlash={flash} />
+            </>
+          ),
+        },
+        {
+          id: "time",
+          label: "Time",
+          content: (
+            <>
+              <DatePanel meta={m} range={r} onRange={setRange} bounds={bounds} />
+              <EventsPanel
+                documented={documented}
+                activeId={activeEvent}
+                // Spikes that are already explained by a documented event are not listed twice.
+                events={an.events.filter((e) => !(e.id.startsWith("anom-") && documented.some((d) => d.i === e.i)))}
+                onJump={(e) => {
+                  if (e.i === undefined) return;
+                  setSelected(e.i);
+                  setWindowMode(e.year !== undefined ? "year" : "month");
+                  setActiveEvent(e.id);
+                  setFocus(e.loc ? { ...e.loc, key: `${e.id}-${Date.now()}` } : null);
+                }}
+              />
+            </>
+          ),
+        },
+        // Map settings only where the map is.
+        ...(onOverview
+          ? [
+              {
+                id: "map",
+                label: "Map",
+                content: (
+                  <>
+                    <LayersPanel layers={layers} setLayers={setLayers} detections={hasDetections} />
+                    <PerformancePanel animations={animations} onAnimations={setAnimationsState} showData={showData} onShowData={setShowData} />
+                  </>
+                ),
+              },
+            ]
+          : []),
+      ]
+    : undefined;
+
+  return shell(
+    <div className="page-wrap">
+      {overview}
+      {other && (
+        // Charts take their colours when built, so they are rebuilt when the theme changes.
+        <main key={`${page}-${theme}`} className={`main page page-${page}`}>
+          {other}
+        </main>
+      )}
+
+      <footer className="site-foot">
+        <div className="site-foot-text">
+          <span>
+            Source data: NASA FIRMS (MODIS, VIIRS 375 m), harmonized by the Wel3a pipeline{m.generated_at ? ` (export of ${m.generated_at.slice(0, 10)})` : ""}. Fire-days measure burning
+            activity, not burned area or individual fires.
+          </span>
+          {page !== "methods" && pageLink("methods", "Methods & limitations")}
+        </div>
+        <div className="site-foot-news">
+          <span className="eyebrow">Monthly digest</span>
+          <p className="small muted">One short email a month with each region's newest month. No account needed.</p>
+          <NewsletterForm source="dashboard" compact />
+        </div>
+      </footer>
+    </div>,
+    filters,
+  );
+}
+
+/** Link card from the overview to another page of the region. */
+function NextCard({ page, onGo, title, text, stat }: { page: Page; onGo: (p: Page) => void; title: string; text: string; stat?: string }) {
+  return (
+    <a
+      className="next-card"
+      href={pageHref(page)}
+      onClick={(e) => {
+        e.preventDefault();
+        onGo(page);
+      }}
+    >
+      <span className="next-card-title">
+        {title} <span aria-hidden>→</span>
+      </span>
+      <span className="next-card-text">{text}</span>
+      {stat && <span className="next-card-stat">{stat}</span>}
+    </a>
   );
 }
 
@@ -922,144 +1375,17 @@ function metaBounds(m: DatasetMeta): [number, number] {
   return [first, parseYm(m.last_month)];
 }
 
-interface HeroProps {
-  name: string;
-  areaName: string;
-  blurb?: string;
-  sensor: string;
-  years: string;
-  grid: number;
-  cells: number;
-  season: ReturnType<typeof typicalSeason>;
-  /** Month with the highest median activity (same as the Peak month tile). */
-  peakMonth?: number;
-  record?: number;
-  trend?: number;
-  /** Name in the local script, shown as a watermark. */
-  localName?: string;
-}
-
-/** Region title plus a one-line, plain-language reading of the record. */
-function RegionHero(p: HeroProps) {
-  const sub = p.areaName.startsWith("All of") ? null : p.areaName;
-  return (
-    <section className="region-hero">
-      {p.localName && (
-        <span className="region-hero-mark" lang="ar" aria-hidden>
-          {p.localName}
-        </span>
-      )}
-      <div className="region-hero-text">
-        <span className="eyebrow">
-          {p.sensor} burning record · {p.years}
-        </span>
-        <h1>
-          {p.name}
-          {sub && <span className="region-hero-sub"> / {sub}</span>}
-        </h1>
-        {p.season ? (
-          <p className="region-hero-story">
-            Fire season usually runs <b>{MONTH_ABBR[p.season.start - 1]}</b> → <b>{MONTH_ABBR[p.season.end - 1]}</b> and peaks in{" "}
-            <b>{MONTH_ABBR[(p.peakMonth ?? p.season.peak) - 1]}</b>.{p.record ? <> The most active year on record is <b>{p.record}</b>.</> : null}
-            {p.trend !== undefined && Math.abs(p.trend) >= 5 ? (
-              <>
-                {" "}
-                Activity is {p.trend > 0 ? "rising" : "falling"} by about <b>{Math.abs(Math.round(p.trend))}%</b> per decade.
-              </>
-            ) : null}
-          </p>
-        ) : (
-          <p className="region-hero-story">Not enough complete years in this selection to describe a typical season.</p>
-        )}
-        {p.blurb && <p className="region-hero-blurb">{p.blurb}</p>}
-      </div>
-      <dl className="region-hero-facts">
-        <div>
-          <dt>Grid</dt>
-          <dd>{p.grid}°</dd>
-        </div>
-        <div>
-          <dt>Cells</dt>
-          <dd>{p.cells}</dd>
-        </div>
-      </dl>
-    </section>
-  );
-}
-
-/** Number that counts up (or down) to its new value. */
-function CountUp({ value }: { value: number }) {
-  const [shown, setShown] = useState(value);
-  const from = useRef(value);
-  useEffect(() => {
-    const a = from.current;
-    if (a === value || reducedMotion()) return setShown(value);
-    const start = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      const x = Math.min(1, (now - start) / 900);
-      const v = a + (value - a) * (1 - (1 - x) ** 3);
-      from.current = v;
-      setShown(v);
-      if (x < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    // Hidden tabs get no frames: still land on the value.
-    const settle = window.setTimeout(() => {
-      from.current = value;
-      setShown(value);
-    }, 1300);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(settle);
-    };
-  }, [value]);
-  return <>{fmt(shown)}</>;
-}
-
-function Kpi({ label, value, num, sub, tone, spark }: { label: string; value: string; num?: number; sub?: string; tone?: string; spark?: { values: number[]; highlight?: number } }) {
-  return (
-    <div className="kpi">
-      <span className="kpi-label">{label}</span>
-      <span className={`kpi-value${tone ? ` tone-${tone}` : ""}`}>{num !== undefined && Number.isFinite(num) ? <CountUp value={num} /> : value}</span>
-      {sub && <span className="kpi-sub">{sub}</span>}
-      {spark && spark.values.length > 1 && <MiniBars {...spark} />}
-    </div>
-  );
-}
-
-/** Tiny bar strip for KPI tiles; the highlighted bar is drawn in the bright end of the ramp. */
-function MiniBars({ values, highlight = -1 }: { values: number[]; highlight?: number }) {
-  const max = Math.max(1e-9, ...values);
-  const w = 100 / values.length;
-  return (
-    <svg className="kpi-spark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden>
-      {values.map((v, k) => {
-        const h = Math.max(0.8, (v / max) * 24);
-        return <rect key={k} x={k * w + w * 0.15} y={24 - h} width={w * 0.7} height={h} rx={0.6} className={k === highlight ? "is-hl" : ""} />;
-      })}
-    </svg>
-  );
-}
-
-function CardHead({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
-  return (
-    <header className="card-head">
-      <div>
-        <h3>{title}</h3>
-        {subtitle && <p>{subtitle}</p>}
-      </div>
-      {actions && <div className="card-actions">{actions}</div>}
-    </header>
-  );
-}
-
-function PngButton({ id }: { id: string }) {
-  return (
-    <button className="icon-btn" title="Download PNG" aria-label="Download chart as PNG" onClick={() => chartPng(id)}>
-      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden>
-        <path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M3 13h10" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </button>
-  );
-}
+const readPref = (key: string) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const savePref = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // storage blocked: the setting lasts for this visit only
+  }
+};

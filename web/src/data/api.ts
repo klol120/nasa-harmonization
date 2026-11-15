@@ -4,7 +4,7 @@ import { type AreaMonth, type AreaSeries, type BBox, type DatasetMeta, type Sens
 import { countryOutline } from "./regions";
 import type { AreaQuery, CellQuery, CellValues, DataSource } from "./sources";
 
-/** Client for the burning-calendar API (backend/firecal_api). Responses follow data contract v0.4. */
+/** Client for the burning-calendar API (backend/firecal_api). Responses follow data contract v0.4/v0.5. */
 
 export class ApiError extends Error {}
 
@@ -71,17 +71,111 @@ export interface RegionWeather {
   months: WeatherMonth[];
 }
 
+/** State of the live pipeline for a region (/regions/{r}/live). */
+export interface LiveStatus {
+  region: string;
+  /** False until the pipeline has stored at least one month for the region. */
+  enabled: boolean;
+  demo: boolean;
+  /** A simulated replay is loaded and can be switched on. */
+  demo_available: boolean;
+  /** Changes whenever the region's live months change. */
+  version: string | null;
+  /** Last UTC day covered, "YYYY-MM-DD". */
+  through: string | null;
+  polled_at: string | null;
+  first_month: string | null;
+  last_month: string | null;
+  last_detection_at: string | null;
+  detections_24h: number;
+  harmonization: { version: string; placeholder: boolean };
+  source: string;
+  months: { ym: string; fire_days: number; harmonized: number; through: string; partial_month: boolean; sensors: Record<string, number>; detections: number }[];
+}
+
+export const getLive = (region: string, demo: boolean, signal?: AbortSignal) =>
+  getJson<LiveStatus>(`/regions/${encodeURIComponent(region)}/live${demo ? "?demo=1" : ""}`, { signal });
+
 export const getWeather = (region: string, signal?: AbortSignal) => getJson<RegionWeather>(`/regions/${encodeURIComponent(region)}/weather`, { signal });
+
+/** Name of the burning-outlook model (backend/firecal_api/outlook.py). */
+export const OUTLOOK_MODEL = "outlook-hgb";
+
+/** Region-level errors of one evaluation (outlook.summarize). `wape` = summed |error| / summed actual. */
+export interface OutlookScore {
+  n: number;
+  actual_mean: number;
+  model: { mae: number; wape: number };
+  seasonal_5y: { mae: number; wape: number };
+  typical_year: { mae: number; wape: number };
+  last_year: { mae: number; wape: number };
+  best_baseline: "seasonal_5y" | "typical_year" | "last_year";
+  skill_vs_best: number;
+  beats_baselines: boolean;
+  within_25pct: number;
+  months?: string[];
+}
+
+export interface ModelRun {
+  run_id: number;
+  model_name: string;
+  model_version: string;
+  release_id: number;
+  target: string;
+  params: Record<string, unknown>;
+  metrics: {
+    test?: OutlookScore & { interval_coverage?: number | null };
+    confirmation?: OutlookScore & { interval_coverage?: number | null };
+    issued_after?: string;
+    /** How this region's outlook is made, e.g. "machine-learning model 50% + 5-year average 50%". */
+    method?: string;
+    /** Weight of the 5-year average (1 = the average alone). */
+    blend?: number;
+  };
+  notes: string | null;
+  created_at: string;
+  is_current: boolean;
+}
+
+export interface ForecastMonth {
+  ym: string;
+  value: number;
+  value_low: number | null;
+  value_high: number | null;
+}
+
+export interface RegionForecast {
+  run: ModelRun;
+  months: ForecastMonth[];
+}
+
+/**
+ * The newest outlook for a region's current release, or null when none has been published
+ * (the model has not been run against this release yet).
+ */
+export async function getForecast(region: string, signal?: AbortSignal): Promise<RegionForecast | null> {
+  const r = encodeURIComponent(region);
+  const runs = await getJson<ModelRun[]>(`/regions/${r}/model-runs`, { signal });
+  // Newest first. Prefer a run on the current release; the pipeline loads a new release every day, so
+  // until the model runs again the newest earlier outlook is still shown (the page says so).
+  const outlooks = runs.filter((x) => x.model_name === OUTLOOK_MODEL);
+  const run = outlooks.find((x) => x.is_current) ?? outlooks[0];
+  if (!run) return null;
+  const p = await getJson<{ months: ForecastMonth[] }>(`/regions/${r}/predictions?run_id=${run.run_id}&level=region`, { signal });
+  return { run, months: p.months };
+}
 
 /** A region_monthly / aggregate row (contract field names). */
 interface MonthRow {
   ym: string;
   modis_raw: number | null;
   viirs_raw: number | null;
+  noaa20_raw?: number | null; // v0.5
   harmonized: number | null;
   harmonized_low: number | null;
   harmonized_high: number | null;
   anomaly_z: number | null;
+  source?: string | null; // v0.5
   is_estimate: boolean;
   has_gap: boolean;
   data_available: boolean;
@@ -113,6 +207,9 @@ function toAreaMonth(r: MonthRow): AreaMonth {
     gap: r.has_gap,
     // display_only (the partial 2026) is shown but excluded from baselines, like a month in progress.
     partial: r.partial_month || r.display_only,
+    partialMonth: r.partial_month,
+    source: r.source ?? null,
+    noaa20: r.noaa20_raw ?? null,
   };
 }
 
@@ -132,12 +229,15 @@ export function apiSource(summary: RegionSummary): DataSource {
   const id = summary.region;
   const info = regionInfo(id);
   const q = `release=${summary.release_id}`;
+  // Months after the release's last day of data come from the live pipeline (live=1); demo adds a simulated replay.
+  let demo = false;
+  const lq = () => `${q}&live=1${demo ? "&demo=1" : ""}`;
   const base = `/regions/${encodeURIComponent(id)}`;
   let monthly: Promise<MonthRow[]> | null = null;
   let cells: Promise<Map<string, { lat: number; lon: number; persistent: boolean }>> | null = null;
   const series = new Map<number, Promise<SeriesFile>>();
 
-  const getMonthly = () => (monthly ??= getJson<MonthRow[]>(`${base}/monthly?${q}`));
+  const getMonthly = () => (monthly ??= getJson<MonthRow[]>(`${base}/monthly?${lq()}`));
   const getCells = () =>
     (cells ??= getJson<{ features: CellFeature[] }>(`${base}/cells?${q}`).then(
       (fc) => new Map(fc.features.map((f) => [f.properties.cell_id, { lat: f.properties.lat_center, lon: f.properties.lon_center, persistent: f.properties.is_persistent }])),
@@ -145,7 +245,7 @@ export function apiSource(summary: RegionSummary): DataSource {
   const getSeries = (year: number) => {
     let p = series.get(year);
     if (!p) {
-      p = getJson<SeriesFile>(`${base}/series/${year}?${q}`);
+      p = getJson<SeriesFile>(`${base}/series/${year}?${lq()}`);
       p.catch(() => series.delete(year)); // let a failed year be retried
       series.set(year, p);
     }
@@ -155,8 +255,13 @@ export function apiSource(summary: RegionSummary): DataSource {
   return {
     id: `api:${id}`,
     label: info.name,
-    kind: "api",
     description: info.blurb,
+
+    refresh(opts) {
+      if (opts?.demo !== undefined) demo = opts.demo;
+      monthly = null;
+      for (const y of [...series.keys()]) if (opts?.fromYear === undefined || y >= opts.fromYear) series.delete(y);
+    },
 
     async load(): Promise<DatasetMeta> {
       const [m, rows] = await Promise.all([getJson<any>(`${base}/meta?${q}`), getMonthly()]);
@@ -199,6 +304,10 @@ export function apiSource(summary: RegionSummary): DataSource {
         harmonized_unit: m.units,
         estimate_until: estimates.at(-1)?.ym,
         splice_date: m.time.splice_date,
+        viirs_switch_date: m.time.viirs_switch_date,
+        continuation: cal.continuation
+          ? { strategy: cal.continuation.strategy, overlap_years: cal.continuation.overlap_years, factors: cal.continuation.factors ?? [] }
+          : undefined,
         baseline_years: m.anomalies?.baseline_years,
         n_cells: m.n_cells,
         n_persistent_cells: m.n_persistent_cells,
@@ -217,7 +326,7 @@ export function apiSource(summary: RegionSummary): DataSource {
       }
       const body = { ...(aq.whole ? {} : areaBody(aq.area)), exclude_persistent: aq.excludePersistent };
       try {
-        const res = await getJson<{ n_cells: number; months: MonthRow[] }>(`${base}/aggregate?${q}`, {
+        const res = await getJson<{ n_cells: number; months: MonthRow[] }>(`${base}/aggregate?${lq()}`, {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(body),

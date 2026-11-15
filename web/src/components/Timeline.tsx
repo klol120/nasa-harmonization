@@ -7,12 +7,12 @@ interface Props {
   selected: number;
   onSelect: (i: number) => void;
   windowMode: "month" | "year" | "range";
-  setWindowMode: (m: "month" | "year" | "range") => void;
   unit: string;
 }
 
 /** Month scrubber with a sparkline of the series behind it and a play button. */
-export function Timeline({ series, selected, onSelect, windowMode, setWindowMode, unit }: Props) {
+/** The map's Month/Year/All window is set in the top bar, next to the month arrows. */
+export function Timeline({ series, selected, onSelect, windowMode, unit }: Props) {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   const first = series[0]?.i ?? 0;
@@ -70,18 +70,11 @@ export function Timeline({ series, selected, onSelect, windowMode, setWindowMode
           <strong>
             {MONTH_ABBR[ymMonth(selected) - 1]} {ymYear(selected)}
           </strong>
-          <span>{cur?.value === null ? "no coverage" : `${fmt(cur?.value)} ${unit}${cur?.partial ? " · partial" : ""}`}</span>
+          <span>{cur?.value === null ? "no coverage" : `${fmt(cur?.value)} ${unit}${cur?.partialMonth ? " · partial month" : cur?.partial ? " · partial" : ""}`}</span>
         </div>
         <button className="chip" onClick={() => setSpeed(speed >= 4 ? 1 : speed * 2)} title="Playback speed">
           {speed}×
         </button>
-        <div className="seg seg-sm" role="radiogroup" aria-label="Map time window">
-          {(["month", "year", "range"] as const).map((m) => (
-            <button key={m} role="radio" aria-checked={windowMode === m} className={windowMode === m ? "is-on" : ""} onClick={() => setWindowMode(m)}>
-              {m === "month" ? "Month" : m === "year" ? "Year" : "Whole range"}
-            </button>
-          ))}
-        </div>
       </div>
       <div className="timeline-track">
         <svg className="spark" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden>

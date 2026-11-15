@@ -2,7 +2,8 @@
 # Teammates work on `dev` (or feature branches) and open a pull request into main; merging it deploys.
 #
 # Only the parts that changed are rebuilt: backend/** rebuilds the API, web/** rebuilds the website
-# (a change to this file rebuilds both). "Run workflow" on the Actions tab redeploys both by hand.
+# and functions/** or backend/firecal_api/live/** redeploys the live-pipeline functions (a change to this
+# file rebuilds everything). "Run workflow" on the Actions tab redeploys everything by hand.
 #
 # Sign-in uses GitHub's OIDC token with a federated credential on an Azure app registration, so no
 # password or key is stored in GitHub. The IDs below are identifiers, not secrets.
@@ -30,6 +31,7 @@ env:
   ACR_NAME: wel3abe616acr
   API_APP: wel3a-api
   WEB_APP: wel3a-web
+  LIVE_APP: wel3a-live-be616
   API_URL: https://api.phoenical.earth
   WEB_URL: https://www.phoenical.earth
 
@@ -39,6 +41,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       web: ${{ steps.filter.outputs.web }}
+      pipeline: ${{ steps.filter.outputs.pipeline }}
     steps:
       - uses: actions/checkout@v7
         if: github.event_name == 'push'
@@ -53,6 +56,12 @@ jobs:
               - '.github/workflows/deploy-azure.yml'
             web:
               - 'web/**'
+              - '.github/workflows/deploy-azure.yml'
+            pipeline:
+              - 'functions/**'
+              - 'backend/firecal_api/live/**'
+              - 'backend/firecal_api/contract.py'
+              - 'backend/firecal_api/db.py'
               - '.github/workflows/deploy-azure.yml'
 
   api:
@@ -137,3 +146,32 @@ jobs:
             sleep 10
           done
           echo "website did not come up" >&2; exit 1
+
+  # The live pipeline's Azure Functions (FIRMS poller + stream consumer). The function app, the Event Hubs
+  # stream and their settings are created once by infra/azure/setup-live-pipeline.sh.
+  pipeline:
+    needs: changes
+    if: needs.changes.outputs.pipeline == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      - name: Package the functions
+        run: ./functions/build.sh
+      - name: Deploy to the function app
+        run: |
+          az functionapp deployment source config-zip -g "$RESOURCE_GROUP" -n "$LIVE_APP" \
+            --src functions/.build.zip --build-remote true
+      - name: Check both functions are registered
+        run: |
+          for _ in $(seq 1 12); do
+            names=$(az functionapp function list -g "$RESOURCE_GROUP" -n "$LIVE_APP" --query "[].name" -o tsv)
+            if echo "$names" | grep -q poll_firms && echo "$names" | grep -q harmonize; then echo "$names"; exit 0; fi
+            sleep 10
+          done
+          echo "functions not registered: $names" >&2; exit 1

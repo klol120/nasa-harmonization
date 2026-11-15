@@ -17,3 +17,7 @@ dist/
 
 # weather fetched from Meteomatics (see weather/README.md)
 weather/*.json
+
+# live pipeline function package (functions/build.sh)
+functions/.build/
+functions/.build.zip

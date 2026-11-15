@@ -30,9 +30,11 @@ interface AreaProps {
   setDrawMode: (m: DrawMode) => void;
   excludePersistent: boolean;
   onExcludePersistent: (v: boolean) => void;
+  /** Drawing and coordinate entry act on the map, so they are only offered on the map page. */
+  mapTools?: boolean;
 }
 
-export function AreaPanel({ meta, whole, area, cellCount, onArea, drawMode, setDrawMode, excludePersistent, onExcludePersistent }: AreaProps) {
+export function AreaPanel({ meta, whole, area, cellCount, onArea, drawMode, setDrawMode, excludePersistent, onExcludePersistent, mapTools = true }: AreaProps) {
   const [tab, setTab] = useState<"bbox" | "point">("bbox");
   const [bbox, setBbox] = useState<string[]>(area.bbox.map((v) => v.toFixed(3)));
   const [pt, setPt] = useState({ lat: "", lon: "", km: "25" });
@@ -96,6 +98,8 @@ export function AreaPanel({ meta, whole, area, cellCount, onArea, drawMode, setD
         ))}
       </div>
 
+      {mapTools && (
+      <>
       <div className="draw-row">
         <button className={`btn btn-ghost${drawMode === "rect" ? " is-on" : ""}`} onClick={() => setDrawMode(drawMode === "rect" ? "none" : "rect")}>
           Draw box
@@ -105,57 +109,62 @@ export function AreaPanel({ meta, whole, area, cellCount, onArea, drawMode, setD
         </button>
       </div>
 
-      <div className="seg seg-sm seg-full" role="tablist">
-        <button role="tab" aria-selected={tab === "bbox"} className={tab === "bbox" ? "is-on" : ""} onClick={() => setTab("bbox")}>
-          Bounds
-        </button>
-        <button role="tab" aria-selected={tab === "point"} className={tab === "point" ? "is-on" : ""} onClick={() => setTab("point")}>
-          Point + radius
-        </button>
-      </div>
-
-      {tab === "bbox" ? (
-        <form
-          className="coord-grid"
-          onSubmit={(e) => {
-            e.preventDefault();
-            applyBbox();
-          }}
-        >
-          {["West", "South", "East", "North"].map((label, k) => (
-            <label key={label} className="field">
-              <span>{label}</span>
-              <input inputMode="decimal" value={bbox[k]} onChange={(e) => setBbox(bbox.map((v, j) => (j === k ? e.target.value : v)))} />
+      <details className="disclosure">
+        <summary>Enter coordinates</summary>
+        <div className="seg seg-sm seg-full" role="tablist">
+          <button role="tab" aria-selected={tab === "bbox"} className={tab === "bbox" ? "is-on" : ""} onClick={() => setTab("bbox")}>
+            Bounds
+          </button>
+          <button role="tab" aria-selected={tab === "point"} className={tab === "point" ? "is-on" : ""} onClick={() => setTab("point")}>
+            Point + radius
+          </button>
+        </div>
+  
+        {tab === "bbox" ? (
+          <form
+            className="coord-grid"
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyBbox();
+            }}
+          >
+            {["West", "South", "East", "North"].map((label, k) => (
+              <label key={label} className="field">
+                <span>{label}</span>
+                <input inputMode="decimal" value={bbox[k]} onChange={(e) => setBbox(bbox.map((v, j) => (j === k ? e.target.value : v)))} />
+              </label>
+            ))}
+            <button className="btn btn-primary span-2" type="submit">
+              Apply bounds
+            </button>
+          </form>
+        ) : (
+          <form
+            className="coord-grid"
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyPoint();
+            }}
+          >
+            <label className="field">
+              <span>Latitude</span>
+              <input inputMode="decimal" placeholder="33.89" value={pt.lat} onChange={(e) => setPt({ ...pt, lat: e.target.value })} />
             </label>
-          ))}
-          <button className="btn btn-primary span-2" type="submit">
-            Apply bounds
-          </button>
-        </form>
-      ) : (
-        <form
-          className="coord-grid"
-          onSubmit={(e) => {
-            e.preventDefault();
-            applyPoint();
-          }}
-        >
-          <label className="field">
-            <span>Latitude</span>
-            <input inputMode="decimal" placeholder="33.89" value={pt.lat} onChange={(e) => setPt({ ...pt, lat: e.target.value })} />
-          </label>
-          <label className="field">
-            <span>Longitude</span>
-            <input inputMode="decimal" placeholder="35.50" value={pt.lon} onChange={(e) => setPt({ ...pt, lon: e.target.value })} />
-          </label>
-          <label className="field span-2">
-            <span>Radius (km)</span>
-            <input inputMode="decimal" value={pt.km} onChange={(e) => setPt({ ...pt, km: e.target.value })} />
-          </label>
-          <button className="btn btn-primary span-2" type="submit">
-            Apply
-          </button>
-        </form>
+            <label className="field">
+              <span>Longitude</span>
+              <input inputMode="decimal" placeholder="35.50" value={pt.lon} onChange={(e) => setPt({ ...pt, lon: e.target.value })} />
+            </label>
+            <label className="field span-2">
+              <span>Radius (km)</span>
+              <input inputMode="decimal" value={pt.km} onChange={(e) => setPt({ ...pt, km: e.target.value })} />
+            </label>
+            <button className="btn btn-primary span-2" type="submit">
+              Apply
+            </button>
+          </form>
+        )}
+      </details>
+      </>
       )}
       {err && <div className="warn">{err}</div>}
     </Section>
@@ -260,14 +269,14 @@ export function LayersPanel({ layers, setLayers, detections }: { layers: LayerSt
     { key: "mask", label: "Dim outside area", hint: "" },
     { key: "extent", label: "Dataset extent", hint: "" },
   ];
-  // Individual detections exist only for loaded FIRMS files.
+  // Individual detections only when the source serves them (the API does not yet).
   const rows = all.filter((r) => r.key !== "hotspots" || detections);
   return (
     <Section title="Map layers">
       <div className="seg seg-sm seg-full" role="radiogroup" aria-label="Basemap">
         {(["dark", "satellite"] as const).map((b) => (
           <button key={b} role="radio" aria-checked={layers.basemap === b} className={layers.basemap === b ? "is-on" : ""} onClick={() => setLayers({ ...layers, basemap: b })}>
-            {b === "dark" ? "Dark map" : "Satellite"}
+            {b === "dark" ? "Street map" : "Satellite"}
           </button>
         ))}
       </div>

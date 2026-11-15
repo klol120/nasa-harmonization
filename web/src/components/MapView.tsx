@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { GeoJSONSource } from "maplibre-gl";
 import { FALLBACK_STYLE, SATELLITE_SOURCE, TERRAIN_SOURCE, loadStyle, maplibregl } from "../lib/maplibre";
+import type { Theme } from "../lib/theme";
 import type { BBox, HotspotRow } from "../data/contract";
 import { fmt, robustMax } from "../lib/analytics";
 import { INFERNO } from "../lib/colors";
@@ -41,7 +42,7 @@ interface Props {
   /** "grid" = the dataset's analysis grid, "1km" = detections re-gridded at ~1 km. */
   resolution: "grid" | "1km";
   onResolution: (r: "grid" | "1km") => void;
-  /** Individual detections are available (loaded FIRMS files); otherwise the 1 km view is hidden. */
+  /** Individual detections are available from the source; otherwise the 1 km view is hidden. */
   detections: boolean;
   gridLabel: string;
   /** Extra line under the legend (what the cells mean). */
@@ -53,7 +54,35 @@ interface Props {
   onArea: (a: Area) => void;
   fitKey: string;
   mapRef?: React.MutableRefObject<maplibregl.Map | null>;
+  /** Light or dark map. Fixed for the life of the map: the page rebuilds it when the theme changes. */
+  theme: Theme;
 }
+
+/**
+ * The map in each theme. Dark: a dark street map, satellite toned down, the outside of the area
+ * dimmed and a night sky in 3D. Light: a light street map, satellite at full brightness, the
+ * outside veiled in white and a daytime sky.
+ */
+const MAP_LOOK = {
+  dark: {
+    style: "dark" as const,
+    sat: { "raster-saturation": -0.35, "raster-brightness-max": 0.75, "raster-contrast": 0 },
+    mask: { color: "#05070c", opacity: 0.55 },
+    hill: { shadow: "#02040a", highlight: "rgba(255, 236, 200, 0.5)", accent: "#0b1220" },
+    light: { color: "#fff1dd", intensity: 0.45 },
+    sky: { sky: "#070b16", horizon: "#2a2233", fog: "#0b0f1a" },
+    blank: "#0b0f17",
+  },
+  light: {
+    style: "light" as const,
+    sat: { "raster-saturation": 0, "raster-brightness-max": 1, "raster-contrast": 0.06 },
+    mask: { color: "#f5f5f7", opacity: 0.5 },
+    hill: { shadow: "#4b5563", highlight: "rgba(255, 255, 255, 0.7)", accent: "#6b7280" },
+    light: { color: "#ffffff", intensity: 0.35 },
+    sky: { sky: "#a9d0f5", horizon: "#f1f6fc", fog: "#e9eff6" },
+    blank: "#e9edf2",
+  },
+};
 
 
 const fc = (features: GeoJSON.Feature[]): GeoJSON.FeatureCollection => ({ type: "FeatureCollection", features });
@@ -164,7 +193,8 @@ function footprint(h: HotspotRow): GeoJSON.Feature {
 }
 
 export function MapView(props: Props) {
-  const { area, extent, gridDeg, cells, scaleMax, hotspots, outline, areaIsRegion, focus, layers, showData, animate, resolution, onResolution, detections, gridLabel, note, unit, windowLabel, drawMode, setDrawMode, onArea, fitKey, mapRef } = props;
+  const { area, extent, gridDeg, cells, scaleMax, hotspots, outline, areaIsRegion, focus, layers, showData, animate, resolution, onResolution, detections, gridLabel, note, unit, windowLabel, drawMode, setDrawMode, onArea, fitKey, mapRef, theme } = props;
+  const look = MAP_LOOK[theme];
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
@@ -219,9 +249,11 @@ export function MapView(props: Props) {
   useEffect(() => {
     let disposed = false;
     setReady(false);
-    loadStyle().then((style) => {
+    loadStyle(look.style).then((style) => {
       if (disposed) return;
-      setBasemap(style.layers.length > FALLBACK_STYLE.layers.length);
+      const online = style.layers.length > FALLBACK_STYLE.layers.length;
+      setBasemap(online);
+      if (!online) style.layers[0].paint = { "background-color": look.blank };
       const m = new maplibregl.Map({
         container: el.current!,
         style,
@@ -257,7 +289,7 @@ export function MapView(props: Props) {
         // Elevation: one source lifts the ground in 3D, a second one shades the slopes.
         m.addSource("dem", TERRAIN_SOURCE);
         m.addSource("dem-shade", TERRAIN_SOURCE);
-        m.addLayer({ id: "sat", type: "raster", source: "sat", layout: { visibility: "none" }, paint: { "raster-saturation": -0.35, "raster-brightness-max": 0.75 } }, firstSymbol);
+        m.addLayer({ id: "sat", type: "raster", source: "sat", layout: { visibility: "none" }, paint: look.sat }, firstSymbol);
 
         m.addLayer(
           { id: "heat", type: "heatmap", source: "heat", paint: {
@@ -280,9 +312,9 @@ export function MapView(props: Props) {
             layout: { visibility: "none" },
             paint: {
               "hillshade-exaggeration": 0.55,
-              "hillshade-shadow-color": "#02040a",
-              "hillshade-highlight-color": "rgba(255, 236, 200, 0.5)",
-              "hillshade-accent-color": "#0b1220",
+              "hillshade-shadow-color": look.hill.shadow,
+              "hillshade-highlight-color": look.hill.highlight,
+              "hillshade-accent-color": look.hill.accent,
               "hillshade-illumination-direction": 315,
             },
           },
@@ -318,9 +350,9 @@ export function MapView(props: Props) {
             "fill-extrusion-vertical-gradient": false,
           },
         });
-        m.setLight({ anchor: "viewport", color: "#fff1dd", intensity: 0.45, position: [1.4, 215, 35] });
-        // Mask sits above the data so everything outside the area is dimmed.
-        m.addLayer({ id: "mask", type: "fill", source: "mask", paint: { "fill-color": "#05070c", "fill-opacity": 0.55 } }, firstSymbol);
+        m.setLight({ anchor: "viewport", color: look.light.color, intensity: look.light.intensity, position: [1.4, 215, 35] });
+        // Mask sits above the data so everything outside the area is dimmed (dark) or veiled (light).
+        m.addLayer({ id: "mask", type: "fill", source: "mask", paint: { "fill-color": look.mask.color, "fill-opacity": look.mask.opacity } }, firstSymbol);
         // Glowing fire points: a blurred halo plus a bright core, both coloured by intensity.
         m.addLayer(
           {
@@ -734,6 +766,7 @@ export function MapView(props: Props) {
   useEffect(() => {
     const m = map.current;
     if (!m || !ready || !focus) return;
+    m.resize(); // the Overview page may have just been shown again
     const r = Math.max(focus.radius * 1.8, gridDeg * 2);
     m.fitBounds(
       [
@@ -772,6 +805,7 @@ export function MapView(props: Props) {
   useEffect(() => {
     const m = map.current;
     if (!m || !ready) return;
+    m.resize(); // the Overview page may have just been shown again
     m.fitBounds(
       [
         [area.bbox[0], area.bbox[1]],
@@ -817,9 +851,9 @@ export function MapView(props: Props) {
       m.setMaxPitch(78);
       m.setTerrain({ source: "dem", exaggeration: TERRAIN_EXAGGERATION });
       m.setSky({
-        "sky-color": "#070b16",
-        "horizon-color": "#2a2233",
-        "fog-color": "#0b0f1a",
+        "sky-color": look.sky.sky,
+        "horizon-color": look.sky.horizon,
+        "fog-color": look.sky.fog,
         "sky-horizon-blend": 0.6,
         "horizon-fog-blend": 0.7,
         "fog-ground-blend": 0.25,

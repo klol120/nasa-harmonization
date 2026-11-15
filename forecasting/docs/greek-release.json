@@ -1,0 +1,14 @@
+{
+  "approved": false,
+  "mode": "retrospective",
+  "failed_requirements": [
+    "issued_forecast_backtest",
+    "historical_input_availability",
+    "adequate_independent_incident_confirmation",
+    "sufficient_test_seasons_and_events",
+    "operational_calibration_and_threshold_review"
+  ],
+  "reason": "Only two new November dates; historical perfect-weather proxies and reprocessed inputs remain unvalidated for operational forecasting",
+  "selected_by_validation": "lstm64-lebanon",
+  "selected_transfer": "logistic-global_greek_lebanon"
+}

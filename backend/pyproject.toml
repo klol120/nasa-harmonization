@@ -14,10 +14,15 @@ dependencies = [
     "duckdb>=1.1",  # reads calendar.parquet (full precision); loads under Application Control, unlike pyarrow
     "google-auth>=2.30",
     "requests>=2.32",
+    "anthropic>=1.0",  # the assistant (firecal_api/chat.py); the API still runs if it can't be imported
 ]
 
 [dependency-groups]
 dev = ["pytest>=8", "httpx>=0.27"]
+ml = [
+    "numpy>=2.0",
+    "scikit-learn>=1.5",
+]
 
 [project.scripts]
 firecal-db = "firecal_api.cli:main"

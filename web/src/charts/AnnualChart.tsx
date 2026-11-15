@@ -35,7 +35,7 @@ export function AnnualChart({ totals, sensor, compare, unit, selectedYear, viirs
       symbol: "circle",
       symbolSize: 7,
       itemStyle: { color: "#fff", borderColor: "#f37819", borderWidth: 2 },
-      label: { show: true, position: "top", distance: 6, color: "#fca50a", fontSize: 10, fontWeight: 600, formatter: (p: any) => p.name },
+      label: { show: true, position: "top", distance: 6, color: UI.fireText, fontSize: 10, fontWeight: 600, formatter: (p: any) => p.name },
       data: ts
         .filter((t) => eventYears.has(t.year) && t.coveredMonths > 0)
         .map((t) => ({ name: eventYears.get(t.year), coord: [String(t.year), t.total] })),
@@ -86,7 +86,7 @@ export function AnnualChart({ totals, sensor, compare, unit, selectedYear, viirs
           return {
             value: t.total,
             itemStyle: {
-              color: y === selectedYear ? "#fcffa4" : t.complete ? "#f37819" : "rgba(243,120,25,0.35)",
+              color: y === selectedYear ? UI.hlBar : t.complete ? "#f37819" : "rgba(243,120,25,0.35)",
               borderRadius: [2, 2, 0, 0],
             },
           };
@@ -111,7 +111,7 @@ export function AnnualChart({ totals, sensor, compare, unit, selectedYear, viirs
       tooltip: {
         ...tooltipStyle,
         trigger: "axis",
-        axisPointer: { type: "shadow", shadowStyle: { color: "rgba(255,255,255,0.04)" } },
+        axisPointer: { type: "shadow", shadowStyle: { color: UI.wash } },
         formatter: (ps: any[]) => {
           const y = Number(ps[0].axisValue);
           const lines = [`<b>${y}</b>`];

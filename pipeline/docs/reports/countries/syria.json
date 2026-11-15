@@ -1,0 +1,261 @@
+{
+ "region": "syria",
+ "countries": [
+  "Syria"
+ ],
+ "bbox": [
+  35.67,
+  32.26,
+  42.43,
+  37.37
+ ],
+ "detections": {
+  "raw": 378070,
+  "clean": 221381,
+  "by_source": {
+   "MODIS_SP": 40596,
+   "VIIRS_NOAA20_NRT": 7296,
+   "VIIRS_NOAA20_SP": 127583,
+   "VIIRS_SNPP_NRT": 6941,
+   "VIIRS_SNPP_SP": 195654
+  }
+ },
+ "strategy": "local",
+ "auto": {
+  "outcome": "rich",
+  "reason": "0/12 months thin (n < n_month 149): share 0.00 < n_country 0.72",
+  "inputs": {
+   "overlap_years": [
+    2012,
+    2020
+   ],
+   "exclude_persistent": true,
+   "annual": 1277.0,
+   "thin_share": 0.0
+  },
+  "thresholds": {
+   "n_month": 149,
+   "n_country": 0.72,
+   "n_country_annual": 132,
+   "n_min_annual": 3.6
+  }
+ },
+ "auto_months": [
+  {
+   "name": "Jan",
+   "n": 159,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Feb",
+   "n": 294,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Mar",
+   "n": 236,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Apr",
+   "n": 183,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "May",
+   "n": 961,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Jun",
+   "n": 2604,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Jul",
+   "n": 2010,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Aug",
+   "n": 1473,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Sep",
+   "n": 1620,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Oct",
+   "n": 1220,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Nov",
+   "n": 567,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Dec",
+   "n": 166,
+   "thin": false,
+   "rule": "rich_month"
+  }
+ ],
+ "terra_strategy": "local",
+ "continuation_strategy": "blend:southern_turkey",
+ "continuation_ranking": [
+  {
+   "strategy": "blend:southern_turkey",
+   "mean_wape": 0.1316
+  },
+  {
+   "strategy": "blend:eastmed_pool_ex_syria",
+   "mean_wape": 0.1326
+  },
+  {
+   "strategy": "blend:israel_palestine",
+   "mean_wape": 0.1366
+  },
+  {
+   "strategy": "single",
+   "mean_wape": 0.1391
+  },
+  {
+   "strategy": "blend:cyprus",
+   "mean_wape": 0.1397
+  },
+  {
+   "strategy": "local",
+   "mean_wape": 0.1435
+  }
+ ],
+ "ratio": {
+  "viirs_over_modis_2012_2020": 3.461,
+  "a_by_month": [
+   4.535,
+   3.503,
+   4.606,
+   7.033,
+   3.648,
+   2.838,
+   3.093,
+   3.386,
+   3.591,
+   4.045,
+   3.617,
+   4.494
+  ],
+  "a_band_by_month": [
+   [
+    3.379,
+    7.873
+   ],
+   [
+    3.099,
+    4.457
+   ],
+   [
+    3.901,
+    6.069
+   ],
+   [
+    4.735,
+    16.347
+   ],
+   [
+    3.124,
+    4.697
+   ],
+   [
+    2.604,
+    3.178
+   ],
+   [
+    2.79,
+    3.536
+   ],
+   [
+    3.024,
+    4.011
+   ],
+   [
+    3.33,
+    4.596
+   ],
+   [
+    3.627,
+    5.16
+   ],
+   [
+    3.179,
+    5.292
+   ],
+   [
+    3.175,
+    7.227
+   ]
+  ]
+ },
+ "holdout": {
+  "forward": {
+   "wape": 0.275,
+   "bias": 0.11
+  },
+  "reverse": {
+   "wape": 0.229,
+   "bias": -0.078
+  }
+ },
+ "continuity_2012": {
+  "step_index": 1.187,
+  "band": [
+   0.927,
+   1.464
+  ],
+  "flagged": false
+ },
+ "continuation": {
+  "step_index": 1.0326868178681932,
+  "band": [
+   0.8185403712645737,
+   1.1649362885902272
+  ],
+  "step_flagged": false
+ },
+ "n_cells": 7512,
+ "timings_s": {
+  "download": 473.4,
+  "ingest_clean_grid": 5.9,
+  "terra_calibrate_continuation": 1.7,
+  "continuation_final": 0.8,
+  "validate_splice_anomalies_export": 99.8,
+  "backend": 43.9,
+  "total": 626.8
+ },
+ "grade": "B",
+ "grade_reason": "mean hold-out WAPE 0.252 <= 0.4, worst |bias| 11.0% <= 20%, no step at 2012",
+ "backend": {
+  "loaded": true,
+  "listed_by_api": true,
+  "log_tail": [
+   "[syria] copying the calendar...",
+   "[syria] 2,358,768 cell-months loaded; checking invariants...",
+   "[syria] release 7 ready and current (43.4s)"
+  ],
+  "release_id": 7,
+  "contract_version": "0.5"
+ }
+}

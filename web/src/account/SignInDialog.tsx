@@ -39,7 +39,7 @@ export function SignInDialog() {
         <header className="drawer-head">
           <div>
             <span className="eyebrow">Optional account</span>
-            <h2 id="signin-title">Sign in to Wel3a</h2>
+            <h2 id="signin-title">Sign in to Phoenical</h2>
           </div>
           <button className="icon-btn" onClick={closeSignIn} aria-label="Close">
             ✕

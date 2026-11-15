@@ -54,6 +54,10 @@ def client(loaded):
         yield c
 
 
+def _meta():
+    return json.loads((LEBANON / "meta.json").read_text())
+
+
 def test_ingest_counts(loaded):
     meta = json.loads((LEBANON / "meta.json").read_text())
     assert loaded.n_cells == meta["n_cells"]
@@ -113,10 +117,11 @@ def test_series_equals_file(client, year):
 def test_aggregate_whole_region_reproduces_region_monthly(client):
     got = client.post("/regions/lebanon/aggregate", json={}).json()
     want = json.loads((LEBANON / "region_monthly.json").read_text())
-    assert got["n_cells"] == 429
+    assert got["n_cells"] == _meta()["n_cells"]
     for g, w in zip(got["months"], want, strict=True):
         assert g["ym"] == w["ym"]
         assert g["modis_raw"] == w["modis_raw"] and g["viirs_raw"] == w["viirs_raw"]
+        assert g.get("noaa20_raw") == w.get("noaa20_raw") and g.get("source") == w.get("source")
         for f in ("harmonized", "harmonized_low", "harmonized_high"):
             assert (g[f] is None) == (w[f] is None)
             if w[f] is not None:
@@ -131,9 +136,10 @@ def test_aggregate_whole_region_reproduces_region_monthly(client):
 def test_aggregate_area_and_persistent(client):
     full = client.post("/regions/lebanon/aggregate", json={}).json()
     nop = client.post("/regions/lebanon/aggregate", json={"exclude_persistent": True}).json()
-    assert nop["n_cells"] == 429 - 6
+    meta = _meta()
+    assert nop["n_cells"] == meta["n_cells"] - meta["n_persistent_cells"]
     box = client.post("/regions/lebanon/aggregate", json={"bbox": [35.4, 33.55, 35.75, 33.8], "from": "2019-01", "to": "2019-12"}).json()
-    assert 0 < box["n_cells"] < 429 and len(box["months"]) == 12
+    assert 0 < box["n_cells"] < meta["n_cells"] and len(box["months"]) == 12
     poly = [[[35.4, 33.55], [35.75, 33.55], [35.75, 33.8], [35.4, 33.8], [35.4, 33.55]]]
     assert client.post("/regions/lebanon/aggregate", json={"polygon": poly}).json()["n_cells"] == box["n_cells"]
     assert sum(m["modis_raw"] or 0 for m in nop["months"]) <= sum(m["modis_raw"] or 0 for m in full["months"])
@@ -146,7 +152,7 @@ def test_calendar(client):
     assert client.get("/regions/lebanon/calendar").status_code == 413
     csv_text = client.get("/regions/lebanon/calendar", params={"format": "csv", "from": "2020-01", "to": "2020-01"}).text
     lines = csv_text.strip().split("\n")
-    assert lines[0] == ",".join(C.CALENDAR_FIELDS) and len(lines) == 1 + 429
+    assert lines[0] == ",".join(C.CALENDAR_FIELDS) and len(lines) == 1 + _meta()["n_cells"]
 
 
 def test_predictions_roundtrip(client, loaded):
@@ -282,3 +288,19 @@ def test_weather_fetch_store_serve_export(client, loaded, tmp_path):
             await conn.close()
 
     run(quota())
+
+
+def test_noaa20_continuation(client):
+    """v0.5: the switch month carries source and noaa20_raw, and NOAA-20 harmonized is c_m x noaa20_raw."""
+    meta = _meta()
+    if meta["contract_version"] == "0.4":
+        pytest.skip("v0.4 export has no NOAA-20 fields")
+    rows = {r["ym"]: r for r in client.get("/regions/lebanon/monthly").json()}
+    switch = meta["time"]["viirs_switch_date"][:7]
+    assert rows[switch]["source"] == "SNPP+NOAA20"
+    assert rows["2011-12"]["source"] == "MODIS" and rows["2012-01"]["source"] == "MODIS+SNPP" and rows["2019-10"]["source"] == "SNPP"
+    assert rows["2017-01"]["noaa20_raw"] is None and rows["2019-01"]["noaa20_raw"] is not None
+    for r in rows.values():
+        assert (r["source"] is None) == (not r["data_available"])
+    cal = client.get("/regions/lebanon/calendar", params={"from": switch, "to": switch}).json()
+    assert sum(x["noaa20_raw"] or 0 for x in cal) == rows[switch]["noaa20_raw"]

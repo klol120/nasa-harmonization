@@ -1,0 +1,21 @@
+{
+  "collection_id": "C2545310874-LPCLOUD",
+  "product": "VJ114A1",
+  "version": "002",
+  "start": "2018-01-01T00:00:00Z",
+  "end": "2025-12-31T23:59:59Z",
+  "bbox": [
+    35.0,
+    33.0,
+    36.7,
+    34.75
+  ],
+  "tiles": [
+    "h20v05",
+    "h21v05"
+  ],
+  "page_size": 2000,
+  "download_workers": 6,
+  "min_free_bytes": 800000000,
+  "label_definition": "Daily NOAA-20 VJ114A1 gridded fire occurrence; not FIRMS 375m occurrence"
+}

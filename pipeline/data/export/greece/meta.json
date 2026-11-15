@@ -1,0 +1,873 @@
+{
+  "contract_version": "0.5",
+  "region": "greece",
+  "bbox": [
+    19.2,
+    34.7,
+    29.8,
+    41.8
+  ],
+  "countries": [
+    "Greece"
+  ],
+  "generated_at": "2026-11-14T12:39:07Z",
+  "pipeline": {
+    "version": "0.1.0",
+    "config_hash": "sha256:4591ae4e5707d6a1"
+  },
+  "formats_status": "pending confirmation from the frontend team",
+  "units": "VIIRS-equivalent fire-days per 0.05\u00b0 cell per month",
+  "n_cells": 5954,
+  "n_persistent_cells": 13,
+  "files": {
+    "calendar.csv.gz": 6507350,
+    "calendar.parquet": 1325793,
+    "cells.geojson": 2000575,
+    "cells_series/2000.json": 3685,
+    "cells_series/2001.json": 127411,
+    "cells_series/2002.json": 69714,
+    "cells_series/2003.json": 106382,
+    "cells_series/2004.json": 137495,
+    "cells_series/2005.json": 112363,
+    "cells_series/2006.json": 94650,
+    "cells_series/2007.json": 198873,
+    "cells_series/2008.json": 163731,
+    "cells_series/2009.json": 98441,
+    "cells_series/2010.json": 70807,
+    "cells_series/2011.json": 154713,
+    "cells_series/2012.json": 203460,
+    "cells_series/2013.json": 186313,
+    "cells_series/2014.json": 162487,
+    "cells_series/2015.json": 149433,
+    "cells_series/2016.json": 179389,
+    "cells_series/2017.json": 174905,
+    "cells_series/2018.json": 121143,
+    "cells_series/2019.json": 158519,
+    "cells_series/2020.json": 164025,
+    "cells_series/2021.json": 148279,
+    "cells_series/2022.json": 137783,
+    "cells_series/2023.json": 145466,
+    "cells_series/2024.json": 134583,
+    "cells_series/2025.json": 123703,
+    "cells_series/2026.json": 95823,
+    "region_monthly.csv": 32843,
+    "region_monthly.json": 123407
+  },
+  "time": {
+    "first_month": "2000-11",
+    "last_month": "2026-12",
+    "stats_last_year": 2025,
+    "display_only_years": [
+      2026
+    ],
+    "splice_date": "2012-01-20",
+    "terra_only_until": "2002-07-04",
+    "viirs_switch_date": "2026-11-03"
+  },
+  "sources": {
+    "MODIS_SP": {
+      "satellites": [
+        "Terra",
+        "Aqua"
+      ],
+      "first_date": "2000-11-01",
+      "last_date": "2026-08-31"
+    },
+    "VIIRS_SNPP_SP": {
+      "satellites": [
+        "SNPP"
+      ],
+      "first_date": "2012-01-20",
+      "last_date": "2026-07-31"
+    },
+    "VIIRS_SNPP_NRT": {
+      "satellites": [
+        "SNPP"
+      ],
+      "first_date": "2026-08-01",
+      "last_date": "2026-11-02"
+    },
+    "VIIRS_NOAA20_SP": {
+      "satellites": [
+        "NOAA20"
+      ],
+      "first_date": "2018-04-01",
+      "last_date": "2026-07-31"
+    },
+    "VIIRS_NOAA20_NRT": {
+      "satellites": [
+        "NOAA20"
+      ],
+      "first_date": "2026-08-01",
+      "last_date": "2026-11-13"
+    }
+  },
+  "source_values": {
+    "MODIS": "estimate converted from MODIS (is_estimate)",
+    "SNPP": "observed VIIRS S-NPP",
+    "NOAA20": "VIIRS NOAA-20 calibrated to S-NPP units (calibration.continuation)",
+    "A+B": "month split between two sources at a switch date (e.g. MODIS+SNPP, SNPP+NOAA20)"
+  },
+  "calibration": {
+    "strategy": "local",
+    "overlap_years": [
+      2012,
+      2020
+    ],
+    "exclude_persistent_from_fit": true,
+    "blend_k": null,
+    "factors": [
+      {
+        "month": 1,
+        "a": 5.095,
+        "a_low": 4.2291,
+        "a_high": 6.2432,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 2,
+        "a": 3.13,
+        "a_low": 2.8742,
+        "a_high": 3.5587,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 3,
+        "a": 4.4989,
+        "a_low": 4.0317,
+        "a_high": 4.9344,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 4,
+        "a": 4.0891,
+        "a_low": 3.5762,
+        "a_high": 4.7577,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 5,
+        "a": 2.6356,
+        "a_low": 2.357,
+        "a_high": 3.1724,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 6,
+        "a": 2.13,
+        "a_low": 1.8539,
+        "a_high": 2.5859,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 7,
+        "a": 2.2596,
+        "a_low": 2.0754,
+        "a_high": 2.4236,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 8,
+        "a": 2.1667,
+        "a_low": 1.9754,
+        "a_high": 2.375,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 9,
+        "a": 2.3229,
+        "a_low": 2.1753,
+        "a_high": 2.449,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 10,
+        "a": 2.6465,
+        "a_low": 2.5274,
+        "a_high": 2.7853,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 11,
+        "a": 2.8154,
+        "a_low": 2.6195,
+        "a_high": 3.146,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      },
+      {
+        "month": 12,
+        "a": 4.9179,
+        "a_low": 4.6948,
+        "a_high": 5.4526,
+        "b": 0.0,
+        "b_low": 0.0,
+        "b_high": 0.0,
+        "w_local": 1.0
+      }
+    ],
+    "composite": null,
+    "terra_strategy": "local",
+    "terra_correction": [
+      {
+        "month": 1,
+        "kT": 3.7692,
+        "kT_low": 3.2163,
+        "kT_high": 4.2897
+      },
+      {
+        "month": 2,
+        "kT": 3.9716,
+        "kT_low": 3.4067,
+        "kT_high": 4.5587
+      },
+      {
+        "month": 3,
+        "kT": 2.4751,
+        "kT_low": 2.3173,
+        "kT_high": 2.624
+      },
+      {
+        "month": 4,
+        "kT": 1.8859,
+        "kT_low": 1.7572,
+        "kT_high": 2.0438
+      },
+      {
+        "month": 5,
+        "kT": 1.8409,
+        "kT_low": 1.6505,
+        "kT_high": 2.0566
+      },
+      {
+        "month": 6,
+        "kT": 1.879,
+        "kT_low": 1.7525,
+        "kT_high": 2.0534
+      },
+      {
+        "month": 7,
+        "kT": 1.8211,
+        "kT_low": 1.7622,
+        "kT_high": 1.8872
+      },
+      {
+        "month": 8,
+        "kT": 1.7352,
+        "kT_low": 1.595,
+        "kT_high": 1.9135
+      },
+      {
+        "month": 9,
+        "kT": 1.8172,
+        "kT_low": 1.7524,
+        "kT_high": 1.8828
+      },
+      {
+        "month": 10,
+        "kT": 2.2463,
+        "kT_low": 2.1539,
+        "kT_high": 2.3504
+      },
+      {
+        "month": 11,
+        "kT": 3.3328,
+        "kT_low": 3.1263,
+        "kT_high": 3.5402
+      },
+      {
+        "month": 12,
+        "kT": 3.6047,
+        "kT_low": 3.0724,
+        "kT_high": 4.2675
+      }
+    ],
+    "continuation": {
+      "satellite": "NOAA20",
+      "replaces": "SNPP",
+      "switch_date": "2026-11-03",
+      "strategy": "single",
+      "overlap_years": [
+        2018,
+        2025
+      ],
+      "factors": [
+        {
+          "month": 1,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 2,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 3,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 4,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 5,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 6,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 7,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 8,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 9,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 10,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 11,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        },
+        {
+          "month": 12,
+          "c": 0.9206,
+          "c_low": 0.8962,
+          "c_high": 0.9449
+        }
+      ],
+      "holdout": [
+        {
+          "strategy": "single",
+          "k": null,
+          "wape": 0.1144,
+          "bias": -0.0066
+        },
+        {
+          "strategy": "blend:southern_turkey",
+          "k": 20.0,
+          "wape": 0.1338,
+          "bias": 0.0069
+        },
+        {
+          "strategy": "blend:cyprus",
+          "k": 5.0,
+          "wape": 0.1341,
+          "bias": 0.0063
+        },
+        {
+          "strategy": "blend:eastmed_pool",
+          "k": 20.0,
+          "wape": 0.1342,
+          "bias": 0.0082
+        },
+        {
+          "strategy": "local",
+          "k": null,
+          "wape": 0.1354,
+          "bias": 0.0064
+        },
+        {
+          "strategy": "blend:israel_palestine",
+          "k": 5.0,
+          "wape": 0.1354,
+          "bias": 0.0068
+        },
+        {
+          "strategy": "blend:syria",
+          "k": 5.0,
+          "wape": 0.1356,
+          "bias": 0.0079
+        }
+      ],
+      "continuity": {
+        "window": [
+          "2026-01-01",
+          "2026-11-02"
+        ],
+        "step_index": 1.1012997535193492,
+        "band": [
+          0.9990759486399153,
+          1.20677686193094
+        ],
+        "step_flagged": false,
+        "raw_ratio": 1.1963470319634704
+      }
+    },
+    "auto_strategy": {
+      "strategy": "local",
+      "outcome": "rich",
+      "reason": "1/12 months thin (n < n_month 149): share 0.08 < n_country 0.72",
+      "available": true,
+      "configured_strategy": "local",
+      "agrees_with_configured": true,
+      "inputs": {
+        "overlap_years": [
+          2012,
+          2020
+        ],
+        "exclude_persistent": true,
+        "annual": 865.44,
+        "thin_share": 0.0833
+      },
+      "thresholds": {
+        "n_month": 149,
+        "n_country": 0.72,
+        "n_country_annual": 132,
+        "n_min_annual": 3.6
+      },
+      "report": "docs/reports/thresholds.md",
+      "months": [
+        {
+          "month": 1,
+          "name": "Jan",
+          "n": 179,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 179 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 2,
+          "name": "Feb",
+          "n": 423,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 423 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 3,
+          "name": "Mar",
+          "n": 461,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 461 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 4,
+          "name": "Apr",
+          "n": 247,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 247 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 5,
+          "name": "May",
+          "n": 118,
+          "thin": true,
+          "rule": "n_country",
+          "reason": "n 118 < n_month 149, but too few thin months to borrow (region rule): local ratio kept"
+        },
+        {
+          "month": 6,
+          "name": "Jun",
+          "n": 277,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 277 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 7,
+          "name": "Jul",
+          "n": 732,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 732 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 8,
+          "name": "Aug",
+          "n": 972,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 972 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 9,
+          "name": "Sep",
+          "n": 1152,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 1152 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 10,
+          "name": "Oct",
+          "n": 2085,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 2085 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 11,
+          "name": "Nov",
+          "n": 948,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 948 >= n_month 149: local monthly ratio"
+        },
+        {
+          "month": 12,
+          "name": "Dec",
+          "n": 195,
+          "thin": false,
+          "rule": "rich_month",
+          "reason": "n 195 >= n_month 149: local monthly ratio"
+        }
+      ]
+    }
+  },
+  "low_confidence_rule": {
+    "min_modis_fire_days": 20,
+    "max_zero_modis_share": 0.95,
+    "months": [
+      5
+    ],
+    "by_month": [
+      {
+        "month": 1,
+        "viirs": 912,
+        "zero_modis": 830,
+        "modis": 179,
+        "zero_modis_share": 0.9101,
+        "low_confidence": false
+      },
+      {
+        "month": 2,
+        "viirs": 1324,
+        "zero_modis": 1198,
+        "modis": 423,
+        "zero_modis_share": 0.9048,
+        "low_confidence": false
+      },
+      {
+        "month": 3,
+        "viirs": 2074,
+        "zero_modis": 1953,
+        "modis": 461,
+        "zero_modis_share": 0.9417,
+        "low_confidence": false
+      },
+      {
+        "month": 4,
+        "viirs": 1010,
+        "zero_modis": 954,
+        "modis": 247,
+        "zero_modis_share": 0.9446,
+        "low_confidence": false
+      },
+      {
+        "month": 5,
+        "viirs": 311,
+        "zero_modis": 298,
+        "modis": 118,
+        "zero_modis_share": 0.9582,
+        "low_confidence": true
+      },
+      {
+        "month": 6,
+        "viirs": 590,
+        "zero_modis": 498,
+        "modis": 277,
+        "zero_modis_share": 0.8441,
+        "low_confidence": false
+      },
+      {
+        "month": 7,
+        "viirs": 1654,
+        "zero_modis": 1243,
+        "modis": 732,
+        "zero_modis_share": 0.7515,
+        "low_confidence": false
+      },
+      {
+        "month": 8,
+        "viirs": 2106,
+        "zero_modis": 1580,
+        "modis": 972,
+        "zero_modis_share": 0.7502,
+        "low_confidence": false
+      },
+      {
+        "month": 9,
+        "viirs": 2676,
+        "zero_modis": 2243,
+        "modis": 1152,
+        "zero_modis_share": 0.8382,
+        "low_confidence": false
+      },
+      {
+        "month": 10,
+        "viirs": 5518,
+        "zero_modis": 4685,
+        "modis": 2085,
+        "zero_modis_share": 0.849,
+        "low_confidence": false
+      },
+      {
+        "month": 11,
+        "viirs": 2669,
+        "zero_modis": 2342,
+        "modis": 948,
+        "zero_modis_share": 0.8775,
+        "low_confidence": false
+      },
+      {
+        "month": 12,
+        "viirs": 959,
+        "zero_modis": 891,
+        "modis": 195,
+        "zero_modis_share": 0.9291,
+        "low_confidence": false
+      }
+    ]
+  },
+  "validation": {
+    "variant": "persistence_excluded",
+    "holdout": {
+      "fit": [
+        2012,
+        2016
+      ],
+      "test": [
+        2017,
+        2020
+      ]
+    },
+    "strategies": [
+      {
+        "strategy": "blend:eastmed_pool",
+        "k": 5.0,
+        "wape": 0.1863,
+        "bias": 0.0147
+      },
+      {
+        "strategy": "blend:southern_turkey",
+        "k": 5.0,
+        "wape": 0.1868,
+        "bias": 0.0115
+      },
+      {
+        "strategy": "local",
+        "k": null,
+        "wape": 0.1883,
+        "bias": 0.0176
+      },
+      {
+        "strategy": "blend:israel_palestine",
+        "k": 0.0,
+        "wape": 0.1883,
+        "bias": 0.0176
+      },
+      {
+        "strategy": "blend:syria",
+        "k": 0.0,
+        "wape": 0.1883,
+        "bias": 0.0176
+      },
+      {
+        "strategy": "blend:cyprus",
+        "k": 0.0,
+        "wape": 0.1883,
+        "bias": 0.0176
+      },
+      {
+        "strategy": "pooled:cyprus",
+        "k": null,
+        "wape": 0.194,
+        "bias": 0.0319
+      },
+      {
+        "strategy": "pooled:israel_palestine",
+        "k": null,
+        "wape": 0.2062,
+        "bias": 0.0787
+      },
+      {
+        "strategy": "pooled:eastmed_pool",
+        "k": null,
+        "wape": 0.2257,
+        "bias": -0.0315
+      },
+      {
+        "strategy": "pooled:southern_turkey",
+        "k": null,
+        "wape": 0.2346,
+        "bias": -0.1261
+      },
+      {
+        "strategy": "donor:eastmed_pool",
+        "k": null,
+        "wape": 0.2435,
+        "bias": -0.0339
+      },
+      {
+        "strategy": "pooled:syria",
+        "k": null,
+        "wape": 0.2494,
+        "bias": 0.1379
+      },
+      {
+        "strategy": "single",
+        "k": null,
+        "wape": 0.2647,
+        "bias": -0.0622
+      },
+      {
+        "strategy": "donor:southern_turkey",
+        "k": null,
+        "wape": 0.2825,
+        "bias": -0.1832
+      },
+      {
+        "strategy": "affine_shape_single_level",
+        "k": 0.0,
+        "wape": 0.3154,
+        "bias": -0.0622
+      },
+      {
+        "strategy": "affine_shape_single_level_pool",
+        "k": 0.0,
+        "wape": 0.3154,
+        "bias": -0.0622
+      },
+      {
+        "strategy": "donor:syria",
+        "k": null,
+        "wape": 0.4658,
+        "bias": 0.3859
+      },
+      {
+        "strategy": "donor:cyprus",
+        "k": null,
+        "wape": 0.698,
+        "bias": 0.6059
+      },
+      {
+        "strategy": "donor:israel_palestine",
+        "k": null,
+        "wape": 0.8494,
+        "bias": 0.8296
+      }
+    ],
+    "continuity_2012": {
+      "step_index": 1.0197529457368502,
+      "band": [
+        0.9672210517153198,
+        1.07530449764133
+      ],
+      "step_flagged": false,
+      "band_factor_only": [
+        0.9876163302436615,
+        1.04166243074487
+      ],
+      "step_flagged_factor_only": false
+    }
+  },
+  "anomalies": {
+    "baseline_years": [
+      2001,
+      2025
+    ],
+    "baseline_source": "anomalies",
+    "method": "z-score per cell and calendar month",
+    "sensitivity": [
+      {
+        "baseline_years": [
+          2012,
+          2025
+        ],
+        "region_corr_z": 0.9053170372861457,
+        "region_mean_abs_dz": 0.46555150558237735,
+        "cells_corr_z": 0.6893854170179984,
+        "cells_mean_abs_dz": 0.24927772616706728
+      }
+    ]
+  },
+  "outages": [
+    {
+      "satellite": "SNPP",
+      "start": "2022-07-27",
+      "end": "2022-08-10"
+    },
+    {
+      "satellite": "Terra",
+      "start": "2001-06-15",
+      "end": "2001-07-02"
+    },
+    {
+      "satellite": "Terra",
+      "start": "2016-02-19",
+      "end": "2016-02-27"
+    }
+  ],
+  "caveats": [
+    "Pre-2012 values are estimates converted from MODIS and must be labelled as such.",
+    "low_confidence marks pre-2012 months where MODIS sees almost none of the VIIRS-detected activity or the factor rests on few MODIS fire-days; show them with extra caution.",
+    "Fire-days measure burning activity, not burned area.",
+    "2026 is a partial year shown for display only.",
+    "From the VIIRS switch date (S-NPP's end) harmonized is NOAA-20 calibrated to S-NPP units per calendar month (source = NOAA20); viirs_raw stays S-NPP only, noaa20_raw is the uncalibrated NOAA-20 count.",
+    "is_persistent cells contain persistent (industrial / waste-burning) sources; they are excluded from calibration but kept in the data so the UI can show or hide them."
+  ]
+}
