@@ -48,6 +48,8 @@ export interface DataSource {
   load(): Promise<DatasetMeta>;
   areaSeries(q: AreaQuery, signal?: AbortSignal): Promise<AreaSeries>;
   cellWindow(q: CellQuery, signal?: AbortSignal): Promise<CellValues>;
+  /** API regions: forget cached months that can change (live data), optionally switching the demo replay on/off. */
+  refresh?(opts?: { demo?: boolean; fromYear?: number }): void;
   /** Individual detections (only imported FIRMS files have them). */
   hotspots?(range: [number, number], bbox: BBox, limit: number): Promise<HotspotRow[]>;
 }

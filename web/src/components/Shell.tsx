@@ -309,6 +309,8 @@ interface TopBarProps {
   onSearch: () => void;
   /** Shares a link to the current view; absent where there is nothing to link to. */
   onShare?: () => void;
+  /** Live-data badge (regions fed by the live pipeline). */
+  live?: React.ReactNode;
   /** Sensor, metric and month controls; hidden where they change nothing. */
   data?: {
     sensor: Sensor;
@@ -393,6 +395,7 @@ export function TopBar(p: TopBarProps) {
         </div>
       )}
 
+      {p.live}
       {p.onShare && (
         <button className="icon-btn glass-btn" onClick={p.onShare} aria-label="Share a link to this view" title="Share a link to this view">
           <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden>

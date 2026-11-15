@@ -2,7 +2,9 @@
 
 import argparse
 import asyncio
+import os
 import sys
+from datetime import date, timedelta
 from pathlib import Path
 
 from .config import settings
@@ -163,13 +165,6 @@ async def cmd_weather_fetch(args) -> int:
         await conn.close()
 
 
-async def cmd_weather_schedule(args) -> int:
-    from .schedule import run_forever, weather_job
-
-    await run_forever("weather", weather_job, log=lambda m: print(m, flush=True))
-    return 0
-
-
 async def cmd_weather_export(args) -> int:
     from . import weather as W
 
@@ -235,6 +230,170 @@ async def cmd_send_outbox(args) -> int:
     return 1 if failed else 0
 
 
+# ---------------------------------------------------------------- live pipeline
+
+
+def _firms_key() -> str:
+    key = os.environ.get("FIRMS_MAP_KEY", "").strip()
+    if not key:
+        raise SystemExit("FIRMS_MAP_KEY is not set (backend/.env). Get a free key at https://firms.modaps.eosdis.nasa.gov/api/map_key/")
+    return key
+
+
+def _publisher(conn, direct: bool):
+    """Where events go: the Event Hubs stream, or (--direct) straight into the consumer on this machine."""
+    from .live import consumer as LC
+    from .live import eventhub as EH
+    from .live import firms as F
+
+    conn_str = os.environ.get("EVENTHUB_CONNECTION", "").strip()
+    if direct or not conn_str:
+        if not direct:
+            print("EVENTHUB_CONNECTION is not set: handling events here instead of sending them to the stream")
+
+        async def local(events):
+            print("  ", await LC.process(conn, events))
+
+        return local
+    hub = EH.parse_connection(conn_str, os.environ.get("EVENTHUB_NAME") or None)
+
+    def stream(events):
+        n = EH.send(hub, [F.dumps(e) for e in events])
+        print(f"   sent {len(events)} events to the stream {hub.name} in {n} request(s)")
+
+    return stream
+
+
+async def cmd_live_poll(args) -> int:
+    from .live import poller as P
+
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        await P.poll(conn, _firms_key(), _publisher(conn, args.direct), days=args.days)
+        return 0
+    finally:
+        await conn.close()
+
+
+async def cmd_live_backfill(args) -> int:
+    """Load every day since the releases' last day of data. Stored directly: far too many events to replay one by one."""
+    from datetime import datetime, timezone
+
+    from .live import consumer as LC
+    from .live import firms as F
+    from .live import poller as P
+    from .live import store as S
+
+    key = _firms_key()
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        rels = await S.current_releases(conn)
+        if not rels:
+            print("no releases loaded")
+            return 1
+        today = datetime.now(timezone.utc).date()
+        first = date.fromisoformat(args.since) if args.since else min(S.live_first_month(r) for r in rels)
+        boxes = P.poll_boxes(rels)
+        total = 0
+        for source, a, b in P.backfill_plan(first, today):
+            for box in boxes:
+                d = a
+                while d <= b:
+                    n = min(F.MAX_DAYS, (b - d).days + 1)
+                    events = F.fetch(key, source, box, n, d)
+                    r = await LC.process(conn, events, resync=False)
+                    total += r["new"]
+                    print(f"{source} {d}..{d + timedelta(days=n - 1)} box {box}: {len(events)} detections, {r['new']} new")
+                    d += timedelta(days=n)
+        await S.advance_coverage(conn, today, polled_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        for m in await S.sync(conn, force=True):
+            print(f"  {m['region']} {m['ym']}: {m['fire_days']} fire-days from {m['detections']} detections")
+        print(f"backfill done: {total} new detections")
+        return 0
+    finally:
+        await conn.close()
+
+
+async def cmd_live_recompute(args) -> int:
+    from .live import store as S
+
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        for m in await S.sync(conn, force=True, regions=args.regions or None):
+            print(f"{m['region']} {m['ym']}{' (demo)' if m['demo'] else ''}: {m['fire_days']} fire-days -> {m['harmonized']:.2f} harmonized")
+        return 0
+    finally:
+        await conn.close()
+
+
+async def cmd_live_status(args) -> int:
+    from .live import store as S
+
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        for k in ("coverage", "poller", "consumer"):
+            print(f"{k}: {await S.get_state(conn, k)}")
+        for rel in await S.current_releases(conn):
+            st = await S.status(conn, rel, False)
+            print(f"[{rel['region_id']}] live {st['first_month']}..{st['last_month']}, last detection {st['last_detection_at']}, "
+                  f"{st['detections_24h']} received in 24 h, harmonization {st['harmonization']['version']}")
+            for m in st["months"]:
+                print(f"    {m['ym']}: {m['fire_days']} fire-days -> {m['harmonized']:.2f} (through {m['through']}{', partial' if m['partial_month'] else ''}) {m['sensors']}")
+        return 0
+    finally:
+        await conn.close()
+
+
+async def cmd_live_replay(args) -> int:
+    from .live import replay as R
+    from .live import store as S
+
+    key = _firms_key()
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        rel = next(iter(await S.current_releases(conn, [args.region])), None)
+        if not rel:
+            print(f"no current release for {args.region}")
+            return 1
+        first, last, what = R.PRESETS.get(args.region, (None, None, "custom period"))
+        if args.frm and args.to:
+            first, last, what = date.fromisoformat(args.frm), date.fromisoformat(args.to), "custom period"
+        if not first:
+            print("give --from and --to (no preset for this region)")
+            return 1
+        print(f"replaying {what} ({first}..{last}) into {args.region}, as if it ended today")
+        days = R.load(key, list(rel["bbox"]), first, last)
+        publish = _publisher(conn, args.direct)
+        for i, (day, events) in enumerate(days):
+            print(f"  day {i + 1}/{len(days)} ({day}): {len(events)} simulated detections")
+            r = publish(events)
+            if hasattr(r, "__await__"):
+                await r
+            if i < len(days) - 1:
+                await asyncio.sleep(args.step_seconds)
+        print("done. Remove the demo data with: firecal-db live-clear-demo")
+        return 0
+    finally:
+        await conn.close()
+
+
+async def cmd_live_clear_demo(args) -> int:
+    from .live import store as S
+
+    conn = await connect(settings().database_url)
+    try:
+        await migrate(conn)
+        print(f"removed {await S.clear_demo(conn)} simulated detections and the demo months")
+        return 0
+    finally:
+        await conn.close()
+
+
 def main() -> None:
     p = argparse.ArgumentParser(prog="firecal-db", description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -262,12 +421,25 @@ def main() -> None:
     wf.add_argument("--dry-run", action="store_true", help="show what would be fetched, without sending requests")
     wf.add_argument("--wait-lock", type=float, default=0, metavar="SECONDS",
                     help="if another fetch is running, keep retrying this long instead of skipping (default: skip)")
-    sub.add_parser("weather-schedule",
-                   help="run weather-fetch now if it never finished, then monthly; saves to WEATHER_DIR (see schedule.py)")
     we = sub.add_parser("weather-export", help="write stored weather to <folder>/<region>.json")
     we.add_argument("folder")
     wi = sub.add_parser("weather-import", help="load <region>.json files written by weather-export")
     wi.add_argument("folder")
+    lp = sub.add_parser("live-poll", help="fetch recent FIRMS detections and publish the new ones (stream, or --direct)")
+    lp.add_argument("--days", type=int, default=2, help="days to look back (1-5)")
+    lp.add_argument("--direct", action="store_true", help="handle the events here instead of sending them to the stream")
+    lb = sub.add_parser("live-backfill", help="load every day since the releases' last day of data, straight into the database")
+    lb.add_argument("--since", help="YYYY-MM-DD (default: the day after the releases' last VIIRS day)")
+    lr = sub.add_parser("live-recompute", help="rebuild the live months (after the harmonization changed)")
+    lr.add_argument("regions", nargs="*")
+    sub.add_parser("live-status", help="what the live pipeline has stored")
+    ly = sub.add_parser("live-replay", help="demo: replay a past outbreak as simulated live detections")
+    ly.add_argument("region")
+    ly.add_argument("--from", dest="frm", help="YYYY-MM-DD (default: the region's preset outbreak)")
+    ly.add_argument("--to", help="YYYY-MM-DD")
+    ly.add_argument("--step-seconds", type=float, default=8, help="pause between replayed days")
+    ly.add_argument("--direct", action="store_true", help="handle the events here instead of sending them to the stream")
+    sub.add_parser("live-clear-demo", help="remove the simulated detections and demo months")
     sa = sub.add_parser("send-alerts", help="email users whose saved areas had an unusually high month")
     sa.add_argument("--dry-run", action="store_true", help="show what would be sent, without queueing emails")
     sd = sub.add_parser("send-digest", help="queue the monthly digest for confirmed email-list subscribers")
@@ -288,7 +460,9 @@ def main() -> None:
     fn = {"init": cmd_init, "ingest": cmd_ingest, "releases": cmd_releases,
           "set-current": cmd_set_current, "delete-release": cmd_delete_release,
           "weather-check": cmd_weather_check, "weather-fetch": cmd_weather_fetch,
-          "weather-schedule": cmd_weather_schedule, "weather-export": cmd_weather_export, "weather-import": cmd_weather_import,
+          "weather-export": cmd_weather_export, "weather-import": cmd_weather_import,
+          "live-poll": cmd_live_poll, "live-backfill": cmd_live_backfill, "live-recompute": cmd_live_recompute,
+          "live-status": cmd_live_status, "live-replay": cmd_live_replay, "live-clear-demo": cmd_live_clear_demo,
           "send-alerts": cmd_send_alerts, "send-digest": cmd_send_digest, "send-outbox": cmd_send_outbox}[args.cmd]
     sys.exit(asyncio.run(fn(args)))
 
