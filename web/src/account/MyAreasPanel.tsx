@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { regionInfo } from "../config";
 import { type Area, areaFromBBox, areaFromRing } from "../lib/geo";
+import { buildHash } from "../lib/urlState";
 import { useAuth } from "./AuthContext";
 import { type SavedArea, api } from "./client";
 
@@ -9,12 +10,12 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 const ymLabel = (ym: string) => `${MONTHS[Number(ym.slice(5, 7)) - 1]} ${ym.slice(0, 4)}`;
 
-/** Link that opens a saved area in its region (same hash format as shareable links; App reloads on hash change). */
+/** Link that opens a saved area in its region (same format as shareable links; App reloads on a link to another region). */
 function areaHash(a: SavedArea): string {
-  const p = new URLSearchParams({ src: `api:${a.region}`, s: "harmonized", m: "cell_days", n: a.name });
+  const p = new URLSearchParams({ s: "harmonized", m: "cell_days", n: a.name });
   if (a.kind === "polygon" && a.ring) p.set("p", a.ring.map(([x, y]) => `${x.toFixed(3)},${y.toFixed(3)}`).join(";"));
   else p.set("b", a.bbox.map((v) => v.toFixed(3)).join(","));
-  return `#${p.toString()}`;
+  return buildHash("overview", `api:${a.region}`, p);
 }
 
 export function toArea(a: SavedArea): Area {

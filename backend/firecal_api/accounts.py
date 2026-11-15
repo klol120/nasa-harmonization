@@ -422,8 +422,8 @@ def area_polygon(a: asyncpg.Record | dict) -> list[list[list[float]]] | None:
 
 
 def dashboard_link(a: asyncpg.Record | dict, ym: str | None = None) -> str:
-    """Link that opens the dashboard on this area (same hash format as the website's shareable links)."""
-    p = {"src": f"api:{a['region_id']}", "s": "harmonized", "m": "cell_days", "n": a["name"]}
+    """Link that opens the dashboard on this area (same format as the website's shareable links)."""
+    p = {"s": "harmonized", "m": "cell_days", "n": a["name"]}
     ring = a["ring"] if isinstance(a["ring"], list) or a["ring"] is None else json.loads(a["ring"])
     if a["kind"] == "polygon" and ring:
         p["p"] = ";".join(f"{x:.3f},{y:.3f}" for x, y in ring)
@@ -431,7 +431,7 @@ def dashboard_link(a: asyncpg.Record | dict, ym: str | None = None) -> str:
         p["b"] = ",".join(f"{v:.3f}" for v in a["bbox"])
     if ym:
         p["t"] = ym
-    return f"{web_url()}/#{urlencode(p, quote_via=quote)}"
+    return f"{web_url()}/#/overview/{quote(a['region_id'], safe='')}?{urlencode(p, quote_via=quote)}"
 
 
 async def area_status(c: asyncpg.Connection, a: asyncpg.Record, cache: dict) -> dict | None:

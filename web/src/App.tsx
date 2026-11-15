@@ -62,7 +62,7 @@ import {
 } from "./lib/analytics";
 import { analyticsCsv, calendarCsv, chartPng, downloadDataUrl, downloadText, slug } from "./lib/exporters";
 import { type Area, areaFromBBox, pointInArea } from "./lib/geo";
-import { PAGES, type Page, pageHref, pushPage, readHash, watchHash, writeHash } from "./lib/urlState";
+import { PAGES, type Page, pageHref, pushPage, readHash, shareUrl, watchHash, writeHash } from "./lib/urlState";
 import { animationsEnabled, fireCellsEnabled, setAnimations, setFireCells } from "./lib/motion";
 import { useTheme } from "./lib/theme";
 
@@ -489,7 +489,7 @@ export default function App() {
 
   /** Shares a link to exactly this view: the system share sheet on phones, the clipboard elsewhere. */
   const share = async () => {
-    const url = window.location.href;
+    const url = shareUrl();
     const title = `${meta?.name ?? "Phoenical"} · burning calendar`;
     try {
       if (navigator.share && window.matchMedia("(pointer: coarse)").matches) await navigator.share({ title, url });
