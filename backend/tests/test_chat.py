@@ -43,7 +43,8 @@ def api(monkeypatch):
 
     fake = anthropic.AsyncAnthropic(api_key="test", max_retries=0, http_client=anthropic.DefaultAsyncHttpxClient(transport=httpx2.MockTransport(handler)))
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test")
-    monkeypatch.delenv("CHAT_MODEL", raising=False)
+    for var in ("CHAT_MODEL", "CHAT_PROVIDER", "OPENROUTER_API_KEY", "OPENROUTER_MODEL"):
+        monkeypatch.delenv(var, raising=False)
     monkeypatch.setattr(chat, "client", lambda: fake)
     chat._recent.clear()
     chat._day.update(date="", count=0)
@@ -121,3 +122,75 @@ def test_rate_limit_per_visitor_and_per_day(api, monkeypatch):
     chat._recent.clear()
     monkeypatch.setenv("CHAT_DAILY_CAP", str(chat.RATE_LIMIT))
     assert c.post("/chat", json=ASK).status_code == 429
+
+
+# ---- OpenRouter (OpenAI-style chat completions) ----------------------------------------------
+
+
+def or_body(parts: list[str], finish: str = "stop") -> bytes:
+    chunks = [{"choices": [{"index": 0, "delta": {"content": p}, "finish_reason": None}]} for p in parts]
+    chunks.append({"choices": [{"index": 0, "delta": {}, "finish_reason": finish}]})
+    lines = [": OPENROUTER PROCESSING"] + [f"data: {json.dumps(c)}" for c in chunks] + ["data: [DONE]"]
+    return ("\n\n".join(lines) + "\n\n").encode()
+
+
+@pytest.fixture
+def router_api(monkeypatch):
+    """The chat routes with OpenRouter selected and its HTTP API replaced by a canned stream."""
+    sent: list[httpx2.Request] = []
+    reply = {"status": 200, "body": or_body(["Aug 2021 was ", "**unusual**."])}
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        sent.append(request)
+        if reply["status"] != 200:
+            return httpx2.Response(reply["status"], json={"error": {"code": reply["status"], "message": "nope"}})
+        return httpx2.Response(200, headers={"content-type": "text/event-stream"}, content=reply["body"])
+
+    for var in ("ANTHROPIC_API_KEY", "CHAT_PROVIDER", "OPENROUTER_MODEL", "CHAT_MODEL"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "or-test")
+    fake = httpx2.AsyncClient(transport=httpx2.MockTransport(handler))
+    monkeypatch.setattr(chat, "http", lambda: fake)
+    chat._recent.clear()
+    chat._day.update(date="", count=0)
+    app = FastAPI()
+    app.include_router(chat.router)
+    return TestClient(app), sent, reply
+
+
+def test_openrouter_is_picked_when_only_its_key_is_set(router_api, monkeypatch):
+    c, _, _ = router_api
+    assert c.get("/chat/config").json() == {"enabled": True, "model": "openrouter/free"}
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "a")  # both keys: Anthropic, unless CHAT_PROVIDER says otherwise
+    assert chat.provider() == "anthropic"
+    monkeypatch.setenv("CHAT_PROVIDER", "openrouter")
+    monkeypatch.setenv("OPENROUTER_MODEL", "google/gemma-4-31b-it:free")
+    assert c.get("/chat/config").json()["model"] == "google/gemma-4-31b-it:free"
+    monkeypatch.setenv("OPENROUTER_API_KEY", "")
+    r = c.post("/chat", json=ASK)
+    assert r.status_code == 503 and "OPENROUTER_API_KEY" in r.json()["detail"]
+
+
+def test_openrouter_streams_the_answer_and_sends_the_view(router_api):
+    c, sent, _ = router_api
+    ev = events_of(c.post("/chat", json=ASK, headers={"origin": "http://localhost:5173"}).text)
+    assert "".join(d["text"] for e, d in ev if e == "delta") == "Aug 2021 was **unusual**."
+    assert ev[-1] == ("done", {"truncated": False})
+    req = sent[0]
+    assert str(req.url) == chat.OPENROUTER_URL
+    assert req.headers["authorization"] == "Bearer or-test" and req.headers["http-referer"] == "http://localhost:5173"
+    body = json.loads(req.content)
+    assert body["model"] == "openrouter/free" and body["stream"] is True
+    assert body["messages"][0]["role"] == "system" and '"value":412' in body["messages"][0]["content"]
+    assert body["messages"][1:] == [{"role": "user", "content": "Was Aug 2021 unusual?"}]
+
+
+def test_openrouter_length_limit_and_errors(router_api):
+    c, _, reply = router_api
+    reply["body"] = or_body(["Half an ans"], "length")
+    assert events_of(c.post("/chat", json=ASK).text)[-1] == ("done", {"truncated": True})
+    reply["body"] = b'data: {"error": {"code": 429, "message": "rate limited"}}\n\n'
+    assert "busy" in events_of(c.post("/chat", json=ASK).text)[-1][1]["message"]
+    reply["status"] = 401
+    ev = events_of(c.post("/chat", json=ASK).text)
+    assert ev == [("error", {"message": "The assistant's API key was rejected. Check OPENROUTER_API_KEY on the server."})]

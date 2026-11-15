@@ -203,7 +203,7 @@ export function ChatWidget({ open, onOpenChange, getContext, scope, suggestions 
                 </p>
                 {disabled ? (
                   <p className="chat-setup">
-                    <b>The assistant isn't set up yet.</b> Add <code>ANTHROPIC_API_KEY</code> to the server's <code>.env</code> and restart the API.
+                    <b>The assistant isn't set up yet.</b> Add <code>OPENROUTER_API_KEY</code> (free) or <code>ANTHROPIC_API_KEY</code> to the server's <code>.env</code> and restart the API.
                   </p>
                 ) : (
                   <div className="chat-suggest">

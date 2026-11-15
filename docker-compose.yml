@@ -46,6 +46,9 @@ services:
       CHAT_MODEL: ${CHAT_MODEL:-claude-haiku-5-5}
       CHAT_DAILY_CAP: ${CHAT_DAILY_CAP:-2000}
       CHAT_BASE_URL: ${CHAT_BASE_URL:-}
+      CHAT_PROVIDER: ${CHAT_PROVIDER:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-}
     volumes:
       - ./pipeline/data/export:/data/export:ro
       - ./weather:/data/weather

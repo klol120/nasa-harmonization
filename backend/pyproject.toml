@@ -15,6 +15,7 @@ dependencies = [
     "google-auth>=2.30",
     "requests>=2.32",
     "anthropic>=1.0",  # the assistant (firecal_api/chat.py); the API still runs if it can't be imported
+    "httpx2>=2.16",  # the assistant's OpenRouter provider (already pulled in by anthropic)
 ]
 
 [dependency-groups]

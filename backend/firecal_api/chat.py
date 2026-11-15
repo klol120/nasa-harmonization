@@ -1,7 +1,12 @@
 """The site's assistant: answers questions about the fire record on screen.
 
-Optional, like accounts: no data endpoint depends on it. It is off until ANTHROPIC_API_KEY is set
-(the key stays in this process and never reaches the web build).
+Optional, like accounts: no data endpoint depends on it. It is off until a key is set for its
+provider (the key stays in this process and never reaches the web build):
+
+    CHAT_PROVIDER=anthropic    ANTHROPIC_API_KEY, model CHAT_MODEL
+    CHAT_PROVIDER=openrouter   OPENROUTER_API_KEY, model OPENROUTER_MODEL (free models work)
+
+With CHAT_PROVIDER empty, OpenRouter is used when only OPENROUTER_API_KEY is set, else Anthropic.
 
     GET  /chat/config   {"enabled": bool, "model": str}
     POST /chat          server-sent events: `delta` {"text"}, then `done` {"truncated"} or `error` {"message"}
@@ -18,11 +23,12 @@ from collections import deque
 from datetime import datetime, timezone
 from typing import Any, Literal
 
+import httpx2
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-try:  # the API runs without the SDK installed; the assistant is then reported as disabled
+try:  # the API runs without the SDK installed; the Anthropic provider is then reported as disabled
     import anthropic
 except ImportError:  # pragma: no cover
     anthropic = None
@@ -31,6 +37,10 @@ log = logging.getLogger("firecal.chat")
 router = APIRouter()
 
 DEFAULT_MODEL = "claude-haiku-5-5"
+# OpenRouter's router over its free models: it picks one that is up, so the default survives
+# individual free models being withdrawn. Pin one (e.g. google/gemma-4-31b-it:free) with OPENROUTER_MODEL.
+DEFAULT_OPENROUTER_MODEL = "openrouter/free"
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 MAX_TOKENS = 4096  # covers the model's thinking and its answer; answers are a few short paragraphs
 MAX_MESSAGES = 40
 MAX_MESSAGE_CHARS = 6000
@@ -70,12 +80,29 @@ SYSTEM = """You are the assistant built into Phoenical, a web app by team Wel3a 
 - Be brief: this is a small chat panel. Lead with the answer in a sentence or two, then at most a few short supporting points. Plain paragraphs, with **bold** for key figures and short bullet lists where they help. No tables, no headings."""
 
 
+def env(name: str) -> str:
+    return os.environ.get(name, "").strip()
+
+
+def provider() -> str:
+    chosen = env("CHAT_PROVIDER").lower()
+    if chosen in ("anthropic", "openrouter"):
+        return chosen
+    return "openrouter" if env("OPENROUTER_API_KEY") and not env("ANTHROPIC_API_KEY") else "anthropic"
+
+
+def key_var() -> str:
+    return "OPENROUTER_API_KEY" if provider() == "openrouter" else "ANTHROPIC_API_KEY"
+
+
 def api_key() -> str:
-    return os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    return env(key_var())
 
 
 def model() -> str:
-    return os.environ.get("CHAT_MODEL", "").strip() or DEFAULT_MODEL
+    if provider() == "openrouter":
+        return env("OPENROUTER_MODEL") or DEFAULT_OPENROUTER_MODEL
+    return env("CHAT_MODEL") or DEFAULT_MODEL
 
 
 def daily_cap() -> int:
@@ -86,7 +113,9 @@ def daily_cap() -> int:
 
 
 def enabled() -> bool:
-    return anthropic is not None and bool(api_key())
+    if provider() == "anthropic" and anthropic is None:
+        return False
+    return bool(api_key())
 
 
 _client = None
@@ -103,6 +132,17 @@ def client():
         _client = anthropic.AsyncAnthropic(api_key=key, base_url=base, timeout=90.0, max_retries=2)
         _client_key = key
     return _client
+
+
+_http: httpx2.AsyncClient | None = None
+
+
+def http() -> httpx2.AsyncClient:
+    """One shared client for OpenRouter (replaced in tests)."""
+    global _http
+    if _http is None:
+        _http = httpx2.AsyncClient(timeout=httpx2.Timeout(90.0, connect=10.0))
+    return _http
 
 
 # ---- limits (in memory: one API process) ---------------------------------------------------
@@ -170,7 +210,7 @@ def sse(event: str, data: dict) -> str:
 def failure_message(e: Exception) -> str:
     """What the visitor is told; the detail goes to the server log."""
     if isinstance(e, (anthropic.AuthenticationError, anthropic.PermissionDeniedError)):
-        return "The assistant's API key was rejected. Check ANTHROPIC_API_KEY on the server."
+        return f"The assistant's API key was rejected. Check {key_var()} on the server."
     if isinstance(e, anthropic.NotFoundError):
         return f'The assistant\'s model "{model()}" was not found. Check CHAT_MODEL on the server.'
     if isinstance(e, anthropic.RateLimitError):
@@ -184,6 +224,90 @@ def failure_message(e: Exception) -> str:
     return "Something went wrong. Try again."
 
 
+def openrouter_failure(status: int) -> str:
+    if status in (401, 403):
+        return "The assistant's API key was rejected. Check OPENROUTER_API_KEY on the server."
+    if status == 402:
+        return "The assistant's OpenRouter account is out of credits. Use a free model (OPENROUTER_MODEL ending in :free)."
+    if status == 404:
+        return f'The assistant\'s model "{model()}" was not found. Check OPENROUTER_MODEL on the server.'
+    if status == 429:
+        return "The assistant is busy right now (free-tier limit). Try again in a moment."
+    if status == 400:
+        return "The assistant couldn't process that message. Try rephrasing it, or start a new chat."
+    return "The assistant is temporarily unavailable. Try again in a moment."
+
+
+async def anthropic_events(system: list[dict], messages: list[dict]):
+    try:
+        async with client().messages.stream(
+            model=model(),
+            max_tokens=MAX_TOKENS,
+            system=system,
+            messages=messages,
+            # Short grounded answers: keep the model quick. Thinking stays adaptive (the default).
+            output_config={"effort": "low"},
+        ) as stream:
+            async for text in stream.text_stream:
+                yield sse("delta", {"text": text})
+            final = await stream.get_final_message()
+        if final.stop_reason == "refusal":
+            yield sse("error", {"message": "The assistant can't help with that request."})
+        else:
+            yield sse("done", {"truncated": final.stop_reason == "max_tokens"})
+    except anthropic.APIError as e:
+        log.warning("chat failed: %s: %s", type(e).__name__, e)
+        yield sse("error", {"message": failure_message(e)})
+
+
+async def openrouter_events(system: list[dict], messages: list[dict], referer: str):
+    """OpenRouter's OpenAI-style chat completions, streamed (SSE `data:` lines, ending in [DONE])."""
+    body = {
+        "model": model(),
+        "max_tokens": MAX_TOKENS,
+        "stream": True,
+        # The instructions and the snapshot go in as one system message, as OpenAI-style models expect.
+        "messages": [{"role": "system", "content": "\n\n".join(b["text"] for b in system)}, *messages],
+    }
+    headers = {"Authorization": f"Bearer {api_key()}", "X-Title": "Phoenical"}
+    if referer:
+        headers["HTTP-Referer"] = referer  # shows the app on OpenRouter's dashboard; optional
+    finish = None
+    try:
+        async with http().stream("POST", OPENROUTER_URL, json=body, headers=headers) as r:
+            if r.status_code != 200:
+                detail = (await r.aread())[:500].decode("utf-8", "replace")
+                log.warning("chat failed: OpenRouter %s: %s", r.status_code, detail)
+                yield sse("error", {"message": openrouter_failure(r.status_code)})
+                return
+            async for line in r.aiter_lines():
+                if not line.startswith("data:"):
+                    continue  # blank lines and ": OPENROUTER PROCESSING" keep-alives
+                data = line[5:].strip()
+                if data == "[DONE]":
+                    break
+                chunk = json.loads(data)
+                if "error" in chunk:  # an error after the stream started arrives as a chunk
+                    err = chunk["error"]
+                    log.warning("chat failed: OpenRouter stream error: %s", err)
+                    code = err.get("code") if isinstance(err, dict) else None
+                    yield sse("error", {"message": openrouter_failure(code if isinstance(code, int) else 502)})
+                    return
+                for choice in chunk.get("choices") or []:
+                    text = (choice.get("delta") or {}).get("content")
+                    if text:  # reasoning models also send `reasoning` deltas; only the answer is shown
+                        yield sse("delta", {"text": text})
+                    finish = choice.get("finish_reason") or finish
+    except httpx2.TransportError as e:
+        log.warning("chat failed: %s: %s", type(e).__name__, e)
+        yield sse("error", {"message": "The server couldn't reach the assistant. Check its internet connection and try again."})
+        return
+    if finish == "content_filter":
+        yield sse("error", {"message": "The assistant can't help with that request."})
+    else:
+        yield sse("done", {"truncated": finish == "length"})
+
+
 @router.get("/chat/config", tags=["assistant"])
 async def chat_config():
     return {"enabled": enabled(), "model": model()}
@@ -192,7 +316,7 @@ async def chat_config():
 @router.post("/chat", tags=["assistant"])
 async def chat(body: ChatBody, request: Request):
     if not enabled():
-        raise HTTPException(503, "The assistant is not configured on this server (ANTHROPIC_API_KEY is not set).")
+        raise HTTPException(503, f"The assistant is not configured on this server ({key_var()} is not set).")
 
     messages = [{"role": m.role, "content": m.content} for m in body.messages]
     while messages and messages[0]["role"] != "user":  # a trimmed history may start mid-exchange
@@ -202,26 +326,15 @@ async def chat(body: ChatBody, request: Request):
     system = system_blocks(body.context)
     check_limits(request.client.host if request.client else "unknown")
 
+    if provider() == "openrouter":
+        source = openrouter_events(system, messages, request.headers.get("origin", ""))
+    else:
+        source = anthropic_events(system, messages)
+
     async def events():
         try:
-            async with client().messages.stream(
-                model=model(),
-                max_tokens=MAX_TOKENS,
-                system=system,
-                messages=messages,
-                # Short grounded answers: keep the model quick. Thinking stays adaptive (the default).
-                output_config={"effort": "low"},
-            ) as stream:
-                async for text in stream.text_stream:
-                    yield sse("delta", {"text": text})
-                final = await stream.get_final_message()
-            if final.stop_reason == "refusal":
-                yield sse("error", {"message": "The assistant can't help with that request."})
-            else:
-                yield sse("done", {"truncated": final.stop_reason == "max_tokens"})
-        except anthropic.APIError as e:
-            log.warning("chat failed: %s: %s", type(e).__name__, e)
-            yield sse("error", {"message": failure_message(e)})
+            async for chunk in source:
+                yield chunk
         except Exception:  # the stream has started, so the error has to travel inside it
             log.exception("chat failed")
             yield sse("error", {"message": "Something went wrong. Try again."})
