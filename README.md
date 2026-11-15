@@ -37,12 +37,30 @@ web/       VITE_API_URL=http://127.0.0.1:8000     <-  backend API
 
 ## Run it locally
 
-**With Docker** (database, API and website in one go; mounts `pipeline/data/export` and loads it on first start):
+**With Docker** (pipeline, database, API and website in one go):
 
 ```sh
-cp .env.example .env        # optional settings (Google sign-in, email); works as is
+cp .env.example .env        # optional settings (FIRMS key, Google sign-in, email); works as is
 docker compose up --build   # website http://localhost:5173 · API http://localhost:8010/docs
 ```
+
+What happens on every `docker compose up`:
+
+```
+pipeline-seed  copies the exports committed in git into the `pipeline-data` volume (seconds)
+     ├─► api       loads them and serves the website right away
+     └─► pipeline  NASA FIRMS up to yesterday → every region recomputed → new exports in the volume
+                   → writes pipeline_status.json → the api sees it and loads the new releases (no restart)
+```
+
+- The pipeline needs `FIRMS_MAP_KEY` in `.env` ([free key](https://firms.modaps.eosdis.nasa.gov/api/map_key/)).
+  Without it, or with `PIPELINE_RUN=0`, the site serves the committed exports.
+- The **first run** downloads every FIRMS archive (2000–2025) and this year's data through the area API: about
+  an hour. Downloads stay in the volume, so later runs fetch only the new days and then recompute.
+- `config.yaml`'s `coverage` is extended to what FIRMS reports as available (inside the container only), so
+  new months show up as data, not as "no data". S-NPP stays capped at the day it stopped sending data.
+- Follow it with `docker compose logs -f pipeline`; the last run's summary is `pipeline_status.json` in the volume.
+- `docker compose down -v` deletes the volume (and the database): the next start downloads everything again.
 
 **Without Docker** (needs PostgreSQL, [uv](https://docs.astral.sh/uv/) and Node 22):
 

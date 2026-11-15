@@ -5,6 +5,7 @@
 services:
   db:
     image: postgres:18
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-firecal}
@@ -18,11 +19,53 @@ services:
       timeout: 3s
       retries: 20
 
+  # ---- Data: pipeline -> shared volume -> backend -> website ----
+  # pipeline-seed (seconds): copies the exports committed in git into the `pipeline-data` volume, so the API
+  # starts with data right away.
+  # pipeline (scheduled): runs once if it never finished (the first run downloads every FIRMS archive and takes
+  # about an hour), then on day SCHEDULE_DAY of every month at SCHEDULE_HOUR_UTC. Each run fetches NASA FIRMS up
+  # to yesterday, recomputes every region into the volume and writes pipeline_status.json; the API watches that
+  # file and loads the new exports as releases, without a restart. State: schedule.json in the volume.
+  # The weather fetch in the api container follows the same schedule (state in the database, files in weather/).
+  # Without FIRMS_MAP_KEY in .env (or with PIPELINE_RUN=0) the pipeline keeps the committed exports.
+  # Progress: docker compose logs -f pipeline   (weather: docker compose logs -f api | grep weather)
+  pipeline-seed:
+    build: ./pipeline
+    image: firecal-pipeline
+    command: ["python", "tools/refresh.py", "seed"]
+    volumes:
+      - pipeline-data:/app/data
+      - ./pipeline/data/export:/seed:ro
+
+  pipeline:
+    build: ./pipeline
+    image: firecal-pipeline
+    command: ["python", "tools/refresh.py", "schedule"]
+    restart: unless-stopped
+    environment:
+      FIRMS_MAP_KEY: ${FIRMS_MAP_KEY:-}
+      PIPELINE_RUN: ${PIPELINE_RUN:-1}
+      SCHEDULE_DAY: ${SCHEDULE_DAY:-1}
+      SCHEDULE_HOUR_UTC: ${SCHEDULE_HOUR_UTC:-3}
+      SCHEDULE_RETRY_HOURS: ${SCHEDULE_RETRY_HOURS:-6}
+    volumes:
+      - pipeline-data:/app/data
+    depends_on:
+      pipeline-seed:
+        condition: service_completed_successfully
+
   api:
     build: ./backend
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-firecal}@db:5432/firecal
-      EXPORT_DIR: /data/export
+      EXPORT_DIR: /data/pipeline/export
+      PIPELINE_STATUS: /data/pipeline/pipeline_status.json
+      # Weather on the monthly schedule (firecal_api/schedule.py) instead of on every start.
+      WEATHER_SCHEDULE: "1"
+      SCHEDULE_DAY: ${SCHEDULE_DAY:-1}
+      SCHEDULE_HOUR_UTC: ${SCHEDULE_HOUR_UTC:-3}
+      SCHEDULE_RETRY_HOURS: ${SCHEDULE_RETRY_HOURS:-6}
       CORS_ORIGINS: http://localhost:${WEB_PORT:-5173},http://127.0.0.1:${WEB_PORT:-5173},http://127.0.0.1:47615
       # Meteomatics weather (see .env.example). Credentials stay in this container, never in the web build.
       METEOMATICS_USER: ${METEOMATICS_USER:-}
@@ -42,15 +85,28 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:-}
     volumes:
-      - ./pipeline/data/export:/data/export:ro
+      - pipeline-data:/data/pipeline:ro
       - ./weather:/data/weather
     ports:
       - "${API_PORT:-8010}:8000"
+    healthcheck:
+      # /health answers once the startup ingest is done and the server is up. Loading new regions can take
+      # several minutes (Turkey alone is ~10M cell-months), hence the long start period; already-loaded
+      # exports are skipped, so later starts are quick.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 1800s
+      start_interval: 5s
     depends_on:
       db:
         condition: service_healthy
+      pipeline-seed:
+        condition: service_completed_successfully
 
   web:
+    restart: unless-stopped
     build:
       context: ./web
       args:
@@ -63,3 +119,4 @@ services:
 
 volumes:
   pgdata:
+  pipeline-data:   # FIRMS downloads, intermediate files and the exports the API loads

@@ -163,6 +163,13 @@ async def cmd_weather_fetch(args) -> int:
         await conn.close()
 
 
+async def cmd_weather_schedule(args) -> int:
+    from .schedule import run_forever, weather_job
+
+    await run_forever("weather", weather_job, log=lambda m: print(m, flush=True))
+    return 0
+
+
 async def cmd_weather_export(args) -> int:
     from . import weather as W
 
@@ -255,6 +262,8 @@ def main() -> None:
     wf.add_argument("--dry-run", action="store_true", help="show what would be fetched, without sending requests")
     wf.add_argument("--wait-lock", type=float, default=0, metavar="SECONDS",
                     help="if another fetch is running, keep retrying this long instead of skipping (default: skip)")
+    sub.add_parser("weather-schedule",
+                   help="run weather-fetch now if it never finished, then monthly; saves to WEATHER_DIR (see schedule.py)")
     we = sub.add_parser("weather-export", help="write stored weather to <folder>/<region>.json")
     we.add_argument("folder")
     wi = sub.add_parser("weather-import", help="load <region>.json files written by weather-export")
@@ -279,7 +288,7 @@ def main() -> None:
     fn = {"init": cmd_init, "ingest": cmd_ingest, "releases": cmd_releases,
           "set-current": cmd_set_current, "delete-release": cmd_delete_release,
           "weather-check": cmd_weather_check, "weather-fetch": cmd_weather_fetch,
-          "weather-export": cmd_weather_export, "weather-import": cmd_weather_import,
+          "weather-schedule": cmd_weather_schedule, "weather-export": cmd_weather_export, "weather-import": cmd_weather_import,
           "send-alerts": cmd_send_alerts, "send-digest": cmd_send_digest, "send-outbox": cmd_send_outbox}[args.cmd]
     sys.exit(asyncio.run(fn(args)))
 

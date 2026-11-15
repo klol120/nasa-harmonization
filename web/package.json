@@ -29,5 +29,5 @@
     "vite": "^5.4.10"
   },
   "main": "electron/main.cjs",
-  "description": "Wel3a Burning Calendar: MODIS + VIIRS fire record (desktop app and website)"
+  "description": "Phoenical burning calendar: MODIS + VIIRS fire record (desktop app and website)"
 }

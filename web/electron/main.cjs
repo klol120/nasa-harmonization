@@ -1,4 +1,4 @@
-// Desktop shell for the Wel3a Burning Calendar.
+// Desktop shell for Phoenical, the burning calendar.
 // The built site (dist/) is served from a tiny local HTTP server on 127.0.0.1, so web workers,
 // lazy-loaded chunks and the URL-hash view state behave exactly as they do in a browser.
 const { app, BrowserWindow, shell } = require("electron");
@@ -59,7 +59,7 @@ async function createWindow() {
     minWidth: 900,
     minHeight: 600,
     backgroundColor: "#0a0d14",
-    title: "Wel3a · Burning Calendar",
+    title: "Phoenical · Burning Calendar",
     icon: path.join(DIST, "emblem.png"),
     autoHideMenuBar: true,
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },

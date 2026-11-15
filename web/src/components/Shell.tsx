@@ -67,8 +67,8 @@ interface SidebarProps {
   /** False until a region is open: its pages are greyed out. */
   hasRegion: boolean;
   regionCard?: React.ReactNode;
-  /** Filter groups for the current page (area, time…). */
-  filters?: React.ReactNode;
+  /** Filter groups for the current page (area, time…), shown one at a time as tabs. */
+  filters?: FilterTab[];
   account: React.ReactNode;
   collapsed: boolean;
   onCollapse: (c: boolean) => void;
@@ -90,11 +90,11 @@ export function AppSidebar(p: SidebarProps) {
               e.preventDefault();
               p.onPage("explore");
             }}
-            aria-label="Wel3a: world map"
+            aria-label="Phoenical: world map"
           >
             <img src="./emblem.png" alt="" width={30} height={30} />
             <span className="sb-brand-text">
-              <strong>Wel3a</strong>
+              <strong>Phoenical</strong>
               <small>Burning calendar</small>
             </span>
           </a>
@@ -106,39 +106,41 @@ export function AppSidebar(p: SidebarProps) {
           </button>
         </div>
 
-        <div className="sb-scroll">
-          {p.regionCard}
+        <div className="sb-body">
+          {/* Pinned: the open region and the page links stay put while the filters below scroll. */}
+          <div className="sb-pinned">
+            {p.regionCard}
 
-          <nav className="sb-nav" aria-label="Pages">
-            {NAV.map((g) => (
-              <div className="sb-nav-group" key={g.label}>
-                <span className="sb-label">{g.label}</span>
-                {g.pages.map((id) => {
-                  const off = id !== "explore" && !p.hasRegion;
-                  const on = p.page === id;
-                  return (
-                    <a
-                      key={id}
-                      href={off ? undefined : pageHref(id)}
-                      className={`sb-link${on ? " is-on" : ""}${off ? " is-off" : ""}`}
-                      aria-current={on ? "page" : undefined}
-                      aria-disabled={off || undefined}
-                      title={off ? "Pick a region on the world map first" : PAGE_LABEL[id]}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (!off) p.onPage(id);
-                      }}
-                    >
-                      <Icon page={id} />
-                      <span>{PAGE_LABEL[id]}</span>
-                    </a>
-                  );
-                })}
-              </div>
-            ))}
-          </nav>
+            <nav className="sb-nav" aria-label="Pages">
+              {NAV.map((g) => (
+                <div className="sb-nav-group" key={g.label} role="group" aria-label={g.label}>
+                  {g.pages.map((id) => {
+                    const off = id !== "explore" && !p.hasRegion;
+                    const on = p.page === id;
+                    return (
+                      <a
+                        key={id}
+                        href={off ? undefined : pageHref(id)}
+                        className={`sb-link${on ? " is-on" : ""}${off ? " is-off" : ""}`}
+                        aria-current={on ? "page" : undefined}
+                        aria-disabled={off || undefined}
+                        title={off ? "Pick a region on the world map first" : PAGE_LABEL[id]}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (!off) p.onPage(id);
+                        }}
+                      >
+                        <Icon page={id} />
+                        <span>{PAGE_LABEL[id]}</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              ))}
+            </nav>
+          </div>
 
-          {p.filters && <div className="sb-filters">{p.filters}</div>}
+          {p.filters && p.filters.length > 0 && <FilterTabs tabs={p.filters} />}
         </div>
 
         <div className="sb-foot">
@@ -150,27 +152,112 @@ export function AppSidebar(p: SidebarProps) {
   );
 }
 
-/** A collapsible group of filter panels in the sidebar. */
-export function SidebarGroup({ label, children, open = true }: { label: string; children: React.ReactNode; open?: boolean }) {
+export interface FilterTab {
+  id: string;
+  label: string;
+  content: React.ReactNode;
+}
+
+const TAB_PREF = "wel3a.filterTab";
+const readTab = () => {
+  try {
+    return localStorage.getItem(TAB_PREF);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * The page's filters as tabs: the tab row stays put and only the open group scrolls,
+ * so every control is one click away. Hidden panels stay mounted to keep their state.
+ */
+function FilterTabs({ tabs }: { tabs: FilterTab[] }) {
+  const [want, setWant] = useState(readTab);
+  const active = tabs.some((t) => t.id === want) ? want! : tabs[0].id;
+  const refs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const pick = (id: string, focus = false) => {
+    setWant(id);
+    try {
+      localStorage.setItem(TAB_PREF, id);
+    } catch {
+      // storage blocked: the choice lasts for this visit only
+    }
+    if (focus) refs.current[id]?.focus();
+  };
+  const onKey = (e: React.KeyboardEvent) => {
+    const i = tabs.findIndex((t) => t.id === active);
+    const to = ({ ArrowLeft: i - 1, ArrowRight: i + 1, Home: 0, End: tabs.length - 1 } as Record<string, number>)[e.key];
+    if (to === undefined) return;
+    e.preventDefault();
+    pick(tabs[(to + tabs.length) % tabs.length].id, true);
+  };
+
   return (
-    <details className="sb-group" open={open}>
-      <summary>
-        <span className="sb-label">{label}</span>
-        <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden>
-          <path d="m6 8 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </summary>
-      <div className="sb-group-body">{children}</div>
-    </details>
+    <div className="sb-filters">
+      <div className="seg seg-sm seg-full sb-tabs" role="tablist" aria-label="Filters" onKeyDown={onKey}>
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            ref={(el) => {
+              refs.current[t.id] = el;
+            }}
+            id={`sb-tab-${t.id}`}
+            role="tab"
+            aria-selected={t.id === active}
+            aria-controls={`sb-panel-${t.id}`}
+            tabIndex={t.id === active ? 0 : -1}
+            className={t.id === active ? "is-on" : ""}
+            onClick={() => pick(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <div className="sb-scroll">
+        {tabs.map((t) => (
+          <div key={t.id} id={`sb-panel-${t.id}`} className="sb-panel" role="tabpanel" aria-labelledby={`sb-tab-${t.id}`} hidden={t.id !== active}>
+            {t.content}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
-interface RegionCardProps {
+export interface DatasetSwitchProps {
   name: string;
   sources: DataSource[];
   sourceId: string;
   onSource: (id: string) => void;
   onImport: () => void;
+}
+
+/** The open region's name in the top bar, doubling as the dataset switcher. */
+function DatasetSwitch(p: DatasetSwitchProps) {
+  return (
+    <label className="ds-switch" title="Switch dataset">
+      <span className="sr-only">Dataset</span>
+      <span className="ds-switch-mark" aria-hidden>
+        {p.name.charAt(0)}
+      </span>
+      <span className="ds-switch-name">{p.name}</span>
+      <svg viewBox="0 0 20 20" width="13" height="13" aria-hidden>
+        <path d="m6 8 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <select value={p.sourceId} onChange={(e) => (e.target.value === "__import" ? p.onImport() : p.onSource(e.target.value))}>
+        {p.sources.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.kind === "upload" ? "File · " : ""}
+            {s.label}
+          </option>
+        ))}
+        <option value="__import">Load your own file…</option>
+      </select>
+    </label>
+  );
+}
+
+interface RegionCardProps {
   /** The last months of the record, oldest first, for the pulse strip. */
   pulse?: { i: number; value: number | null }[];
   selected?: number;
@@ -178,38 +265,14 @@ interface RegionCardProps {
   unit?: string;
 }
 
-/** The open region: its dataset switcher and a strip of its recent monthly fire activity. */
+/** A strip of the open region's recent monthly fire activity; click a bar to select that month. */
 export function RegionCard(p: RegionCardProps) {
   const pulse = p.pulse ?? [];
   const max = Math.max(1e-9, ...pulse.map((m) => m.value ?? 0));
   const cur = pulse.find((m) => m.i === p.selected);
+  if (pulse.length < 2) return null;
   return (
-    <section className="region-card" aria-label="Open region">
-      <label className="region-switch">
-        <span className="sr-only">Dataset</span>
-        <span className="region-switch-mark" aria-hidden>
-          {p.name.charAt(0)}
-        </span>
-        <span className="region-switch-text">
-          <b>{p.name}</b>
-          <small>Switch dataset</small>
-        </span>
-        <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden>
-          <path d="m6.5 8 3.5-3.5L13.5 8M6.5 12l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <select value={p.sourceId} onChange={(e) => (e.target.value === "__import" ? p.onImport() : p.onSource(e.target.value))}>
-          {p.sources.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.kind === "upload" ? "File · " : ""}
-              {s.label}
-            </option>
-          ))}
-          <option value="__import">Load your own file…</option>
-        </select>
-      </label>
-
-      {pulse.length > 1 && (
-        <div className="pulse-strip">
+    <section className="region-card" aria-label="Recent fire activity">
           <div className="pulse-head">
             <span>Last {pulse.length} months</span>
             {cur && (
@@ -231,15 +294,14 @@ export function RegionCard(p: RegionCardProps) {
               />
             ))}
           </div>
-        </div>
-      )}
     </section>
   );
 }
 
 interface TopBarProps {
   page: Page;
-  regionName?: string;
+  /** The open region; its name in the breadcrumb switches datasets. */
+  dataset?: DatasetSwitchProps;
   onMenu: () => void;
   onPage: (p: Page) => void;
   exports: ExportAction[] | null;
@@ -273,17 +335,9 @@ export function TopBar(p: TopBarProps) {
       </button>
 
       <nav className="crumbs" aria-label="Breadcrumb">
-        {p.regionName && p.page !== "explore" ? (
+        {p.dataset && p.page !== "explore" ? (
           <>
-            <a
-              href={pageHref("overview")}
-              onClick={(e) => {
-                e.preventDefault();
-                p.onPage("overview");
-              }}
-            >
-              {p.regionName}
-            </a>
+            <DatasetSwitch {...p.dataset} />
             <span aria-hidden>/</span>
           </>
         ) : null}
@@ -355,11 +409,10 @@ export function TopBar(p: TopBarProps) {
 function ThemeSwitch() {
   const [, setTheme, choice] = useTheme();
   const opt = (t: ThemeChoice, label: string, icon: React.ReactNode) => (
-    <button role="radio" aria-checked={choice === t} className={choice === t ? "is-on" : ""} onClick={() => setTheme(t)} title={t === "auto" ? "Match the system appearance" : `${label} appearance`}>
+    <button role="radio" aria-checked={choice === t} aria-label={label} className={choice === t ? "is-on" : ""} onClick={() => setTheme(t)} title={t === "auto" ? "Auto: match the system appearance" : `${label} appearance`}>
       <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden>
         {icon}
       </svg>
-      <span>{label}</span>
     </button>
   );
   return (

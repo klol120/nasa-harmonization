@@ -12,7 +12,7 @@ import { type DrawMode, type LayerState, MapView } from "./components/MapView";
 import { MethodsPage } from "./components/MethodsPage";
 import { SeasonStrip } from "./components/SeasonStrip";
 import { AreaPanel, DatePanel, EventsPanel, LayersPanel, PerformancePanel } from "./components/SidePanels";
-import { AppSidebar, type ExportAction, PAGE_LABEL, RegionCard, SidebarGroup, TopBar } from "./components/Shell";
+import { AppSidebar, type ExportAction, type FilterTab, PAGE_LABEL, RegionCard, TopBar } from "./components/Shell";
 import { type Command, CommandPalette, MOD_KEY } from "./components/CommandPalette";
 import { YearCompare } from "./charts/YearCompare";
 import { Timeline } from "./components/Timeline";
@@ -461,7 +461,7 @@ export default function App() {
   const share = async () => {
     if (source?.kind !== "api") return flash("Files loaded in this browser can't be shared as a link");
     const url = window.location.href;
-    const title = `${meta?.name ?? "Wel3a"} · burning calendar`;
+    const title = `${meta?.name ?? "Phoenical"} · burning calendar`;
     try {
       if (navigator.share && window.matchMedia("(pointer: coarse)").matches) await navigator.share({ title, url });
       else {
@@ -484,7 +484,7 @@ export default function App() {
     estimates: meta?.estimate_until ? `harmonized values up to ${meta.estimate_until} are modelled from MODIS, not detections` : "",
     exported: new Date().toISOString(),
   });
-  const base = () => `wel3a_${slug(meta?.id ?? "data")}_${slug(area?.name ?? "area")}_${ymKey(r[0])}_${ymKey(r[1])}`;
+  const base = () => `phoenical_${slug(meta?.id ?? "data")}_${slug(area?.name ?? "area")}_${ymKey(r[0])}_${ymKey(r[1])}`;
 
   const exportsList: ExportAction[] = [
     {
@@ -609,7 +609,7 @@ export default function App() {
   );
 
   /** Sidebar + top bar around a page's content. */
-  const shell = (content: React.ReactNode, filters?: React.ReactNode) => (
+  const shell = (content: React.ReactNode, filters?: FilterTab[]) => (
     <div className={`app${sidebarCollapsed ? " sb-collapsed" : ""}`}>
       <AppSidebar
         page={shownPage}
@@ -618,11 +618,6 @@ export default function App() {
         regionCard={
           source ? (
             <RegionCard
-              name={meta && dsSource === sourceId ? meta.name : source.label}
-              sources={sources}
-              sourceId={source.id}
-              onSource={setSourceId}
-              onImport={() => setImportOpen(true)}
               pulse={a && ready ? a.series.filter((p) => p.i <= r[1]).slice(-36).map((p) => ({ i: p.i, value: p.value })) : undefined}
               selected={sel}
               onSelect={selectMonth}
@@ -640,7 +635,17 @@ export default function App() {
       <div className={`shell-main${shownPage === "explore" ? " is-explore" : ""}`}>
         <TopBar
           page={shownPage}
-          regionName={meta && dsSource === sourceId ? meta.name : undefined}
+          dataset={
+            source
+              ? {
+                  name: meta && dsSource === sourceId ? meta.name : source.label,
+                  sources,
+                  sourceId: source.id,
+                  onSource: setSourceId,
+                  onImport: () => setImportOpen(true),
+                }
+              : undefined
+          }
           onMenu={() => setMobileNav(true)}
           onPage={navigate}
           exports={regionPage && ready ? exportsList : null}
@@ -1102,53 +1107,63 @@ export default function App() {
     );
   else if (page === "methods") other = <MethodsPage meta={m} sourceLabel={source?.label ?? ""} />;
 
-  const filters = withSidebar ? (
-    <>
-      <SidebarGroup label="Area">
-        <AreaPanel
-          meta={m}
-          whole={whole!}
-          area={ar}
-          cellCount={cellCount}
-          onArea={onArea}
-          drawMode={drawMode}
-          setDrawMode={(dm) => {
-            // Drawing happens on the map.
-            if (dm !== "none" && !onOverview) navigate("overview");
-            setMobileNav(false);
-            setDrawMode(dm);
-          }}
-          excludePersistent={excludePersistent}
-          onExcludePersistent={setExcludePersistent}
-        />
-        <MyAreasPanel region={m.id} area={ar} isWhole={isWhole} excludePersistent={excludePersistent} onOpen={onArea} onFlash={flash} />
-      </SidebarGroup>
-      <SidebarGroup label="Time">
-        <DatePanel meta={m} range={r} onRange={setRange} bounds={bounds} />
-        <EventsPanel
-          documented={documented}
-          activeId={activeEvent}
-          // Spikes that are already explained by a documented event are not listed twice.
-          events={an.events.filter((e) => !(e.id.startsWith("anom-") && documented.some((d) => d.i === e.i)))}
-          onJump={(e) => {
-            if (e.i === undefined) return;
-            setSelected(e.i);
-            setWindowMode(e.year !== undefined ? "year" : "month");
-            setActiveEvent(e.id);
-            setFocus(e.loc ? { ...e.loc, key: `${e.id}-${Date.now()}` } : null);
-          }}
-        />
-      </SidebarGroup>
-      {onOverview && (
-        <SidebarGroup label="Map layers">
-          <LayersPanel layers={layers} setLayers={setLayers} detections={hasDetections} />
-        </SidebarGroup>
-      )}
-      <SidebarGroup label="Display" open={false}>
-        <PerformancePanel animations={animations} onAnimations={setAnimationsState} showData={showData} onShowData={setShowData} />
-      </SidebarGroup>
-    </>
-  ) : undefined;
+  const filters: FilterTab[] | undefined = withSidebar
+    ? [
+        {
+          id: "area",
+          label: "Area",
+          content: (
+            <>
+              <AreaPanel
+                meta={m}
+                whole={whole!}
+                area={ar}
+                cellCount={cellCount}
+                onArea={onArea}
+                drawMode={drawMode}
+                setDrawMode={(dm) => {
+                  // Drawing happens on the map.
+                  if (dm !== "none" && !onOverview) navigate("overview");
+                  setMobileNav(false);
+                  setDrawMode(dm);
+                }}
+                excludePersistent={excludePersistent}
+                onExcludePersistent={setExcludePersistent}
+              />
+              <MyAreasPanel region={m.id} area={ar} isWhole={isWhole} excludePersistent={excludePersistent} onOpen={onArea} onFlash={flash} />
+            </>
+          ),
+        },
+        {
+          id: "time",
+          label: "Time",
+          content: (
+            <>
+              <DatePanel meta={m} range={r} onRange={setRange} bounds={bounds} />
+              <EventsPanel
+                documented={documented}
+                activeId={activeEvent}
+                // Spikes that are already explained by a documented event are not listed twice.
+                events={an.events.filter((e) => !(e.id.startsWith("anom-") && documented.some((d) => d.i === e.i)))}
+                onJump={(e) => {
+                  if (e.i === undefined) return;
+                  setSelected(e.i);
+                  setWindowMode(e.year !== undefined ? "year" : "month");
+                  setActiveEvent(e.id);
+                  setFocus(e.loc ? { ...e.loc, key: `${e.id}-${Date.now()}` } : null);
+                }}
+              />
+            </>
+          ),
+        },
+        ...(onOverview ? [{ id: "layers", label: "Layers", content: <LayersPanel layers={layers} setLayers={setLayers} detections={hasDetections} /> }] : []),
+        {
+          id: "display",
+          label: "Display",
+          content: <PerformancePanel animations={animations} onAnimations={setAnimationsState} showData={showData} onShowData={setShowData} />,
+        },
+      ]
+    : undefined;
 
   return shell(
     <div className="page-wrap">
