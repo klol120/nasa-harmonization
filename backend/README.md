@@ -177,6 +177,22 @@ training and publication scope. Omit `--save` for a local backtest and report. S
 baselines are stored as regional totals, and the website labels forecast months and shows their
 whole-region outlook without placing detection markers on the map.
 
+### Azure outlook refresh
+
+The API deployment creates or updates the `phoenical-outlook` Container Apps job and starts one
+execution immediately. The deployment verifies that the public API returns six forecast months
+for Lebanon. The job uses the current PostgreSQL calendar releases and completed, non-demo live
+months with calibrated coverage. It writes model runs and predictions in one transaction.
+
+Azure wakes the job at 05:00 UTC each day. The job checks the data every 15 days, with the last
+successful check recorded in PostgreSQL. A failed check can retry the next day. An unchanged
+issue month reuses its published forecasts. A deployment can check immediately through
+`--on-deploy`. Run an equivalent check against a local database with:
+
+```sh
+uv run --frozen --group ml python -m firecal_api.outlook_job --on-deploy
+```
+
 - **Train** from the `ml_cell_month` view, for example with polars:
   `pl.read_database_uri("select * from ml_cell_month where region_id = 'lebanon'", DATABASE_URL)`.
 - **Write** results with `firecal_api.ml.save_run(...)`. It records the run against the release it was

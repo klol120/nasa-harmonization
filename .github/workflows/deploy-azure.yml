@@ -32,6 +32,7 @@ env:
   API_APP: wel3a-api
   WEB_APP: wel3a-web
   LIVE_APP: wel3a-live-be616
+  OUTLOOK_JOB: phoenical-outlook
   API_URL: https://api.phoenical.earth
   WEB_URL: https://www.phoenical.earth
 
@@ -53,6 +54,7 @@ jobs:
           filters: |
             backend:
               - 'backend/**'
+              - 'infra/azure/deploy-outlook-job.py'
               - '.github/workflows/deploy-azure.yml'
             web:
               - 'web/**'
@@ -105,6 +107,24 @@ jobs:
             sleep 10
           done
           echo "API did not become healthy" >&2; exit 1
+      - name: Start the scheduled outlook and verify publication
+        run: |
+          execution=$(python3 infra/azure/deploy-outlook-job.py \
+            "$RESOURCE_GROUP" "$API_APP" "$OUTLOOK_JOB" "$ACR_NAME.azurecr.io/firecal-api:${GITHUB_SHA::7}")
+          echo "Outlook execution: $execution"
+          for _ in $(seq 1 75); do
+            status=$(az containerapp job execution show -g "$RESOURCE_GROUP" -n "$OUTLOOK_JOB" \
+              --job-execution-name "$execution" --query properties.status -o tsv || true)
+            case "$status" in
+              Succeeded)
+                curl -fsS -m 20 "$API_URL/regions/lebanon/predictions?model_name=outlook-hgb" \
+                  | jq -e '.months | length == 6'
+                exit 0 ;;
+              Failed|Stopped) echo "Outlook execution $status" >&2; exit 1 ;;
+            esac
+            sleep 12
+          done
+          echo "Outlook execution did not finish before verification timed out" >&2; exit 1
 
   web:
     needs: changes

@@ -460,10 +460,14 @@ def evaluate(rows: list[dict], method: str, band: tuple[float, float] | None) ->
 
 
 def run(export_dir: Path, out_dir: Path, names: list[str] | None = None, log=print) -> dict:
-    t0 = time.time()
     regions = [load_region(p) for p in country_regions(export_dir, names)]
     if not regions:
         raise ValueError(f"No matching export regions in {export_dir}")
+    return run_regions(regions, out_dir, log)
+
+
+def run_regions(regions: list[Region], out_dir: Path | None = None, log=print) -> dict:
+    t0 = time.time()
     log(f"loaded {len(regions)} regions: " + ", ".join(f"{R.name} ({len(R.cells)} cells)" for R in regions))
 
     def months_in(R, y0, y1):
@@ -547,16 +551,18 @@ def run(export_dir: Path, out_dir: Path, names: list[str] | None = None, log=pri
         live[R.name] = {**info, "_cells": cells, "_cell_ids": R.cells}
         report["live"][R.name] = info
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    data_key = hashlib.sha256(json.dumps(report["export_fingerprints"], sort_keys=True).encode()).hexdigest()
-    artifact = out_dir / f"outlook-{MODEL_VERSION}-{data_key}.pkl"
-    with artifact.open("wb") as f:
-        pickle.dump({"estimator": m_live.est, "feature_columns": m_live.cols,
-                     "features": FEATURES, "regions": [R.name for R in regions],
-                     "blends": blends, "bands": bands, "methods": methods, "version": MODEL_VERSION}, f)
-    report["artifact"] = artifact.name
-    (out_dir / "outlook-report.json").write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
-    log(f"done in {time.time() - t0:.0f}s -> {out_dir}")
+    artifact = None
+    if out_dir is not None:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        data_key = hashlib.sha256(json.dumps(report["export_fingerprints"], sort_keys=True).encode()).hexdigest()
+        artifact = out_dir / f"outlook-{MODEL_VERSION}-{data_key}.pkl"
+        with artifact.open("wb") as f:
+            pickle.dump({"estimator": m_live.est, "feature_columns": m_live.cols,
+                         "features": FEATURES, "regions": [R.name for R in regions],
+                         "blends": blends, "bands": bands, "methods": methods, "version": MODEL_VERSION}, f)
+        report["artifact"] = artifact.name
+        (out_dir / "outlook-report.json").write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
+    log(f"trained and evaluated in {time.time() - t0:.0f}s")
     return {"report": report, "live": live, "artifact": artifact}
 
 
@@ -596,7 +602,6 @@ async def has_due_exports(folders: list[Path], database_url: str) -> bool:
 
 async def save(live: dict, report: dict, database_url: str, artifact_uri: str | None = None, *, if_due=False, log=print) -> None:
     """Publish atomically against the exact current exports used to train the shared model."""
-    from . import ml
     from .db import connect
 
     conn = await connect(database_url)
@@ -623,29 +628,35 @@ async def save(live: dict, report: dict, database_url: str, artifact_uri: str | 
                     release_id, MODEL_NAME, MODEL_VERSION,
                 ):
                     continue
-                cell_rows = [(cid, ym, float(v), None, None)
-                             for ym, p in L["_cells"] for cid, v in zip(L["_cell_ids"], p) if v >= 0.005]
-                selection = report["selection"]
-                metrics = {
-                    "test": report["test"]["regions"][name], "confirmation": report["confirmation"]["regions"][name],
-                    "method_evaluation": report["method_evaluation"][name], "test_years": report["test_years"],
-                    "method_years": selection["method_years"], "issued_after": L["issued_after"],
-                    "method": L["method_label"], "method_kind": L["method"], "blend": selection["blends"][name],
-                    "monthly_comparison": {m["ym"]: {"candidate": m["candidate"], "method": m["method"]} for m in L["months"]},
-                }
-                run_id = await ml.save_run(
-                    conn, region=name, model_name=MODEL_NAME, model_version=MODEL_VERSION, release_id=release_id,
-                    region_predictions=[(m["ym"], m["value"], m["value_low"], m["value_high"]) for m in L["months"]],
-                    cell_predictions=cell_rows,
-                    params={"features": report["features"], "horizons": list(HORIZONS),
-                            "candidate": selection["candidate"], "export_fingerprints": fingerprints,
-                            "fitted_through": report["fitted_through"]["live"]},
-                    metrics=metrics, artifact_uri=artifact_uri,
-                    notes="Method and prediction ranges selected on issue-date backtests for 2022–2023.",
-                )
-                log(f"{name}: saved run {run_id} on release {release_id} ({len(L['months'])} months, {len(cell_rows)} cell values)")
+                await write_run(conn, name, release_id, L, report, {"export_fingerprints": fingerprints}, artifact_uri, log)
     finally:
         await conn.close()
+
+
+async def write_run(conn, name, release_id, L, report, provenance, artifact_uri=None, log=print):
+    from . import ml
+
+    cell_rows = [(cid, ym, float(v), None, None)
+                 for ym, p in L["_cells"] for cid, v in zip(L["_cell_ids"], p) if v >= 0.005]
+    selection = report["selection"]
+    metrics = {
+        "test": report["test"]["regions"][name], "confirmation": report["confirmation"]["regions"][name],
+        "method_evaluation": report["method_evaluation"][name], "test_years": report["test_years"],
+        "method_years": selection["method_years"], "issued_after": L["issued_after"],
+        "method": L["method_label"], "method_kind": L["method"], "blend": selection["blends"][name],
+        "monthly_comparison": {m["ym"]: {"candidate": m["candidate"], "method": m["method"]} for m in L["months"]},
+    }
+    run_id = await ml.save_run(
+        conn, region=name, model_name=MODEL_NAME, model_version=MODEL_VERSION, release_id=release_id,
+        region_predictions=[(m["ym"], m["value"], m["value_low"], m["value_high"]) for m in L["months"]],
+        cell_predictions=cell_rows,
+        params={"features": report["features"], "horizons": list(HORIZONS),
+                "candidate": selection["candidate"], **provenance,
+                "fitted_through": report["fitted_through"]["live"]},
+        metrics=metrics, artifact_uri=artifact_uri,
+        notes="Method and prediction ranges selected on issue-date backtests for 2022–2023.",
+    )
+    log(f"{name}: saved run {run_id} on release {release_id} ({len(L['months'])} months, {len(cell_rows)} cell values)")
 
 
 def main(argv: list[str] | None = None) -> int:

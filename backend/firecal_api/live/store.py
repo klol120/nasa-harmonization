@@ -26,6 +26,17 @@ _CELL_MONTH_LIVE = """(
            on lr.region_id = ${r} and lr.demo = ${d} and lr.ym = cm.ym and lr.release_id = cm.release_id
     left join live_cell_month lc
            on lc.region_id = ${r} and lc.demo = ${d} and lc.ym = cm.ym and lc.cell_key = cm.cell_key and lr.ym is not null
+    union all
+    select lr.release_id, rc.cell_key, lr.ym, null::smallint,
+           coalesce(lc.viirs_raw, 0)::smallint, coalesce(lc.noaa20_raw, 0)::smallint,
+           coalesce(lc.harmonized, 0)::real, coalesce(lc.harmonized_low, 0)::real,
+           coalesce(lc.harmonized_high, 0)::real, lc.anomaly_z
+    from live_region_month lr
+    join release r on r.release_id = lr.release_id and lr.ym > r.last_month
+    join release_cell rc on rc.release_id = lr.release_id
+    left join live_cell_month lc on lc.region_id = lr.region_id and lc.demo = lr.demo
+         and lc.ym = lr.ym and lc.cell_key = rc.cell_key
+    where lr.region_id = ${r} and lr.demo = ${d}
 ) cm"""
 
 
@@ -254,7 +265,7 @@ async def sync(conn: asyncpg.Connection, dirty: set[tuple[str, date]] | None = N
     for rel in await current_releases(conn, regions):
         region, rid = rel["region_id"], rel["release_id"]
         first = live_first_month(rel)
-        last = min(cov.replace(day=1), rel["last_month"])
+        last = cov.replace(day=1)
         months = month_range(first, last) if first <= last else []
         have = {
             (r["ym"], r["demo"]): r

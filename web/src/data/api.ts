@@ -378,7 +378,7 @@ export function apiSource(summary: RegionSummary): DataSource {
       const key = SERIES_KEY[cq.sensor];
       const out: CellValues = new Map();
       const first = parseYm(summary.first_month);
-      const last = parseYm(summary.last_month);
+      const last = parseYm((await getMonthly()).at(-1)?.ym ?? summary.last_month);
       const from = Math.max(cq.from, first);
       const to = Math.min(cq.to, last);
       for (let year = Math.floor(from / 12); year <= Math.floor(to / 12); year++) {

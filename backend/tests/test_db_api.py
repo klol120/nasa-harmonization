@@ -304,3 +304,78 @@ def test_noaa20_continuation(client):
         assert (r["source"] is None) == (not r["data_available"])
     cal = client.get("/regions/lebanon/calendar", params={"from": switch, "to": switch}).json()
     assert sum(x["noaa20_raw"] or 0 for x in cal) == rows[switch]["noaa20_raw"]
+
+
+def test_completed_live_month_after_archive_is_used_by_api_and_outlook(client, loaded):
+    from datetime import date
+
+    from firecal_api.db import connect
+    from firecal_api.live import harmonize as H
+
+    ym = date(2027, 1, 1)
+
+    async def seed():
+        conn = await connect(TEST_DB_URL)
+        try:
+            key, cid = await conn.fetchrow(
+                "select rc.cell_key, c.cell_id from release_cell rc join cell c using (cell_key) "
+                "where rc.release_id = $1 order by rc.cell_key limit 1", loaded.release_id,
+            )
+            await conn.execute(
+                """insert into live_region_month
+                   (region_id, ym, demo, release_id, viirs_raw, harmonized, harmonized_low, harmonized_high,
+                    through, partial_month, sensors, harmonization, n_detections)
+                   values ('lebanon', $1, false, $2, 0, 2.5, 2, 3, $3, false, $4, $5, 3)""",
+                ym, loaded.release_id, date(2027, 1, 31), {"NOAA20": 3}, H.VERSION,
+            )
+            await conn.execute(
+                """insert into live_cell_month
+                   (region_id, ym, demo, cell_key, viirs_raw, noaa20_raw, harmonized, harmonized_low, harmonized_high)
+                   values ('lebanon', $1, false, $2, 0, 3, 2.5, 2, 3)""", ym, key,
+            )
+            return cid
+        finally:
+            await conn.close()
+
+    cid = run(seed())
+    try:
+        monthly = client.get("/regions/lebanon/monthly?live=1").json()
+        assert monthly[-1]["ym"] == "2027-01"
+        assert monthly[-1]["harmonized"] == 2.5
+        assert monthly[-1]["partial_month"] is False
+        archived = client.get("/regions/lebanon/monthly").json()
+        assert archived[-1]["ym"] == "2026-12"
+        series = client.get("/regions/lebanon/series/2027?live=1").json()
+        assert series["cells"][cid]["h"] == [2.5]
+        subset = client.post("/regions/lebanon/aggregate?live=1", json={"cell_ids": [cid], "from": "2027-01"})
+        assert subset.json()["months"][0]["harmonized"] == 2.5
+
+        pytest.importorskip("numpy")
+        from firecal_api import outlook_job as job
+
+        async def check_worker():
+            conn = await connect(TEST_DB_URL)
+            try:
+                async with conn.transaction(readonly=True):
+                    release = await conn.fetchrow("select * from release where release_id = $1", loaded.release_id)
+                    before = await job.input_months(conn, release, date(2027, 1, 1))
+                    assert before.issue == "2026-10"
+                    source = await job.input_months(conn, release, date(2027, 2, 1))
+                    assert source.issue == "2027-01"
+                    region = await job.load_region(conn, release, source)
+                    assert region.V[region.cells.index(cid), region.last_ok] == 2.5
+                    assert region.V[:, region.last_ok].sum() == 2.5
+            finally:
+                await conn.close()
+
+        run(check_worker())
+    finally:
+        async def remove_live_month():
+            conn = await connect(TEST_DB_URL)
+            try:
+                await conn.execute("delete from live_cell_month where region_id = 'lebanon' and ym = $1", ym)
+                await conn.execute("delete from live_region_month where region_id = 'lebanon' and ym = $1", ym)
+            finally:
+                await conn.close()
+
+        run(remove_live_month())

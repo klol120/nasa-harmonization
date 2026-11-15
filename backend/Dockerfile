@@ -12,11 +12,11 @@ WORKDIR /app
 
 # Dependencies first so code changes don't reinstall them.
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-dev --group ml --no-install-project
 
 COPY firecal_api ./firecal_api
 COPY README.md ./
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --group ml
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

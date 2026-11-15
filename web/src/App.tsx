@@ -313,7 +313,20 @@ export default function App() {
   }, [weatherRegion, reloadKey, liveKey]);
 
   // ---- derived analytics ----------------------------------------------
-  const bounds = useMemo(() => (meta ? metaBounds(meta) : ([0, 0] as [number, number])), [meta]);
+  const bounds = useMemo((): [number, number] => {
+    if (!meta) return [0, 0];
+    const [first, last] = metaBounds(meta);
+    const end = areaSeries?.months.reduce((end, m) => m.values.harmonized !== null ? Math.max(end, m.i) : end, last);
+    return [first, end ?? last];
+  }, [meta, areaSeries]);
+  const previousEnd = useRef({ source: dsSource, month: bounds[1] });
+  useEffect(() => {
+    const previous = previousEnd.current;
+    previousEnd.current = { source: dsSource, month: bounds[1] };
+    if (previous.source === dsSource && bounds[1] > previous.month) {
+      setRange((current) => current?.[1] === previous.month ? [current[0], bounds[1]] : current);
+    }
+  }, [dsSource, bounds[1]]);
   const r: [number, number] = range ?? bounds;
   const regionOutlook = forecast?.region === weatherRegion && dsSource === sourceId ? forecast : null;
   const latestComplete = useMemo(() => {

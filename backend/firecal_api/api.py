@@ -126,9 +126,9 @@ async def live_mode(c: asyncpg.Connection, r: asyncpg.Record, live: bool, demo: 
     return on, (await L.use_demo(c, r["region_id"], demo) if on else False)
 
 
-def month_bounds(frm: str | None, to: str | None, rel: asyncpg.Record) -> tuple[date, date]:
+def month_bounds(frm: str | None, to: str | None, rel: asyncpg.Record, last: date | None = None) -> tuple[date, date]:
     a = C.parse_ym(frm) if frm else rel["first_month"]
-    b = C.parse_ym(to) if to else rel["last_month"]
+    b = C.parse_ym(to) if to else (last or rel["last_month"])
     if a > b:
         raise HTTPException(400, "'from' is after 'to'")
     return a, b
@@ -191,6 +191,13 @@ async def region_months(c: asyncpg.Connection, r: asyncpg.Record, live: bool, de
     if live:
         lv = await L.region_months(c, r["region_id"], r["release_id"], demo)
         months = [L.overlay_month(m, lv.get(m["ym"])) for m in months]
+        months.extend(
+            L.overlay_month({
+                "ym": ym, "modis_raw": None, "display_only": True,
+                "n_cells": r["n_cells"], "n_persistent_cells": r["n_persistent_cells"],
+            }, row)
+            for ym, row in lv.items() if ym > r["last_month"]
+        )
     return months
 
 
@@ -247,14 +254,16 @@ async def series(region: RegionId, year: int, request: Request, c: Conn, release
     live, demo = await live_mode(c, r, live, demo)
     # A year holding live months changes as detections arrive: its cache entry is tied to the live version.
     live_version = None
+    last_month = r["last_month"]
     if live:
         lv = await L.region_months(c, region, rid, demo)
         if any(m.year == year for m in lv):
             live_version = (demo, max(m["updated_at"] for m in lv.values()))
+            last_month = max(last_month, max(lv))
     cache = request.app.state.series
     key = (rid, year, live_version)
     if key not in cache:
-        months = [m for m in C.month_range(r["first_month"], r["last_month"]) if m.year == year]
+        months = [m for m in C.month_range(r["first_month"], last_month) if m.year == year]
         if not months:
             raise HTTPException(404, f"{year} is outside {C.ym_str(r['first_month'])}..{C.ym_str(r['last_month'])}")
         ids = {x["cell_key"]: x["cell_id"] for x in await region_cells(request, c, rid)}
@@ -455,7 +464,7 @@ async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, r
         cell_ids=set(q.cell_ids) if q.cell_ids is not None else None,
         bbox=q.bbox, polygon=q.polygon, exclude_persistent=q.exclude_persistent, live=live, demo=demo,
     )
-    a, b = month_bounds(q.frm, q.to, r)
+    a, b = month_bounds(q.frm, q.to, r, C.parse_ym(months[-1]["ym"]) if live and months else None)
     out = [m for m in months if C.ym_str(a) <= m["ym"] <= C.ym_str(b)]
     return jsonr({
         "region": region,
