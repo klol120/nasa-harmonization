@@ -35,6 +35,7 @@ import {
   ymYear,
 } from "./data/contract";
 import { type RegionSummary, type RegionWeather, apiSource, getWeather, listRegions } from "./data/api";
+import { LiveBadge } from "./components/LiveBadge";
 import { WeatherCard } from "./components/WeatherCard";
 import type { CellValues, DataSource } from "./data/sources";
 import { WorldPicker } from "./components/WorldPicker";
@@ -92,6 +93,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  // Bumped when the live pipeline delivered new data: reloads the numbers without resetting the view.
+  const [liveKey, setLiveKey] = useState(0);
+  const [demo, setDemo] = useState(false);
   const [areaSeries, setAreaSeries] = useState<AreaSeries | null>(null);
   const [seriesError, setSeriesError] = useState<string | null>(null);
   const [excludePersistent, setExcludePersistent] = useState(false);
@@ -174,6 +178,14 @@ export default function App() {
   );
 
   const source = sources.find((s) => s.id === sourceId);
+  // The demo replay is a per-visit choice: leaving a region switches it off again.
+  useEffect(
+    () => () => {
+      source?.refresh?.({ demo: false });
+      setDemo(false);
+    },
+    [source],
+  );
 
   // ---- regions on the data server ---------------------------------------
   useEffect(() => {
@@ -254,7 +266,7 @@ export default function App() {
       .then((s) => !ctl.signal.aborted && setAreaSeries(s))
       .catch((e) => !ctl.signal.aborted && (e as Error).name !== "AbortError" && setSeriesError(e instanceof Error ? e.message : String(e)));
     return () => ctl.abort();
-  }, [source, meta, dsSource, area, isWhole, metric, excludePersistent, reloadKey]);
+  }, [source, meta, dsSource, area, isWhole, metric, excludePersistent, reloadKey, liveKey]);
 
   // ---- past weather at the region's hotspots (API regions only) ----
   const [weather, setWeather] = useState<RegionWeather | null>(null);
@@ -340,7 +352,7 @@ export default function App() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, meta, dsSource, sensor, metric, win[0], win[1], excludePersistent]);
+  }, [source, meta, dsSource, sensor, metric, win[0], win[1], excludePersistent, liveKey]);
 
   // One colour/height scale for every month (or year) of the range, so the map can be compared
   // through time: the largest per-window 98th-percentile cell value. Without it each window would
@@ -368,7 +380,7 @@ export default function App() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, meta, dsSource, sensor, metric, r[0], r[1], windowMode, excludePersistent]);
+  }, [source, meta, dsSource, sensor, metric, r[0], r[1], windowMode, excludePersistent, liveKey]);
 
   // What the map is showing, in words: estimates must never pass for detections (data contract).
   const mapNote = useMemo(() => {
@@ -651,6 +663,25 @@ export default function App() {
           exports={regionPage && ready ? exportsList : null}
           onSearch={() => setPaletteOpen(true)}
           onShare={regionPage && ready && source?.kind === "api" ? share : undefined}
+          live={
+            regionPage && ready && meta && source?.kind === "api" && source.refresh ? (
+              <LiveBadge
+                region={meta.id}
+                demo={demo}
+                onDemo={(on) => {
+                  source.refresh?.({ demo: on });
+                  setDemo(on);
+                  setLiveKey((k) => k + 1);
+                  flash(on ? "Demo replay on: simulated detections are included" : "Demo replay off");
+                }}
+                onChange={(fromYear) => {
+                  source.refresh?.({ fromYear });
+                  setLiveKey((k) => k + 1);
+                  flash("New satellite detections: figures updated");
+                }}
+              />
+            ) : undefined
+          }
           data={
             dataPage
               ? {
