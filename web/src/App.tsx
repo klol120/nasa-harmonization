@@ -482,7 +482,11 @@ export default function App() {
     setSelected(Math.max(r[0], Math.min(r[1], i)));
     setWindowMode("month");
   };
-  const stepMonths = (d: number) => setSelected(Math.max(r[0], Math.min(r[1], sel + d)));
+  // The arrows (top bar, "This month vs normal" card, keyboard) step by what the map shows: a year
+  // when the Overview map shows a whole year, otherwise a month. The month of the year is kept.
+  const stepUnit: "month" | "year" = onOverview && windowMode === "year" ? "year" : "month";
+  const stepPeriod = (d: number) => setSelected(Math.max(r[0], Math.min(r[1], sel + d * (stepUnit === "year" ? 12 : 1))));
+  const canStep: [boolean, boolean] = stepUnit === "year" ? [ymYear(sel) > ymYear(r[0]), ymYear(sel) < ymYear(r[1])] : [sel > r[0], sel < r[1]];
 
   // Two years side by side on the Trends page; until picked, the selected year and the one before it.
   const [compareYears, setCompareYears] = useState<[number, number] | null>(null);
@@ -566,7 +570,7 @@ export default function App() {
   const regionPage = page !== "explore" && !!sourceId;
   const shownPage: Page = regionPage ? page : "explore";
   const dataPage = regionPage && ready && page !== "methods";
-  keys.current.step = dataPage ? stepMonths : undefined;
+  keys.current.step = dataPage ? (d) => stepPeriod(Math.sign(d) * (Math.abs(d) === 12 && stepUnit === "month" ? 12 : 1)) : undefined;
 
   // ---- assistant -------------------------------------------------------
   // What the assistant is told about the view. Kept in a ref and read when a question is sent,
@@ -726,8 +730,10 @@ export default function App() {
                   metrics: meta!.metrics,
                   onMetric: setMetric,
                   selected: sel,
-                  canStep: [sel > r[0], sel < r[1]],
-                  onStep: stepMonths,
+                  canStep,
+                  onStep: stepPeriod,
+                  stepUnit,
+                  period: onOverview ? { mode: windowMode, setMode: setWindowMode } : undefined,
                 }
               : undefined
           }
@@ -907,7 +913,7 @@ export default function App() {
             fitKey={shownFit.current}
             mapRef={mapRef}
           />
-          <Timeline series={an.series} selected={sel} onSelect={setSelected} windowMode={windowMode} setWindowMode={setWindowMode} unit={unit} />
+          <Timeline series={an.series} selected={sel} onSelect={setSelected} windowMode={windowMode} unit={unit} />
         </div>
         <div className="stage-title glass">
           <RegionHero
@@ -932,7 +938,8 @@ export default function App() {
             series={an.series}
             selected={sel}
             unit={unit}
-            onStep={(d) => setSelected(Math.max(r[0], Math.min(r[1], sel + d)))}
+            onStep={stepPeriod}
+            stepUnit={stepUnit}
             onLatest={() => setSelected(Math.min(r[1], parseYm(m.last_month)))}
           />
         </div>
