@@ -41,7 +41,8 @@ def redact(text: str) -> str:
 
 
 def map_key() -> str:
-    key = dotenv_values(ROOT / ".env").get("FIRMS_MAP_KEY")
+    # .env next to config.yaml, or the environment (the docker compose pipeline container)
+    key = dotenv_values(ROOT / ".env").get("FIRMS_MAP_KEY") or os.environ.get("FIRMS_MAP_KEY")
     if not key:
         sys.exit("FIRMS_MAP_KEY missing from .env")
     return key
