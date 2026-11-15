@@ -33,8 +33,9 @@ import {
   ymMonth,
   ymYear,
 } from "./data/contract";
-import { type RegionForecast, type RegionSummary, type RegionWeather, apiSource, getForecast, getWeather, listRegions } from "./data/api";
+import { type RegionForecast, type RegionSummary, type RegionWeather, apiSource, getForecast, getForecastCells, getWeather, listRegions } from "./data/api";
 import { ForecastPage } from "./components/ForecastPage";
+import { ForecastMonthReadout, outlookMonthName } from "./components/ForecastMonthReadout";
 import { LiveBadge } from "./components/LiveBadge";
 import { WeatherCard } from "./components/WeatherCard";
 import type { CellValues, DataSource } from "./data/sources";
@@ -80,6 +81,8 @@ const DEFAULT_LAYERS: LayerState = {
 const SIDEBAR_PAGES: Page[] = ["overview", "calendar", "trends", "weather"];
 /** Pages that draw ECharts (their charts can be exported as PNG). */
 const CHART_PAGES: Page[] = ["calendar", "trends", "forecast", "weather"];
+const EMPTY_CELLS: CellValues = new Map();
+const EMPTY_HOTSPOTS: HotspotRow[] = [];
 
 export default function App() {
   const initial = useRef(readHash()).current;
@@ -292,9 +295,12 @@ export default function App() {
   const [forecast, setForecast] = useState<RegionForecast | null>(null);
   const [forecastStatus, setForecastStatus] = useState<"none" | "loading" | "ready" | "unpublished" | "failed">("none");
   useEffect(() => {
-    setForecast(null);
-    setForecastStatus(weatherRegion ? "loading" : "none");
-    if (!weatherRegion) return;
+    if (!weatherRegion) {
+      setForecast(null);
+      setForecastStatus("none");
+      return;
+    }
+    setForecastStatus((s) => (s === "ready" ? s : "loading"));
     const ctl = new AbortController();
     getForecast(weatherRegion, ctl.signal)
       .then((f) => {
@@ -304,12 +310,34 @@ export default function App() {
       })
       .catch(() => !ctl.signal.aborted && setForecastStatus("failed"));
     return () => ctl.abort();
-  }, [weatherRegion, reloadKey]);
+  }, [weatherRegion, reloadKey, liveKey]);
 
   // ---- derived analytics ----------------------------------------------
   const bounds = useMemo(() => (meta ? metaBounds(meta) : ([0, 0] as [number, number])), [meta]);
   const r: [number, number] = range ?? bounds;
-  const sel = Math.max(r[0], Math.min(r[1], selected ?? r[1]));
+  const regionOutlook = forecast?.region === weatherRegion && dsSource === sourceId ? forecast : null;
+  const latestComplete = useMemo(() => {
+    if (!meta) return 0;
+    return (areaSeries?.months ?? []).reduce(
+      (last, p) => (!p.partialMonth && p.values.harmonized !== null ? Math.max(last, p.i) : last),
+      parseYm(meta.last_complete_month),
+    );
+  }, [areaSeries, meta]);
+  const outlookMonths = useMemo(() => {
+    if (!regionOutlook?.run.metrics.method_kind || !isWhole || excludePersistent || demo || sensor !== "harmonized" || metric !== "cell_days") return [];
+    if (r[1] < bounds[1] || (page !== "overview" && page !== "calendar")) return [];
+    return regionOutlook.months.filter((p) => parseYm(p.ym) > latestComplete);
+  }, [regionOutlook, isWhole, excludePersistent, demo, sensor, metric, r[1], bounds[1], latestComplete, page]);
+  const forecastStart = outlookMonths.length ? parseYm(outlookMonths[0].ym) : null;
+  const navEnd = outlookMonths.length ? Math.max(r[1], parseYm(outlookMonths[outlookMonths.length - 1].ym)) : r[1];
+  const sel = Math.max(r[0], Math.min(navEnd, selected ?? r[1]));
+  const selectedOutlook = outlookMonths.find((p) => p.ym === ymKey(sel));
+  const outlookDetails = selectedOutlook && regionOutlook ? {
+    month: selectedOutlook,
+    method: regionOutlook.run.metrics.monthly_comparison?.[selectedOutlook.ym]?.method ?? regionOutlook.run.metrics.method_kind,
+    issuedAfter: regionOutlook.run.metrics.issued_after,
+    observedToDate: areaSeries?.months.find((p) => p.i === sel && p.partialMonth)?.values.harmonized,
+  } : undefined;
   const unit = unitFor(sensor, metric);
   const cellCount = areaSeries?.nCells ?? 0;
 
@@ -338,6 +366,16 @@ export default function App() {
   }, [seriesBy, sensor, unit]);
 
   const cvm = useMemo(() => (a ? currentVsMedian(a.series, sel) : null), [a, sel]);
+  const timelineSeries = useMemo(() => {
+    if (!a || !outlookMonths.length) return a?.series ?? [];
+    const combined = new Map(a.series.map((p) => [p.i, p]));
+    for (const p of outlookMonths) {
+      const i = parseYm(p.ym);
+      combined.set(i, { i, year: ymYear(i), month: ymMonth(i), value: p.value, partial: false, forecast: true });
+    }
+    return [...combined.values()].sort((p, q) => p.i - q.i);
+  }, [a, outlookMonths]);
+  const calendarCells = useMemo(() => (a && outlookMonths.length ? anomalies(timelineSeries, a.clim) : a?.anoms ?? []), [a, outlookMonths, timelineSeries]);
 
   // Documented events near the area and in range, plus a lookup for chart annotations.
   const documented = useMemo(() => (meta && area && a ? documentedEvents(meta.events, area, r, a.anoms) : []), [meta, area, a, r[0], r[1]]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -350,18 +388,19 @@ export default function App() {
   const [focus, setFocus] = useState<{ lat: number; lon: number; radius: number; key: string } | null>(null);
 
   const win: [number, number] = useMemo(() => {
+    if (selectedOutlook) return [sel, sel];
     if (windowMode === "month") return [sel, sel];
     if (windowMode === "year") return [Math.max(r[0], ym(ymYear(sel), 1)), Math.min(r[1], ym(ymYear(sel), 12))];
     return r;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [windowMode, sel, r[0], r[1]]);
+  }, [windowMode, sel, r[0], r[1], selectedOutlook]);
   const windowLabel =
-    windowMode === "month" ? `${MONTH_ABBR[ymMonth(sel) - 1]} ${ymYear(sel)}` : windowMode === "year" ? String(ymYear(sel)) : `${ymYear(r[0])}–${ymYear(r[1])}`;
+    selectedOutlook || windowMode === "month" ? `${MONTH_ABBR[ymMonth(sel) - 1]} ${ymYear(sel)}` : windowMode === "year" ? String(ymYear(sel)) : `${ymYear(r[0])}–${ymYear(r[1])}`;
 
   // Per-cell values for the map window (the API reads them from the compact per-year series).
   const [cells, setCells] = useState<CellValues>(new Map());
   useEffect(() => {
-    if (!source || !meta || dsSource !== source.id) return;
+    if (!source || !meta || dsSource !== source.id || selectedOutlook) return;
     let alive = true;
     source
       .cellWindow({ sensor, metric, from: win[0], to: win[1], excludePersistent })
@@ -371,7 +410,7 @@ export default function App() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, meta, dsSource, sensor, metric, win[0], win[1], excludePersistent, liveKey]);
+  }, [source, meta, dsSource, sensor, metric, win[0], win[1], excludePersistent, liveKey, selectedOutlook]);
 
   // One colour/height scale for every month (or year) of the range, so the map can be compared
   // through time: the largest per-window 98th-percentile cell value. Without it each window would
@@ -420,7 +459,7 @@ export default function App() {
   const [detectionsCapped, setDetectionsCapped] = useState(false);
   const hasDetections = !!source?.hotspots;
   useEffect(() => {
-    if ((!layers.hotspots.on && resolution === "grid") || !meta || !area || !source?.hotspots) {
+    if (selectedOutlook || (!layers.hotspots.on && resolution === "grid") || !meta || !area || !source?.hotspots) {
       setHotspots([]);
       return;
     }
@@ -434,7 +473,7 @@ export default function App() {
     return () => {
       alive = false;
     };
-  }, [layers.hotspots.on, resolution, meta, area, sensor, win, source]);
+  }, [layers.hotspots.on, resolution, meta, area, sensor, win, source, selectedOutlook]);
   useEffect(() => {
     if (!hasDetections) setResolution("grid");
   }, [hasDetections]);
@@ -444,6 +483,23 @@ export default function App() {
   // The Overview map stays mounted while other pages show (no reload when coming back). Camera
   // moves asked for meanwhile are held until it is visible again, so it measures itself first.
   const onOverview = page === "overview";
+  const forecastRegion = onOverview && outlookDetails?.method === "outlook" ? regionOutlook?.region : undefined;
+  const forecastRun = forecastRegion ? regionOutlook?.run.run_id : undefined;
+  const forecastMonth = selectedOutlook?.ym;
+  const forecastGrid = meta?.grid_deg;
+  const forecastCellKey = forecastRegion && forecastRun !== undefined && forecastMonth && forecastGrid
+    ? `${forecastRegion}/${forecastRun}/${forecastMonth}`
+    : undefined;
+  const [forecastCellResult, setForecastCellResult] = useState<{ key: string; cells: CellValues | null }>();
+  useEffect(() => {
+    if (!forecastCellKey || !forecastRegion || forecastRun === undefined || !forecastMonth || !forecastGrid) return;
+    const ctl = new AbortController();
+    getForecastCells(forecastRegion, forecastRun, forecastMonth, forecastGrid, ctl.signal)
+      .then((cells) => { if (!ctl.signal.aborted) setForecastCellResult({ key: forecastCellKey, cells }); })
+      .catch(() => { if (!ctl.signal.aborted) setForecastCellResult({ key: forecastCellKey, cells: null }); });
+    return () => ctl.abort();
+  }, [forecastCellKey, forecastRegion, forecastRun, forecastMonth, forecastGrid]);
+  const matchedForecastCells = forecastCellResult?.key === forecastCellKey ? forecastCellResult?.cells : undefined;
   const shownFit = useRef(fitKey);
   const shownFocus = useRef(focus);
   if (onOverview) {
@@ -455,8 +511,10 @@ export default function App() {
   useEffect(() => {
     // Skip while a newly picked dataset is still loading, so the URL never mixes two datasets.
     if (!meta || !area || !range || !sourceId || dsSource !== sourceId) return;
-    writeHash({ page, source: sourceId, sensor, metric, area, areaAll: isWhole, range, selected: sel });
-  }, [page, meta, dsSource, sourceId, sensor, metric, area, isWhole, range, sel]);
+    // Keep a shared forecast date while its forecast run is loading.
+    const date = !regionOutlook && forecastStatus === "loading" && (page === "overview" || page === "calendar") ? (selected ?? sel) : sel;
+    writeHash({ page, source: sourceId, sensor, metric, area, areaAll: isWhole, range, selected: date });
+  }, [page, meta, dsSource, sourceId, sensor, metric, area, isWhole, range, selected, sel, regionOutlook, forecastStatus]);
 
   // ---- actions ---------------------------------------------------------
   const flash = useCallback((msg: string) => {
@@ -478,15 +536,31 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [selected, r[0], r[1]],
   );
-  const selectMonth = (i: number) => {
-    setSelected(Math.max(r[0], Math.min(r[1], i)));
+  const selectMonth = useCallback((i: number) => {
+    setSelected(Math.max(r[0], Math.min(navEnd, i)));
     setWindowMode("month");
-  };
+  }, [r[0], navEnd]);
+  const scrubMonth = useCallback((i: number) => {
+    if (forecastStart !== null && i >= forecastStart) selectMonth(i);
+    else setSelected(i);
+  }, [forecastStart, selectMonth]);
   // The arrows (top bar, "This month vs normal" card, keyboard) step by what the map shows: a year
   // when the Overview map shows a whole year, otherwise a month. The month of the year is kept.
-  const stepUnit: "month" | "year" = onOverview && windowMode === "year" ? "year" : "month";
-  const stepPeriod = (d: number) => setSelected(Math.max(r[0], Math.min(r[1], sel + d * (stepUnit === "year" ? 12 : 1))));
-  const canStep: [boolean, boolean] = stepUnit === "year" ? [ymYear(sel) > ymYear(r[0]), ymYear(sel) < ymYear(r[1])] : [sel > r[0], sel < r[1]];
+  const stepUnit: "month" | "year" = onOverview && windowMode === "year" && !selectedOutlook ? "year" : "month";
+  const forwardToForecast = stepUnit === "year" && forecastStart !== null && ymYear(sel) >= ymYear(latestComplete);
+  const forwardLabel = forwardToForecast ? "First forecast month" : undefined;
+  const stepPeriod = (d: number) => {
+    if (d > 0 && forwardToForecast) {
+      selectMonth(forecastStart);
+      return;
+    }
+    const next = Math.max(r[0], Math.min(stepUnit === "year" ? r[1] : navEnd, sel + d * (stepUnit === "year" ? 12 : 1)));
+    if (forecastStart !== null && next >= forecastStart) selectMonth(next);
+    else setSelected(next);
+  };
+  const canStep: [boolean, boolean] = stepUnit === "year"
+    ? [ymYear(sel) > ymYear(r[0]), ymYear(sel) < ymYear(r[1]) || forwardToForecast]
+    : [sel > r[0], sel < navEnd];
 
   // Two years side by side on the Trends page; until picked, the selected year and the one before it.
   const [compareYears, setCompareYears] = useState<[number, number] | null>(null);
@@ -730,10 +804,18 @@ export default function App() {
                   metrics: meta!.metrics,
                   onMetric: setMetric,
                   selected: sel,
+                  forecast: !!selectedOutlook,
                   canStep,
                   onStep: stepPeriod,
+                  forwardLabel,
                   stepUnit,
-                  period: onOverview ? { mode: windowMode, setMode: setWindowMode } : undefined,
+                  period: onOverview ? {
+                    mode: selectedOutlook ? "month" : windowMode,
+                    setMode: (mode) => {
+                      if (selectedOutlook && mode !== "month") setSelected(Math.min(r[1], latestComplete));
+                      setWindowMode(mode);
+                    },
+                  } : undefined,
                 }
               : undefined
           }
@@ -886,25 +968,26 @@ export default function App() {
             theme={theme}
             area={ar}
             extent={m.bbox}
-            gridDeg={fineCells ? FINE_GRID : m.grid_deg}
-            cells={fineCells ?? cells}
+            gridDeg={fineCells && !selectedOutlook ? FINE_GRID : m.grid_deg}
+            cells={selectedOutlook ? EMPTY_CELLS : (fineCells ?? cells)}
             scaleMax={fineCells ? undefined : cellScale}
-            resolution={resolution}
+            resolution={selectedOutlook ? "grid" : resolution}
             onResolution={setResolution}
-            detections={hasDetections}
+            detections={hasDetections && !selectedOutlook}
             gridLabel={`${m.grid_deg}° (~${Math.round(m.grid_deg * 111)} km)`}
             note={
               fineCells
                 ? `~1 km cells from individual ${sensor === "harmonized" ? "MODIS + VIIRS" : SENSOR_LABEL[sensor]} detections (not calibrated)${detectionsCapped ? ` · first ${DETECTION_LIMIT.toLocaleString()} detections` : ""}`
                 : mapNote
             }
-            hotspots={hotspots}
+            hotspots={selectedOutlook ? EMPTY_HOTSPOTS : hotspots}
             outline={m.outline}
             focus={shownFocus.current}
             areaIsRegion={isWhole}
             layers={layers}
-            showData={showData}
-            animate={animations && onOverview}
+            showData={showData && !selectedOutlook}
+            forecast={selectedOutlook ? { cells: matchedForecastCells, loading: !!forecastCellKey && matchedForecastCells === undefined } : undefined}
+            animate={animations && onOverview && !selectedOutlook}
             unit={unit}
             windowLabel={windowLabel}
             drawMode={drawMode}
@@ -913,7 +996,7 @@ export default function App() {
             fitKey={shownFit.current}
             mapRef={mapRef}
           />
-          <Timeline series={an.series} selected={sel} onSelect={setSelected} windowMode={windowMode} unit={unit} />
+          <Timeline series={timelineSeries} selected={sel} onSelect={scrubMonth} windowMode={selectedOutlook ? "month" : windowMode} unit={unit} />
         </div>
         <div className="stage-title glass">
           <RegionHero
@@ -932,7 +1015,7 @@ export default function App() {
           />
         </div>
         <div className="card cvm-card glass">
-          <CardHead title="This month vs normal" subtitle={`${SENSOR_LABEL[sensor]} · ${METRIC_LABEL[metric]}`} />
+          <CardHead title={selectedOutlook ? "Monthly burning outlook" : "This month vs normal"} subtitle={`${SENSOR_LABEL[sensor]} · ${METRIC_LABEL[metric]}`} />
           <CurrentVsMedian
             cvm={cvm}
             series={an.series}
@@ -940,6 +1023,9 @@ export default function App() {
             unit={unit}
             onStep={stepPeriod}
             stepUnit={stepUnit}
+            forecast={outlookDetails}
+            canStep={canStep}
+            forwardLabel={forwardLabel}
             onLatest={() => setSelected(Math.min(r[1], parseYm(m.last_month)))}
           />
         </div>
@@ -1013,6 +1099,12 @@ export default function App() {
       <>
         <PageHead eyebrow={eyebrow} title="Burning calendar" lede="Each month of the record, read two ways: as the rings of a tree, and as a month-by-year grid. Click any month to select it." />
         {banners}
+        {outlookDetails && (
+          <section className="card calendar-outlook">
+            <CardHead title={`${outlookMonthName(outlookDetails.month.ym)} forecast`} subtitle={`Whole ${m.name} · Harmonized fire-days`} />
+            <ForecastMonthReadout {...outlookDetails} />
+          </section>
+        )}
         <section className="card rings-card">
           <FireRings
             cells={an.anoms}
@@ -1085,7 +1177,7 @@ export default function App() {
             }
           />
           <CalendarHeatmap
-            cells={an.anoms}
+            cells={calendarCells}
             mode={calendarMode}
             unit={unit}
             selected={sel}
@@ -1101,6 +1193,7 @@ export default function App() {
               </>
             )}
             <span className="lg lg-sel" /> selected
+            {outlookMonths.length > 0 && <><span className="lg lg-forecast" /> forecast</>}
           </p>
         </section>
       </>
@@ -1172,8 +1265,8 @@ export default function App() {
         eyebrow={`${m.name} · whole region · harmonized fire-days`}
         regionName={m.name}
         status={forecastStatus}
-        forecast={forecast}
-        history={comparable ? an.series.filter((p) => !p.partial).slice(-24).map((p) => ({ i: p.i, value: p.value })) : undefined}
+        forecast={regionOutlook}
+        history={comparable ? an.series.filter((p) => !p.partialMonth).slice(-24).map((p) => ({ i: p.i, value: p.value })) : undefined}
         typical={comparable ? an.clim.map((c) => (Number.isFinite(c.median) ? c.median : null)) : undefined}
         historyNote={
           comparable

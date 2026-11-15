@@ -155,16 +155,19 @@ export function buildChatContext(v: ViewState): Record<string, unknown> {
 
   if (r.forecast?.months.length) {
     const score = r.forecast.run.metrics.test;
+    const wape = score?.model?.wape;
+    const baselineWape = score?.[score.best_baseline]?.wape;
     out.burning_outlook = {
-      what: "machine-learning forecast of whole-region harmonized fire-days (all cells, industrial sites included), whatever area or series is selected",
+      what: "monthly outlook for whole-region harmonized fire-days, including all cells",
+      method: r.forecast.run.metrics.method,
       issued: r.forecast.run.created_at.slice(0, 10),
       months: r.forecast.months.map((f) => ({ month: f.ym, expected: n(f.value), likely_range: [n(f.value_low), n(f.value_high)] })),
-      accuracy_on_held_out_months: score
+      accuracy_on_held_out_months: score?.model
         ? {
-            months_tested: score.n,
-            error_wape_pct: n(score.model.wape * 100),
+            month_lead_pairs_tested: score.n,
+            error_wape_pct: wape == null ? null : n(wape * 100),
             best_simple_baseline: score.best_baseline,
-            best_baseline_error_wape_pct: n(score[score.best_baseline].wape * 100),
+            best_baseline_error_wape_pct: baselineWape == null ? null : n(baselineWape * 100),
             beats_simple_baselines: score.beats_baselines,
             share_within_25pct: n(score.within_25pct),
           }

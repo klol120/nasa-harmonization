@@ -51,7 +51,7 @@ export function ForecastChart({ forecast, history = [], typical, unit }: Props) 
           return [
             `${head} · forecast`,
             `<b>Expected ${fmt(f.value)} ${unit}</b>`,
-            f.value_low !== null && f.value_high !== null ? `Likely ${fmt(f.value_low)} – ${fmt(f.value_high)} (8 in 10 months)` : null,
+            f.value_low !== null && f.value_high !== null ? `Estimated range ${fmt(f.value_low)} – ${fmt(f.value_high)}` : null,
             t,
           ]
             .filter(Boolean)

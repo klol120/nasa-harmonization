@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { GeoJSONSource } from "maplibre-gl";
 import { FALLBACK_STYLE, SATELLITE_SOURCE, TERRAIN_SOURCE, loadStyle, maplibregl } from "../lib/maplibre";
 import type { Theme } from "../lib/theme";
 import type { BBox, HotspotRow } from "../data/contract";
+import type { CellValues } from "../data/sources";
 import { fmt, robustMax } from "../lib/analytics";
 import { INFERNO } from "../lib/colors";
 import { type Area, type Ring, areaFromBBox, areaFromRing, bboxRing } from "../lib/geo";
@@ -37,6 +38,7 @@ interface Props {
   layers: LayerState;
   /** False hides every fire layer so only the map shows (lighter on slow machines). */
   showData: boolean;
+  forecast?: { cells?: CellValues | null; loading: boolean };
   /** False stops sparks, the camera orbit and tweens. */
   animate: boolean;
   /** "grid" = the dataset's analysis grid, "1km" = detections re-gridded at ~1 km. */
@@ -92,9 +94,10 @@ const poly = (ring: Ring, props: Record<string, unknown> = {}): GeoJSON.Feature 
   geometry: { type: "Polygon", coordinates: [[...ring, ring[0]]] },
 });
 
-const rampExpr = (): any[] => {
+const FORECAST_RAMP = ["#185a9e", "#1a9fd4", "#36d8ed", "#c8faff"];
+const rampExpr = (colors = INFERNO): any[] => {
   const stops: (number | string)[] = [];
-  INFERNO.forEach((c, k) => stops.push(k / (INFERNO.length - 1), c));
+  colors.forEach((c, k) => stops.push(k / (colors.length - 1), c));
   return ["interpolate", ["linear"], ["get", "t"], ...stops];
 };
 
@@ -207,6 +210,15 @@ export function MapView(props: Props) {
   const [orbit, setOrbit] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
   const [panelsHidden, setPanelsHidden] = useState(false);
+  const [showForecastCells, setShowForecastCells] = useState(true);
+  const forecastCells = props.forecast?.cells;
+  const visibleForecast = !!forecastCells?.size && showForecastCells;
+  const forecastScale = useMemo(() => {
+    const values = Array.from(forecastCells?.values() ?? [], (c) => c.value);
+    const max = robustMax(values);
+    return { max, clipped: values.some((v) => v > max * 1.0001), fixed: false };
+  }, [forecastCells]);
+  const legendScale = props.forecast ? forecastScale : scale;
   const wrap = useRef<HTMLDivElement>(null);
   /** The element that goes full screen: the whole stage (map + timeline) when there is one. */
   const stageEl = () => (wrap.current?.closest(".stage") as HTMLElement | null) ?? wrap.current;
@@ -282,7 +294,7 @@ export function MapView(props: Props) {
       m.on("load", () => {
         const firstSymbol = m.getStyle().layers.find((l) => l.type === "symbol")?.id;
         const empty = fc([]);
-        for (const id of ["cells", "heat", "hotspots", "aoi", "mask", "extent", "draft", "outline", "footprints"]) m.addSource(id, { type: "geojson", data: empty });
+        for (const id of ["cells", "forecast-cells", "heat", "hotspots", "aoi", "mask", "extent", "draft", "outline", "footprints"]) m.addSource(id, { type: "geojson", data: empty });
         // Columns are keyed by cell id so the hovered one can be lit through feature state.
         m.addSource("pillars", { type: "geojson", data: empty, promoteId: "id" });
         m.addSource("sat", SATELLITE_SOURCE);
@@ -353,6 +365,13 @@ export function MapView(props: Props) {
         m.setLight({ anchor: "viewport", color: look.light.color, intensity: look.light.intensity, position: [1.4, 215, 35] });
         // Mask sits above the data so everything outside the area is dimmed (dark) or veiled (light).
         m.addLayer({ id: "mask", type: "fill", source: "mask", paint: { "fill-color": look.mask.color, "fill-opacity": look.mask.opacity } }, firstSymbol);
+        m.addLayer({
+          id: "forecast-cells",
+          type: "fill",
+          source: "forecast-cells",
+          layout: { visibility: "none" },
+          paint: { "fill-color": rampExpr(FORECAST_RAMP) as any, "fill-opacity": 0.82, "fill-outline-color": "#a2e7ff" },
+        }, firstSymbol);
         // Glowing fire points: a blurred halo plus a bright core, both coloured by intensity.
         m.addLayer(
           {
@@ -445,6 +464,14 @@ export function MapView(props: Props) {
       m.on("mousemove", (e) => {
         setCursor([e.lngLat.lng, e.lngLat.lat]);
         if (drawRef.current.mode !== "none" || !m.getLayer("cells")) return;
+        if (m.getLayoutProperty("forecast-cells", "visibility") === "visible") {
+          const cell = m.queryRenderedFeatures(e.point, { layers: ["forecast-cells"] })[0];
+          if (cell) {
+            const { id, value } = cell.properties;
+            popup.setLngLat(e.lngLat).setHTML(`<b>${fmt(value)}</b> expected fire-days<br/><span>Forecast cell ${id}</span>`).addTo(m);
+          } else popup.remove();
+          return;
+        }
         // In 3D the pointer is usually on a column, not over its ground cell: test the columns first.
         const col = m.getLayoutProperty("cells-3d", "visibility") !== "none" ? m.queryRenderedFeatures(e.point, { layers: ["cells-3d-cap", "cells-3d"] })[0] : undefined;
         if (col) {
@@ -576,6 +603,19 @@ export function MapView(props: Props) {
   }, [drawMode, ready]);
 
   // --- data -------------------------------------------------------------
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready) return;
+    const source = m.getSource("forecast-cells") as GeoJSONSource;
+    const h = gridDeg / 2;
+    const features = visibleForecast && forecastCells && forecastScale.max > 0
+      ? Array.from(forecastCells, ([id, { lon, lat, value }]) =>
+        poly(bboxRing([lon - h, lat - h, lon + h, lat + h]), { id, value, t: Math.sqrt(Math.min(1, value / forecastScale.max)) }))
+      : [];
+    source.setData(fc(features));
+    m.setLayoutProperty("forecast-cells", "visibility", visibleForecast ? "visible" : "none");
+  }, [forecastCells, forecastScale.max, gridDeg, ready, visibleForecast]);
+
   useEffect(() => {
     const m = map.current;
     if (!m || !ready) return;
@@ -953,24 +993,36 @@ export function MapView(props: Props) {
           {drawMode === "rect" ? "Drag on the map to draw a rectangle" : "Click to add points · double-click or Enter to finish"} · Esc to cancel
         </div>
       )}
-      {!showData && <div className="map-offline">Fire cells hidden: map only</div>}
-      <div className="map-legend" hidden={!showData}>
-        <div className="map-legend-title">
-          {windowLabel} · {unit} per cell
+      {props.forecast ? (
+        <div className="map-offline map-forecast-control">
+          {forecastCells?.size ? (
+            <button className="chip" aria-pressed={showForecastCells} onClick={() => setShowForecastCells((v) => !v)}>
+              Forecast cells {showForecastCells ? "on" : "off"}
+            </button>
+          ) : props.forecast.loading ? "Loading forecast cells…" :
+            forecastCells === null ? "Forecast cells could not load" :
+            forecastCells ? "No grid cells published for this forecast month" : "Regional forecast · whole-region totals"}
         </div>
-        <div className="ramp" style={{ background: `linear-gradient(90deg, ${INFERNO.join(",")})` }} />
+      ) : !showData && <div className="map-offline">Fire cells hidden: map only</div>}
+      <div className="map-legend" hidden={props.forecast ? !visibleForecast : !showData}>
+        <div className="map-legend-title">
+          {windowLabel} · {props.forecast ? "expected fire-days" : unit} per cell
+        </div>
+        <div className="ramp" style={{ background: `linear-gradient(90deg, ${(props.forecast ? FORECAST_RAMP : INFERNO).join(",")})` }} />
         <div className="ramp-labels">
           <span>0</span>
-          <span>{fmt(scale.max / 4)}</span>
+          <span>{fmt(legendScale.max / 4)}</span>
           <span>
-            {scale.clipped ? "≥ " : ""}
-            {fmt(scale.max)}
+            {legendScale.clipped ? "≥ " : ""}
+            {fmt(legendScale.max)}
           </span>
         </div>
         <div className="map-legend-hint">
-          {mode3d ? "Colour and column height: square-root scale" : "Square-root scale"}
-          {scale.fixed ? ", fixed across the selected years" : ", scaled to this window"}
-          {scale.clipped ? `. Cells above ${fmt(scale.max)} are drawn at the top` : ""}
+          {props.forecast ? "Forecast grid · square-root scale for this month" : <>
+            {mode3d ? "Colour and column height: square-root scale" : "Square-root scale"}
+            {scale.fixed ? ", fixed across the selected years" : ", scaled to this window"}
+            {scale.clipped ? `. Cells above ${fmt(scale.max)} are drawn at the top` : ""}
+          </>}
         </div>
         {detections && layers.hotspots.on && (
           <div className="ramp-labels dots">
@@ -978,7 +1030,7 @@ export function MapView(props: Props) {
             <span><i style={{ background: "#56B4E9" }} /> VIIRS</span>
           </div>
         )}
-        {note && <div className="map-legend-hint">{note}</div>}
+        {!props.forecast && note && <div className="map-legend-hint">{note}</div>}
         {detections && layers.hotspots.on && (
           <div className="map-legend-hint">{zoom >= FOOTPRINT_ZOOM ? "Squares = real pixel size (MODIS ≈ 1 km, VIIRS ≈ 375 m)" : "Zoom in to see each detection at its real pixel size"}</div>
         )}

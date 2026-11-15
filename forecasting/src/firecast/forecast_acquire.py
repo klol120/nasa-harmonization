@@ -5,6 +5,8 @@ from datetime import datetime,timezone
 import hashlib
 import json
 from pathlib import Path
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 import fsspec
 import h5py
 import h5netcdf
@@ -13,16 +15,20 @@ import pandas as pd
 
 COLLECTIONS={'slv':['T2M','QV2M','PS','U10M','V10M'],'flx':['PRECTOT'],'rad':['CLDTOT']}
 
+def forecast_source(issue, midpoint, collection):
+    label = f"GEOS.fp.fcst.tavg1_2d_{collection}_Nx.{issue:%Y%m%d_%H}+{midpoint:%Y%m%d_%H%M}.V01.nc4"
+    directory = f"Y{issue:%Y}/M{issue:%m}/D{issue:%d}/H{issue:%H}/"
+    return label, "https://portal.nccs.nasa.gov/datashare/gmao/geos-fp/forecast/" + directory + label.replace("+", "%2B")
+
 def subset_hour(issue,midpoint,collection,bbox,out):
     issue=pd.Timestamp(issue);midpoint=pd.Timestamp(midpoint);out=Path(out)
     if issue.tzinfo is None or midpoint.tzinfo is None or midpoint<=issue:raise ValueError('Explicit UTC issue and future valid midpoint required')
-    label=f'GEOS.fp.fcst.tavg1_2d_{collection}_Nx.{issue:%Y%m%d_%H}+{midpoint:%Y%m%d_%H%M}.V01.nc4'
+    label,source=forecast_source(issue,midpoint,collection)
     path=out/'subsets'/label;manifest_path=path.with_suffix(path.suffix+'.manifest.json')
     if path.exists() and manifest_path.exists():
         m=json.loads(manifest_path.read_text())
         if hashlib.sha256(path.read_bytes()).hexdigest()!=m['sha256']:raise ValueError('Subset checksum mismatch')
         return m
-    source='https://portal.nccs.nasa.gov/datashare/gmao/geos-fp/forecast/'+f'Y{issue:%Y}/M{issue:%m}/D{issue:%d}/H{issue:%H}/'+label.replace('+','%2B')
     fs=fsspec.filesystem('https',client_kwargs={'trust_env':True},block_size=262144)
     arrays={};attrs={}
     with fs.open(source,'rb',cache_type='blockcache') as remote:
@@ -71,8 +77,52 @@ def acquire_forecast(issue,prediction_time,horizon,bbox,out):
     Path(out).mkdir(parents=True,exist_ok=True);(Path(out)/'forecast-report.json').write_text(json.dumps(report,indent=2))
     return report
 
-def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--issue',required=True);p.add_argument('--prediction-time',required=True);p.add_argument('--out',required=True);p.add_argument('--horizon',type=int,default=24);a=p.parse_args()
-    r=acquire_forecast(a.issue,a.prediction_time,a.horizon,[35,33,36.7,34.75],a.out);print(json.dumps({'complete':r['complete'],'failures':len(r['failures'])}))
+def source_exists(url):
+    try:
+        with urlopen(Request(url, method="HEAD"), timeout=10):
+            return True
+    except (URLError, TimeoutError):
+        return False
 
-if __name__=='__main__':main()
+
+def archive_next_day(root, now=None):
+    """Keep the latest available full Lebanon window for tomorrow UTC."""
+    now = pd.Timestamp.now(tz="UTC") if now is None else pd.Timestamp(now).tz_convert("UTC")
+    start = now.normalize() + pd.Timedelta(days=1)
+    first = start + pd.Timedelta(minutes=30)
+    last = start + pd.Timedelta(hours=23, minutes=30)
+    for age in range(0, 49, 6):
+        issue = now.floor("6h") - pd.Timedelta(hours=age)
+        folder = Path(root) / f"{start:%Y%m%d}" / f"{issue:%Y%m%d-%H}"
+        report_path = folder / "forecast-report.json"
+        cached = report_path.is_file() and json.loads(report_path.read_text())["complete"]
+        if not cached and not all(source_exists(forecast_source(issue, t, c)[1]) for t in (last, first) for c in COLLECTIONS):
+            continue
+        report = acquire_forecast(issue.isoformat(), start.isoformat(), 24, [35, 33, 36.7, 34.75], folder)
+        if report["complete"] and all(pd.Timestamp(m["downloaded_at"]) < start for m in report["subsets"]):
+            print(f"Archived issued forecasts for {start:%Y-%m-%d} UTC in {folder}")
+            return True
+    print(f"No complete GEOS window archived before the {start:%Y-%m-%d} UTC target day.")
+    return False
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--issue")
+    p.add_argument("--prediction-time")
+    p.add_argument("--next-day", action="store_true", help="archive the latest complete window for tomorrow UTC")
+    p.add_argument("--out", required=True)
+    p.add_argument("--horizon", type=int, default=24)
+    a = p.parse_args()
+    if a.next_day:
+        if a.issue or a.prediction_time or a.horizon != 24:
+            p.error("--next-day chooses the issue and target for a 24-hour window")
+        return 0 if archive_next_day(a.out) else 1
+    if not a.issue or not a.prediction_time:
+        p.error("provide --issue and --prediction-time, or use --next-day")
+    report = acquire_forecast(a.issue, a.prediction_time, a.horizon, [35, 33, 36.7, 34.75], a.out)
+    print(json.dumps({"complete": report["complete"], "failures": len(report["failures"])}))
+    return 0 if report["complete"] else 1
+
+if __name__ == "__main__":
+    raise SystemExit(main())

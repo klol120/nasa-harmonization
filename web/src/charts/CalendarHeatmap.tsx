@@ -24,16 +24,19 @@ export function CalendarHeatmap({ cells, mode, unit, selected, onSelect, markers
     const yIndex = new Map(years.map((y, k) => [y, k]));
     const vals = cells.filter((c) => c.value !== null).map((c) => c.value!);
     const max = Math.max(1, ...vals);
+    const lastForecastYear = cells.filter((c) => c.forecast).at(-1)?.year;
 
     // [x, y, colourValue, cellIndex]; colour uses sqrt so a few extreme months don't flatten the rest.
     const data: (number | null)[][] = [];
     const nodata: number[][] = [];
     const partial: number[][] = [];
     const lowConf: number[][] = [];
+    const projected: number[][] = [];
     cells.forEach((c, k) => {
       if (c.lowConfidence && c.value !== null) lowConf.push([yIndex.get(c.year)!, c.month - 1, k]);
       const x = yIndex.get(c.year)!;
       const y = c.month - 1;
+      if (c.forecast) projected.push([x, y, k]);
       if (c.value === null) {
         nodata.push([x, y, k]);
         return;
@@ -55,7 +58,7 @@ export function CalendarHeatmap({ cells, mode, unit, selected, onSelect, markers
         const head = `<b>${MONTH_ABBR[c.month - 1]} ${c.year}</b>`;
         if (c.value === null) return `${head}<br/><span style="color:${UI.muted}">No data for this month. Not counted as zero.</span>`;
         const partialNote = c.partialMonth ? " <i>(partial month: data still arriving, not in medians)</i>" : c.partial ? " <i>(partial year, not in medians)</i>" : "";
-        const lines = [`${head}`, `${fmt(c.value)} ${unit}${partialNote}`];
+        const lines = [c.forecast ? `${head} · forecast` : head, `${c.forecast ? "Expected " : ""}${fmt(c.value)} ${unit}${partialNote}`];
         if (c.pct !== null) lines.push(`${fmtPct(c.pct)} vs ${MONTH_ABBR[c.month - 1]} median${c.z !== null ? ` · z ${c.z.toFixed(1)}` : ""}`);
         if (c.source?.includes("NOAA20")) lines.push(`<span style="color:${UI.muted}">${c.source === "NOAA20" ? "VIIRS NOAA-20, calibrated to S-NPP" : "S-NPP, then VIIRS NOAA-20 calibrated to S-NPP"}</span>`);
         if (c.estimate) lines.push(`<span style="color:${UI.muted}">Modelled estimate from MODIS (not detections)${c.lowConfidence ? " · <b>low confidence</b>" : ""}</span>`);
@@ -75,7 +78,7 @@ export function CalendarHeatmap({ cells, mode, unit, selected, onSelect, markers
         splitArea: { show: false },
         axisLine: { show: false },
         axisTick: { show: false },
-        axisLabel: { color: UI.muted, interval: (k: number) => years.length <= 16 || years[k] % 2 === 0, fontSize: 10 },
+        axisLabel: { color: UI.muted, interval: (k: number) => years.length <= 16 || years[k] === lastForecastYear || years[k] % 2 === 0, fontSize: 10 },
       },
       yAxis: {
         type: "category",
@@ -136,6 +139,7 @@ export function CalendarHeatmap({ cells, mode, unit, selected, onSelect, markers
         ),
         overlay(nodata, (r) => ({ type: "rect", shape: inset(r, 0.75), style: { fill: { image: hatch(), repeat: "repeat" } as any } }), 2, false),
         overlay(partial, (r) => ({ type: "rect", shape: inset(r, 1.5), style: { fill: "transparent", stroke: UI.text, lineWidth: 1, lineDash: [3, 2] } }), 3),
+        overlay(projected, (r) => ({ type: "rect", shape: inset(r, 2.5), style: { fill: "transparent", stroke: UI.markerText, lineWidth: 1.5, lineDash: [3, 2] } }), 3),
         // Low-confidence estimates: a muted dot screen over the colour, so they read as "less sure".
         overlay(lowConf, (r) => ({ type: "rect", shape: inset(r, 1.5), style: { fill: { image: dots(), repeat: "repeat" } as any } }), 2),
         overlay(

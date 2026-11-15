@@ -17,9 +17,9 @@ def synthetic(n_cells=20, years=12, seed=1) -> O.Region:
     V = rng.poisson(lam).astype(np.float32)
     return O.Region(
         name="test", months=months, cells=[f"{1000 + c}_2000" for c in range(n_cells)], V=V,
-        ok=np.ones(len(months), bool), estimate=np.zeros(len(months), bool), stats_last_year=2010 + years - 1,
+        ok=np.ones(len(months), bool),
         lat=np.linspace(33, 34, n_cells, dtype=np.float32), lon=np.linspace(35, 36, n_cells, dtype=np.float32),
-        persistent=np.zeros(n_cells, np.float32), mean=V.mean(axis=0),
+        mean=V.mean(axis=0),
     )
 
 
@@ -43,6 +43,29 @@ def test_target_month_and_lead_are_inputs():
     assert (X[:, O.FEATURES.index("h")] == 3).all()
     # last year's value is the same calendar month one year earlier
     assert np.allclose(X[:, O.FEATURES.index("ly")], R.V[:, R.months.index("2017-08")])
+
+
+def test_backtest_drops_issues_before_the_shared_fit_cutoff():
+    class Constant:
+        def predict(self, inputs):
+            return np.ones(len(inputs))
+
+    region = synthetic()
+    jan = region.idx("2020-01")
+    july = region.idx("2020-07")
+    scored = O.score(Constant(), [region], {region.name: [jan, july]}, fitted_through="2019-12")[region.name]
+    assert [r["h"] for r in scored if r["ym"] == "2020-01"] == [1]
+    assert [r["h"] for r in scored if r["ym"] == "2020-07"] == list(O.HORIZONS)
+    assert all(r["issue"] >= "2019-12" for r in scored)
+
+
+def test_uses_the_strongest_baseline_when_the_blend_does_not_improve():
+    row = {"h": 1, "ym": "2023-01", "actual": 10, "model": 12, "seasonal_5y": 12,
+           "typical_year": 11, "last_year": 15}
+    assert O.pick_method([row]) == "typical_year"
+    assert O.evaluate([row], "typical_year", (0.0, 0.0))["model"]["wape"] == pytest.approx(0.1)
+    assert O.pick_method([{**row, "model": 10}]) == "outlook"
+    assert O.pick_method([{**row, "model": 11}]) == "typical_year"
 
 
 def test_summarize_and_band():

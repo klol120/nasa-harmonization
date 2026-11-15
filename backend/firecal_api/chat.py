@@ -49,7 +49,7 @@ SYSTEM = """You are the assistant built into Phoenical, a web app by team Wel3a 
 - Normal / typical: the median for that calendar month across the years in range. Anomalies are z-scores against a fixed baseline period. The typical-year band describes the past and is not a forecast.
 - Partial months and the current partial year are shown but left out of medians, trends and records. Missing data means no coverage, never zero fires.
 - Some cells contain persistent industrial or waste-burning heat sources (flares, kilns, landfills). They can be excluded in the Area panel.
-- Burning outlook: a machine-learning model (gradient-boosted trees) forecasting whole-region harmonized fire-days for the next six months with a likely range, scored against simple baselines such as the typical year. It is an experimental statistical outlook, not an operational fire-danger forecast.
+- Burning outlook: six monthly estimates of whole-region harmonized fire-days. Each region uses a gradient-boosting blend or a seasonal baseline, selected on historical backtests. The overview timeline and calendar continue into these forecast months. It is an experimental statistical outlook, not an operational fire-danger forecast.
 - Weather: past monthly temperature, rain, humidity and wind at the region's fire hotspots (Meteomatics), compared with each month's normal.
 
 # The app

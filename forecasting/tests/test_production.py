@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 from sklearn.dummy import DummyClassifier
 from firecast.clouds import cloud_point
 from firecast.geos import decode_hour,aggregate_window
+from firecast import forecast_acquire
 from firecast.masks import swath_evidence
 from firecast.release import assess_release,REQUIRED_EVIDENCE,EXPECTED_CHECKS
 from firecast.service import create_app,load_release
@@ -26,6 +27,22 @@ def test_cloud_sentinel_and_units(monkeypatch,tmp_path):
     assert frame.CLOUD_AMT.isna().iloc[0] and frame.CLOUD_AMT.iloc[1]==20 and meta['missing']['CLOUD_AMT']==1
     payload['properties']['parameter']['CLOUD_AMT']['20200102']=110;path.write_text(json.dumps(payload))
     with pytest.raises(ValueError,match='percent range'):cloud_point((33.5,35.5),{'start':'20200101','end':'20200102'},tmp_path)
+
+
+def test_next_day_archive_retries_older_cycles_and_requires_on_time_retrieval(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(forecast_acquire, "source_exists", lambda url: "/D15/H12/" not in url)
+
+    def acquire(issue, prediction, horizon, bbox, out):
+        calls.append((issue, prediction, horizon, out))
+        retrieved = prediction if issue.endswith("06:00:00+00:00") else "2026-11-15T17:00:00Z"
+        return {"complete": True, "subsets": [{"downloaded_at": retrieved}]}
+
+    monkeypatch.setattr(forecast_acquire, "acquire_forecast", acquire)
+    assert forecast_acquire.archive_next_day(tmp_path, now="2026-11-15T16:45:00Z")
+    assert [call[0] for call in calls] == ["2026-11-15T06:00:00+00:00", "2026-11-15T00:00:00+00:00"]
+    assert all(call[1:3] == ("2026-11-16T00:00:00+00:00", 24) for call in calls)
+    assert calls[-1][-1] == tmp_path / "20261116" / "20261115-00"
 
 
 def geos_fixture(tmp_path):

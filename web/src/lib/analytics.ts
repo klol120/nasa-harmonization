@@ -8,6 +8,8 @@ export interface MonthPoint {
   month: number;
   value: number | null; // null = no coverage (never "zero fires")
   partial: boolean;
+  /** Future projection, shown only in the date navigator and calendar. */
+  forecast?: boolean;
   /** Modelled from MODIS, not detections (harmonized, pre-VIIRS). */
   estimate?: boolean;
   lowConfidence?: boolean;

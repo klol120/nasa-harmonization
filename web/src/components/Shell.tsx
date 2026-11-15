@@ -325,8 +325,10 @@ interface TopBarProps {
     metrics: Metric[];
     onMetric: (m: Metric) => void;
     selected: number;
+    forecast?: boolean;
     canStep: [boolean, boolean];
     onStep: (d: number) => void;
+    forwardLabel?: string;
     /** What one arrow click moves by (a year when the Overview map shows a whole year). */
     stepUnit: "month" | "year";
     /** The map's time window (Overview only), set next to the arrows so one control decides what they step. */
@@ -411,8 +413,9 @@ export function TopBar(p: TopBarProps) {
                   {MONTH_ABBR[ymMonth(d.selected) - 1]} {ymYear(d.selected)}
                 </>
               )}
+              {d.forecast && <small className="time-forecast-label">Forecast</small>}
             </output>
-            <button className="icon-btn" disabled={!d.canStep[1]} onClick={() => d.onStep(1)} aria-label={`Next ${d.stepUnit}`} title={`Next ${d.stepUnit}`}>
+            <button className="icon-btn" disabled={!d.canStep[1]} onClick={() => d.onStep(1)} aria-label={d.forwardLabel ?? `Next ${d.stepUnit}`} title={d.forwardLabel ?? `Next ${d.stepUnit}`}>
               <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden>
                 <path d="m8 5 5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

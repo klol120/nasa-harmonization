@@ -51,10 +51,10 @@ jobs:
           python-version: "3.13" # same as backend/Dockerfile
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
-      - run: uv sync --frozen
+      - run: uv sync --frozen --group ml
       # Tests marked `db` need PostgreSQL and are left out. The others use the export files in
       # export/export/ (checked into the repo) and a fake Meteomatics client.
-      - run: uv run --frozen python -m pytest -q -m "not db"
+      - run: uv run --frozen --group ml python -m pytest -q -m "not db"
 
   forecasting:
     name: Forecasting (time, labels, transfer and release checks)

@@ -3,6 +3,7 @@ import type { OutlookScore, RegionForecast } from "../data/api";
 import { MONTH_ABBR, parseYm, ymMonth, ymYear } from "../data/contract";
 import { fmt } from "../lib/analytics";
 import { CardHead, Kpi, PageHead, PngButton } from "./Blocks";
+import { OUTLOOK_METHOD_LABEL } from "./ForecastMonthReadout";
 
 export type ForecastStatus = "none" | "loading" | "ready" | "unpublished" | "failed";
 
@@ -26,7 +27,7 @@ const monthName = (ym: string) => {
   const i = parseYm(ym);
   return `${MONTH_ABBR[ymMonth(i) - 1]} ${ymYear(i)}`;
 };
-const pct = (x: number) => `${Math.round(100 * x)}%`;
+const pct = (x: number | null | undefined) => x != null && Number.isFinite(x) ? `${Math.round(100 * x)}%` : "–";
 const signed = (x: number) => `${x > 0 ? "+" : x < 0 ? "−" : "±"}${Math.abs(Math.round(100 * x))}%`;
 const BASELINE: Record<OutlookScore["best_baseline"], string> = {
   seasonal_5y: "5-year average",
@@ -34,12 +35,11 @@ const BASELINE: Record<OutlookScore["best_baseline"], string> = {
   last_year: "last year's value",
 };
 
-/** The region's burning outlook: the next six months from the shared machine-learning model. */
+/** Compare the region's published six-month outlook with the statistical model and baselines. */
 export function ForecastPage(p: Props) {
   const lede = (
     <>
-      Expected fire activity for the next six months, from a machine-learning model trained on the fire history of {p.regionName} and its neighbours. It covers the whole
-      region, in harmonized fire-days.
+      Six months of expected fire activity for {p.regionName}, in harmonized fire-days. You can also reach these months from the Overview timeline or the Burning calendar.
     </>
   );
   const head = <PageHead eyebrow={p.eyebrow} title="Burning outlook" lede={lede} />;
@@ -70,7 +70,7 @@ export function ForecastPage(p: Props) {
               <p className="muted">
                 {p.status === "none"
                   ? "Outlooks come from the data server, so they are only shown for regions opened from the world map."
-                  : "The forecasting model has not been run on this region's latest data yet. When it has, this page shows:"}
+                  : "An outlook appears after a forecast is published for this region."}
               </p>
               {p.status !== "none" && (
                 <ul className="forecast-promise">
@@ -95,6 +95,11 @@ export function ForecastPage(p: Props) {
   const { run, months } = p.forecast;
   const test = run.metrics.test;
   const conf = run.metrics.confirmation;
+  const method = run.metrics.method_kind;
+  const comparison = run.metrics.monthly_comparison;
+  const testYears = run.metrics.test_years?.join("–") ?? "2022–2025";
+  const methodYears = run.metrics.method_years?.join("–");
+  const options = run.metrics.method_evaluation;
   const next = months[0];
   const total = months.reduce((s, m) => s + m.value, 0);
   const typ = (ym: string) => p.typical?.[ymMonth(parseYm(ym)) - 1] ?? null;
@@ -110,7 +115,13 @@ export function ForecastPage(p: Props) {
           satellite data has arrived since; the outlook updates the next time the model runs.
         </div>
       )}
-      {test && !test.beats_baselines && (
+      {method && method !== "outlook" && (
+        <div className="banner banner-soft">
+          <b>Seasonal baseline in use.</b> The {OUTLOOK_METHOD_LABEL[method].toLowerCase()} matched or beat the model blend in the {methodYears} method comparison
+          {options?.candidate && ` (${pct(options.model.wape)} error vs ${pct(options.candidate.wape)})`}.
+        </div>
+      )}
+      {!method && test?.model && !test.beats_baselines && (
         <div className="banner banner-soft">
           <b>Read this as a seasonal guide.</b> In testing on 2022–2025, this forecast was no better here than the {BASELINE[test.best_baseline]} (typical error{" "}
           {pct(test.model.wape)} vs {pct(test[test.best_baseline].wape)}).
@@ -119,7 +130,7 @@ export function ForecastPage(p: Props) {
 
       <section className="kpis forecast-kpis" aria-label="Outlook summary">
         <Kpi
-          label={`Next month · ${monthName(next.ym)}`}
+          label={`First forecast · ${monthName(next.ym)}`}
           value={fmt(next.value)}
           num={next.value}
           sub={next.value_low !== null && next.value_high !== null ? `likely ${fmt(next.value_low)}–${fmt(next.value_high)} ${p.unit}` : p.unit}
@@ -132,17 +143,17 @@ export function ForecastPage(p: Props) {
           tone={typTotal ? (total > typTotal * 1.15 ? "warm" : total < typTotal * 0.85 ? "cool" : undefined) : undefined}
         />
         <Kpi
-          label="Tested accuracy"
-          value={test ? `±${pct(test.model.wape)}` : "–"}
-          sub={test ? `typical monthly error, 2022–2025 · 5-year average ±${pct(test.seasonal_5y.wape)}` : "not recorded"}
-          tone={test ? (test.beats_baselines ? "cool" : undefined) : undefined}
+          label="Backtest error"
+          value={pct(test?.model?.wape)}
+          sub={test?.model ? `${testYears} · ${test.candidate ? "model blend" : "5-year average"} error ${pct(test.candidate?.wape ?? test.seasonal_5y.wape)}` : "No score recorded"}
+          tone={test?.beats_baselines ? "cool" : undefined}
         />
       </section>
 
       <section className="card">
         <CardHead
-          title="Next six months"
-          subtitle={`${span} · forecast issued after ${run.metrics.issued_after ? monthName(run.metrics.issued_after) : "the last complete month"} · band = likely range (8 in 10 months)`}
+          title="Monthly outlook"
+          subtitle={`${span} · observations through ${run.metrics.issued_after ? monthName(run.metrics.issued_after) : "the last complete month"} · range targets 80% coverage`}
           actions={<PngButton id="forecast" />}
         />
         <ForecastChart forecast={months} history={p.history} typical={p.typical} unit={p.unit} />
@@ -158,7 +169,7 @@ export function ForecastPage(p: Props) {
                 <th scope="col">Month</th>
                 <th scope="col">Expected</th>
                 <th scope="col">Likely range</th>
-                {p.typical && <th scope="col">Typical</th>}
+                {comparison ? <th scope="col">Model blend</th> : p.typical && <th scope="col">Typical</th>}
               </tr>
             </thead>
             <tbody>
@@ -171,7 +182,7 @@ export function ForecastPage(p: Props) {
                       <b>{fmt(m.value)}</b>
                     </td>
                     <td className="muted">{m.value_low !== null && m.value_high !== null ? `${fmt(m.value_low)} – ${fmt(m.value_high)}` : "–"}</td>
-                    {p.typical && (
+                    {comparison ? <td className="muted">{fmt(comparison[m.ym]?.candidate)}</td> : p.typical && (
                       <td className="muted">
                         {t === null ? "–" : fmt(t)}
                         {t ? <span className={`forecast-delta${m.value > t * 1.15 ? " tone-warm" : m.value < t * 0.85 ? " tone-cool" : ""}`}> {signed(m.value / t - 1)}</span> : null}
@@ -185,31 +196,28 @@ export function ForecastPage(p: Props) {
         </section>
 
         <section className="card">
-          <CardHead title="How this forecast works" subtitle={`${run.model_name} v${run.model_version}`} />
-          <ul className="forecast-how">
-            <li>
-              <b>One model for every region.</b> It learns from each 5 km cell's past: the same month in earlier years, recent months, and whether the region is running hot
-              or quiet.
-            </li>
-            <li>
-              <b>Tuned for {p.regionName}.</b>{" "}
-              {run.metrics.method
-                ? `Here the outlook is the ${run.metrics.method}: the mix that worked best on 2019–2021, before the test years.`
-                : "Blended with the 5-year average, which kept it steadier on years it never saw."}
-            </li>
-            <li>
-              <b>Tested honestly.</b>{" "}
-              {test
-                ? `Trained on data up to 2021 and scored on 2022–2025: it landed within 25% of the actual in ${pct(test.within_25pct)} of months.`
-                : "Scored on years kept out of training."}
-              {conf?.months?.length ? ` On ${conf.months.length} newer months of 2026 its typical error was ${pct(conf.model.wape)}.` : ""}
-            </li>
-            <li>
-              <b>Not yet included:</b> weather forecasts, rainfall or vegetation dryness. It shows where the season usually goes, not individual fires.
-            </li>
-          </ul>
+          <CardHead title="Backtest by lead time" subtitle={`${testYears} · total absolute error ÷ observed fire-days`} />
+          {test?.by_horizon ? (
+            <table className="forecast-table">
+              <thead><tr><th scope="col">Ahead</th><th scope="col">Published</th><th scope="col">Best baseline</th><th scope="col">In range</th></tr></thead>
+              <tbody>
+                {Object.entries(test.by_horizon).map(([lead, score]) => (
+                  <tr key={lead}>
+                    <th scope="row">{lead} mo</th>
+                    <td>{pct(score.model.wape)}</td>
+                    <td title={BASELINE[score.best_baseline]}>{pct(score[score.best_baseline].wape)}</td>
+                    <td>{pct(score.interval_coverage)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <p className="muted small">This run has no results by lead time.</p>}
+          {conf?.months?.length ? <p className="muted small">Recent check over {conf.months.length} months · {pct(conf.model.wape)} error.</p> : null}
         </section>
       </div>
+      <p className="muted small">
+        Published method {run.metrics.method ?? "statistical outlook"} · history-based regional estimates · run {new Date(run.created_at).toLocaleDateString()}
+      </p>
     </>
   );
 }

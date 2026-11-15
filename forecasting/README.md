@@ -63,6 +63,17 @@ The grid is 0.1° (about 11.1 km north–south and 9.2 km east–west at Lebanon
 
 ## Forecast inputs and inference
 
+To build an issued-weather record prospectively, run this command daily before 00:00 UTC. It
+selects a complete GEOS cycle for the next UTC day and retains the original issue and retrieval
+times. Keep the archive on persistent storage. Pair each target day with its NOAA-20 VJ114A1.002
+daily fire masks and QA once Earthdata publishes them, using the same grid and observation
+coverage rules as the existing confirmation pipeline. Training and validation should keep the
+issue-date data and subsequent outcomes separate.
+
+```sh
+uv run --frozen python -m firecast.forecast_acquire --next-day --out data/prospective-geos
+```
+
 For the completed issue/window, cached inputs already exist. For another **future** window, choose an available GEOS cycle before prediction, download all hours and retain actual retrieval timestamps:
 
 ```sh

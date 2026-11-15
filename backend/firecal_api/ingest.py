@@ -11,6 +11,7 @@ not used: this machine's Application Control policy blocks them.
 
 import contextlib
 import gzip
+import hashlib
 import json
 import os
 import tempfile
@@ -28,35 +29,52 @@ REQUIRED_FILES = ("meta.json", "region_monthly.json", "cells.geojson")
 CALENDAR_FILES = ("calendar.parquet", "calendar.csv.gz")  # in order of preference; one is required
 
 
-@contextlib.contextmanager
-def calendar_csv(folder: Path, warnings: list[str]):
-    """Yield (path, opener) of a CSV holding the calendar, converting the parquet file when possible."""
-    pq, gz = folder / "calendar.parquet", folder / "calendar.csv.gz"
-    if pq.is_file():
+def export_fingerprint(folder: Path, calendar_name: str) -> str:
+    """Identify the exact metadata, region months, cells, and calendar used."""
+    digest = hashlib.sha256()
+    for name in (*REQUIRED_FILES, calendar_name):
+        with (folder / name).open("rb") as f:
+            digest.update(name.encode("utf-8") + b"\0")
+            digest.update(hashlib.file_digest(f, "sha256").digest())
+    return digest.hexdigest()
+
+
+def calendar_input(folder: Path, warnings: list[str]) -> Path:
+    parquet, csv = (folder / name for name in CALENDAR_FILES)
+    if parquet.is_file():
         try:
             import duckdb
         except ImportError:
-            duckdb = None
-            if gz.is_file():
+            if csv.is_file():
                 warnings.append("duckdb is not installed: loading calendar.csv.gz, whose values are rounded to 3 decimals")
-        if duckdb is not None:
-            fd, tmp = tempfile.mkstemp(suffix=".csv", prefix="firecal_calendar_")
-            os.close(fd)
-            try:
-                src, dst = str(pq).replace("'", "''"), tmp.replace("'", "''")
-                con = duckdb.connect()
-                try:
-                    con.execute(f"copy (select * from read_parquet('{src}')) to '{dst}' (header, delimiter ',')")
-                finally:
-                    con.close()
-                yield Path(tmp), lambda p, mode: open(p, mode, **({"encoding": "utf-8", "newline": ""} if "t" in mode else {}))
-            finally:
-                os.unlink(tmp)
-            return
-    if gz.is_file():
-        yield gz, lambda p, mode: gzip.open(p, mode, **({"encoding": "utf-8", "newline": ""} if "t" in mode else {}))
+        else:
+            return parquet
+    if csv.is_file():
+        return csv
+    raise ContractError(f"{folder}: no readable calendar ({' or '.join(CALENDAR_FILES)})")
+
+
+@contextlib.contextmanager
+def calendar_csv(source: Path):
+    """Yield (path, opener) for the selected calendar source."""
+    if source.suffix == ".gz":
+        yield source, lambda p, mode: gzip.open(p, mode, **({"encoding": "utf-8", "newline": ""} if "t" in mode else {}))
         return
-    raise ContractError(f"{folder}: missing calendar ({' or '.join(CALENDAR_FILES)})")
+
+    import duckdb
+
+    fd, tmp = tempfile.mkstemp(suffix=".csv", prefix="firecal_calendar_")
+    os.close(fd)
+    try:
+        src, dst = str(source).replace("'", "''"), tmp.replace("'", "''")
+        con = duckdb.connect()
+        try:
+            con.execute(f"copy (select * from read_parquet('{src}')) to '{dst}' (header, delimiter ',')")
+        finally:
+            con.close()
+        yield Path(tmp), lambda p, mode: open(p, mode, **({"encoding": "utf-8", "newline": ""} if "t" in mode else {}))
+    finally:
+        os.unlink(tmp)
 
 
 @dataclass
@@ -230,15 +248,17 @@ async def ingest_region(
     t0 = time.perf_counter()
     folder = folder.resolve()
     warnings: list[str] = []
+    source = calendar_input(folder, warnings)
+    fingerprint = export_fingerprint(folder, source.name)
     meta = read_meta(folder, warnings)
     region = meta["region"]
     rep = IngestReport(region=region, warnings=warnings)
     generated_at = datetime.fromisoformat(meta["generated_at"].replace("Z", "+00:00")) if meta.get("generated_at") else None
-
-    if not force and generated_at:
+    if not force:
         prev = await conn.fetchval(
-            "select release_id from release where region_id = $1 and generated_at = $2 and pipeline is not distinct from $3",
-            region, generated_at, meta.get("pipeline"),
+            """select release_id from release where region_id = $1 and export_fingerprint = $2
+               order by is_current desc, release_id desc limit 1""",
+            region, fingerprint,
         )
         if prev:
             log(f"[{region}] this export (generated {meta['generated_at']}) is already release {prev}; skipping (use --force to reload)")
@@ -257,10 +277,10 @@ async def ingest_region(
         release_id = await conn.fetchval(
             """insert into release (region_id, contract_version, generated_at, pipeline, bbox, countries,
                    first_month, last_month, n_cells, n_persistent_cells, baseline_first_year, baseline_last_year,
-                   meta, source_path)
-               values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) returning release_id""",
+                   meta, source_path, export_fingerprint)
+               values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) returning release_id""",
             region, meta["contract_version"], generated_at, meta.get("pipeline"), meta["bbox"], meta["countries"],
-            first, last, meta["n_cells"], meta["n_persistent_cells"], b0, b1, meta, str(folder),
+            first, last, meta["n_cells"], meta["n_persistent_cells"], b0, b1, meta, str(folder), fingerprint,
         )
         rep.release_id = release_id
         log(f"[{region}] release {release_id}: loading {len(cells)} cells and {len(months)} months")
@@ -287,7 +307,7 @@ async def ingest_region(
         # Calendar: stream a CSV into a text staging table whose columns follow the file header
         # (so added fields are tolerated), then cast into cell_month.
         log(f"[{region}] copying the calendar...")
-        with calendar_csv(folder, warnings) as (cal, opener):
+        with calendar_csv(source) as (cal, opener):
             with opener(cal, "rt") as f:
                 header = f.readline().strip().split(",")
             missing = [c for c in C.CALENDAR_FIELDS if c not in header and c not in C.OPTIONAL_CALENDAR_FIELDS]
@@ -423,6 +443,8 @@ async def ingest_region(
                           f.get("b_low"), f.get("b_high"), f.get("w_local")) for model, f in factors],
             )
 
+        if export_fingerprint(folder, source.name) != fingerprint:
+            raise ContractError(f"{folder}: export changed during ingest")
         if make_current:
             await conn.execute("update release set is_current = false where region_id = $1 and is_current", region)
             await conn.execute("update release set is_current = true where release_id = $1", R)

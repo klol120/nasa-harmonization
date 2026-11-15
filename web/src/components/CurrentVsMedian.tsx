@@ -1,5 +1,6 @@
 import { MONTH_ABBR, ymMonth, ymYear } from "../data/contract";
 import { type CurrentVsMedian as CVM, type MonthPoint, fmt, fmtPct } from "../lib/analytics";
+import { ForecastMonthReadout, type ForecastMonthDetails } from "./ForecastMonthReadout";
 
 interface Props {
   cvm: CVM | null;
@@ -10,6 +11,9 @@ interface Props {
   onLatest: () => void;
   /** What one arrow click moves by. */
   stepUnit?: "month" | "year";
+  forecast?: ForecastMonthDetails;
+  canStep?: [boolean, boolean];
+  forwardLabel?: string;
 }
 
 const ordinal = (n: number) => {
@@ -26,7 +30,7 @@ function verdict(z: number, pct: number) {
 }
 
 /** "Is this month above or below normal?" for the selected month. */
-export function CurrentVsMedian({ cvm, series, selected, unit, onStep, onLatest, stepUnit = "month" }: Props) {
+export function CurrentVsMedian({ cvm, series, selected, unit, onStep, onLatest, stepUnit = "month", forecast, canStep, forwardLabel = `Next ${stepUnit}` }: Props) {
   const month = ymMonth(selected);
   const year = ymYear(selected);
   const same = series.filter((p) => p.month === month && p.value !== null && !p.partial);
@@ -35,18 +39,18 @@ export function CurrentVsMedian({ cvm, series, selected, unit, onStep, onLatest,
   return (
     <div className="cvm">
       <div className="cvm-head">
-        <button className="icon-btn" onClick={() => onStep(-1)} aria-label={`Previous ${stepUnit}`} title={`Previous ${stepUnit}`}>‹</button>
+        <button className="icon-btn" disabled={canStep && !canStep[0]} onClick={() => onStep(-1)} aria-label={`Previous ${stepUnit}`} title={`Previous ${stepUnit}`}>‹</button>
         <div className="cvm-title">
-          <span className="eyebrow">Selected month</span>
+          <span className={forecast ? "eyebrow time-forecast-label" : "eyebrow"}>{forecast ? "Forecast month" : "Selected month"}</span>
           <strong>
             {MONTH_ABBR[month - 1]} {year}
           </strong>
         </div>
-        <button className="icon-btn" onClick={() => onStep(1)} aria-label={`Next ${stepUnit}`} title={`Next ${stepUnit}`}>›</button>
-        <button className="chip" onClick={onLatest}>Latest</button>
+        <button className="icon-btn" disabled={canStep && !canStep[1]} onClick={() => onStep(1)} aria-label={forwardLabel} title={forwardLabel}>›</button>
+        <button className="chip" onClick={onLatest} title="Latest observed month">Latest</button>
       </div>
 
-      {!cvm ? (
+      {forecast ? <ForecastMonthReadout {...forecast} /> : !cvm ? (
         <p className="muted small">No coverage for this month, or not enough other years to compare against.</p>
       ) : (
         <>

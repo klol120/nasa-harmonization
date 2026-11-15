@@ -152,6 +152,31 @@ On Azure the poller and the consumer are the two Functions in [`functions/`](../
 
 ## Machine learning
 
+The Burning Outlook publishes monthly regional fire-day estimates for leads 1–6 on the Overview
+timeline and Burning calendar. Each country uses the blend or seasonal baseline with the lowest
+2022–2023 error. The report includes 2024–2025 and recent checks, by-lead errors and interval coverage.
+Backtests enforce the model fit cutoff at each issue date and use today's historical exports.
+
+Run from `backend/` with `EXPORT_DIR` pointing to the exports used to load the current database
+releases. To refresh automatically, run the last command as a scheduled job on the same export
+volume after ingest. It skips months that already have an outlook at the current model version.
+
+```sh
+uv run --frozen --group ml python -m firecal_api.cli ingest
+uv run --frozen --group ml python -m firecal_api.outlook --save --if-due --out /path/to/outlook-artifacts
+```
+
+Ingest records a fingerprint of the files used for each release. Re-ingesting existing exports
+registers fingerprints for older releases. Publishing rejects a mismatch and writes the batch
+in a single transaction. A release with a newer partial month can still show the previous outlook
+until a full month closes. The historical export needs to include that completed month for a new
+run. The near-real-time overlay updates separately.
+
+The defaults train on the available single-country exports. Pass `--regions` to choose the
+training and publication scope. Omit `--save` for a local backtest and report. Seasonal regional
+baselines are stored as regional totals, and the website labels forecast months and shows their
+whole-region outlook without placing detection markers on the map.
+
 - **Train** from the `ml_cell_month` view, for example with polars:
   `pl.read_database_uri("select * from ml_cell_month where region_id = 'lebanon'", DATABASE_URL)`.
 - **Write** results with `firecal_api.ml.save_run(...)`. It records the run against the release it was

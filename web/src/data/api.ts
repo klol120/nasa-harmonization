@@ -100,20 +100,26 @@ export const getWeather = (region: string, signal?: AbortSignal) => getJson<Regi
 
 /** Name of the burning-outlook model (backend/firecal_api/outlook.py). */
 export const OUTLOOK_MODEL = "outlook-hgb";
+export type OutlookBaseline = "seasonal_5y" | "typical_year" | "last_year";
+export type OutlookMethod = OutlookBaseline | "outlook";
+type OutlookError = { mae: number; wape: number | null };
 
 /** Region-level errors of one evaluation (outlook.summarize). `wape` = summed |error| / summed actual. */
 export interface OutlookScore {
   n: number;
   actual_mean: number;
-  model: { mae: number; wape: number };
-  seasonal_5y: { mae: number; wape: number };
-  typical_year: { mae: number; wape: number };
-  last_year: { mae: number; wape: number };
-  best_baseline: "seasonal_5y" | "typical_year" | "last_year";
+  model: OutlookError;
+  candidate?: OutlookError;
+  seasonal_5y: OutlookError;
+  typical_year: OutlookError;
+  last_year: OutlookError;
+  best_baseline: OutlookBaseline;
   skill_vs_best: number;
   beats_baselines: boolean;
   within_25pct: number;
   months?: string[];
+  interval_coverage?: number | null;
+  by_horizon?: Record<string, OutlookScore>;
 }
 
 export interface ModelRun {
@@ -124,11 +130,16 @@ export interface ModelRun {
   target: string;
   params: Record<string, unknown>;
   metrics: {
-    test?: OutlookScore & { interval_coverage?: number | null };
-    confirmation?: OutlookScore & { interval_coverage?: number | null };
+    test?: OutlookScore;
+    confirmation?: OutlookScore;
+    method_evaluation?: OutlookScore;
+    test_years?: [number, number];
+    method_years?: [number, number];
     issued_after?: string;
     /** How this region's outlook is made, e.g. "machine-learning model 50% + 5-year average 50%". */
     method?: string;
+    method_kind?: OutlookMethod;
+    monthly_comparison?: Record<string, { candidate: number; method: OutlookMethod }>;
     /** Weight of the 5-year average (1 = the average alone). */
     blend?: number;
   };
@@ -145,6 +156,7 @@ export interface ForecastMonth {
 }
 
 export interface RegionForecast {
+  region: string;
   run: ModelRun;
   months: ForecastMonth[];
 }
@@ -162,7 +174,23 @@ export async function getForecast(region: string, signal?: AbortSignal): Promise
   const run = outlooks.find((x) => x.is_current) ?? outlooks[0];
   if (!run) return null;
   const p = await getJson<{ months: ForecastMonth[] }>(`/regions/${r}/predictions?run_id=${run.run_id}&level=region`, { signal });
-  return { run, months: p.months };
+  return { region, run, months: p.months };
+}
+
+export async function getForecastCells(region: string, runId: number, month: string, gridDeg: number, signal?: AbortSignal): Promise<CellValues> {
+  const query = new URLSearchParams({ run_id: String(runId), level: "cell", from: month, to: month });
+  const { rows } = await getJson<{ rows: { cell_id: string; value: number }[] }>(
+    `/regions/${encodeURIComponent(region)}/predictions?${query}`, { signal },
+  );
+  const cells: CellValues = new Map();
+  for (const { cell_id, value } of rows) {
+    // The export contract indexes the grid north and east from (-90°, -180°).
+    const [row, col] = cell_id.split("_").map(Number);
+    if (Number.isInteger(row) && Number.isInteger(col) && value > 0) {
+      cells.set(cell_id, { lat: (row + 0.5) * gridDeg - 90, lon: (col + 0.5) * gridDeg - 180, value });
+    }
+  }
+  return cells;
 }
 
 /** A region_monthly / aggregate row (contract field names). */
@@ -266,7 +294,7 @@ export function apiSource(summary: RegionSummary): DataSource {
     async load(): Promise<DatasetMeta> {
       const [m, rows] = await Promise.all([getJson<any>(`${base}/meta?${q}`), getMonthly()]);
       const avail = rows.filter((r) => r.data_available);
-      const complete = avail.filter((r) => !r.display_only && !r.partial_month);
+      const complete = avail.filter((r) => !r.partial_month);
       const estimates = rows.filter((r) => r.is_estimate);
       const cal = m.calibration ?? {};
       const val = m.validation;
