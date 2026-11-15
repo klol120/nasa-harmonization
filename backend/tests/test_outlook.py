@@ -71,3 +71,18 @@ def test_fit_and_predict_on_synthetic_data():
     assert p.sum() > 3 * q.sum()
     assert m.with_blend(1.0).predict(O.features(R, 0, 120, 1)) == pytest.approx(
         np.nan_to_num(O.features(R, 0, 120, 1)[:, O.FEATURES.index("m5")]))
+
+
+def test_blend_weights_and_range_coverage():
+    rows = [{"h": 1, "ym": "2020-01", "actual": 10.0, "raw": 20.0, "seasonal_5y": 10.0, "typical_year": 9.0, "last_year": 8.0},
+            {"h": 1, "ym": "2020-02", "actual": 30.0, "raw": 40.0, "seasonal_5y": float("nan"), "typical_year": 25.0,
+             "last_year": 40.0}]
+    half = O.blended(rows, 0.5)
+    assert half[0]["model"] == pytest.approx(15.0)
+    assert half[1]["model"] == pytest.approx(40.0)  # no 5-year mean yet: the model alone
+    assert O.blended(rows, 1.0)[0]["model"] == pytest.approx(10.0)  # weight 1 = the 5-year mean
+    q = O.band_quantiles(O.blended(rows, 1.0))
+    assert q[0] <= 0 <= q[1] or q[0] <= q[1]
+    assert O.coverage(O.blended(rows, 1.0), (math.log(0.5), math.log(2))) == pytest.approx(1.0)
+    assert O.coverage([], (0.0, 0.0)) is None
+    assert "5-year average" in O.method_text(1.0) and O.method_text(0.0) == "machine-learning model"

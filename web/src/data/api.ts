@@ -123,7 +123,15 @@ export interface ModelRun {
   release_id: number;
   target: string;
   params: Record<string, unknown>;
-  metrics: { test?: OutlookScore; confirmation?: OutlookScore; issued_after?: string };
+  metrics: {
+    test?: OutlookScore & { interval_coverage?: number | null };
+    confirmation?: OutlookScore & { interval_coverage?: number | null };
+    issued_after?: string;
+    /** How this region's outlook is made, e.g. "machine-learning model 50% + 5-year average 50%". */
+    method?: string;
+    /** Weight of the 5-year average (1 = the average alone). */
+    blend?: number;
+  };
   notes: string | null;
   created_at: string;
   is_current: boolean;
@@ -148,7 +156,10 @@ export interface RegionForecast {
 export async function getForecast(region: string, signal?: AbortSignal): Promise<RegionForecast | null> {
   const r = encodeURIComponent(region);
   const runs = await getJson<ModelRun[]>(`/regions/${r}/model-runs`, { signal });
-  const run = runs.find((x) => x.model_name === OUTLOOK_MODEL && x.is_current);
+  // Newest first. Prefer a run on the current release; the pipeline loads a new release every day, so
+  // until the model runs again the newest earlier outlook is still shown (the page says so).
+  const outlooks = runs.filter((x) => x.model_name === OUTLOOK_MODEL);
+  const run = outlooks.find((x) => x.is_current) ?? outlooks[0];
   if (!run) return null;
   const p = await getJson<{ months: ForecastMonth[] }>(`/regions/${r}/predictions?run_id=${run.run_id}&level=region`, { signal });
   return { run, months: p.months };

@@ -35,7 +35,7 @@ import duckdb
 import numpy as np
 
 MODEL_NAME = "outlook-hgb"
-MODEL_VERSION = "0.1.0"
+MODEL_VERSION = "0.2.0"
 HORIZONS = range(1, 7)
 MIN_HISTORY = 36  # months of history before the first issue month used for fitting
 TEST_YEARS = (2022, 2025)
@@ -241,8 +241,11 @@ CANDIDATES = {
     "full": [],
     "shared": ["lat", "lon", "region"],
 }
-BLENDS = (0.0, 0.25, 0.5)  # weight of the 5-year same-month mean in the final forecast
+# Weight of the 5-year same-month mean in each region's forecast, chosen per region on the validation
+# years. 1.0 means the model did not help there: the outlook is the 5-year mean.
+BLENDS = (0.0, 0.25, 0.5, 0.75, 1.0)
 VALIDATION_YEARS = (2019, 2021)
+BAND = (0.1, 0.9)  # likely range: 8 in 10 months
 
 
 class Outlook:
@@ -277,53 +280,35 @@ def fit(regions: list[Region], last_target: dict[str, int], candidate: str = "fu
     return Outlook(est, cols, blend, candidate), len(y)
 
 
-def relative_error(scored: dict) -> float:
-    """Mean over regions of MAE(model) / MAE(5-year mean): every region counts the same, however big."""
-    r = [summarize(v["rows"]) for v in scored.values() if v["rows"]]
-    return float(np.mean([s["model"]["mae"] / s["seasonal_5y"]["mae"] for s in r if s["seasonal_5y"]["mae"]]))
-
-
-def select(regions: list[Region], log=print) -> tuple[str, float, list[dict]]:
-    """Pick the candidate and blend with the lowest validation error. The test years are never used."""
-    last = {R.name: max(j for j in range(len(R.months)) if R.year(j) < VALIDATION_YEARS[0] and R.ok[j]) for R in regions}
-    val = {R.name: [j for j in range(len(R.months)) if VALIDATION_YEARS[0] <= R.year(j) <= VALIDATION_YEARS[1] and R.ok[j]]
-           for R in regions}
-    table = []
-    for cand in CANDIDATES:
-        m, _ = fit(regions, last, cand)
-        for b in BLENDS:
-            e = relative_error(score(m.with_blend(b), regions, val))
-            table.append({"candidate": cand, "blend": b, "relative_error": e})
-            log(f"  validation {VALIDATION_YEARS[0]}-{VALIDATION_YEARS[1]}: {cand:6} blend {b:.2f} -> "
-                f"{100 * e:.0f}% of the 5-year mean's error")
-    best = min(table, key=lambda t: t["relative_error"])
-    return best["candidate"], best["blend"], table
-
-
 # ---------------------------------------------------------------- scoring
 
 
 def score(model, regions: list[Region], targets: dict[str, list[int]]) -> dict:
-    """Score every (target month, lead) pair. Returns per-region region-level and cell-level errors."""
+    """Score every (target month, lead) pair with the model alone ("raw"). Blends with the 5-year mean are
+    applied afterwards (`blended`): at region level that is exact, because the region's 5-year mean is the
+    sum of its cells' 5-year means."""
     out = {}
     for code, R in enumerate(regions):
-        recs = []  # (h, j, actual, model, baselines...)
-        cell_abs = {"model": 0.0, "seasonal_5y": 0.0, "actual": 0.0}
+        recs = []
         for j in targets[R.name]:
             for h in HORIZONS:
                 i = j - h
                 if i < MIN_HISTORY or not R.ok[i] or not R.ok[j]:
                     continue
                 p = model.predict(features(R, code, i, h))
-                a = R.V[:, j]
-                b5 = _nanmean(_same_month(R.V, j, 5))
-                m = np.isfinite(a)
-                cell_abs["model"] += float(np.abs(p[m] - a[m]).sum())
-                cell_abs["seasonal_5y"] += float(np.abs(np.nan_to_num(b5[m]) - a[m]).sum())
-                cell_abs["actual"] += float(a[m].sum())
-                recs.append({"h": h, "ym": R.months[j], "actual": float(np.nansum(a)), "model": float(p.sum()),
+                recs.append({"h": h, "ym": R.months[j], "actual": float(np.nansum(R.V[:, j])), "raw": float(p.sum()),
                              **region_baselines(R, j)})
-        out[R.name] = {"rows": recs, "cell": cell_abs}
+        out[R.name] = recs
+    return out
+
+
+def blended(rows: list[dict], w: float) -> list[dict]:
+    """Rows with "model" = (1-w) * model + w * 5-year mean (the model alone where the mean is missing)."""
+    out = []
+    for r in rows:
+        b = r["seasonal_5y"]
+        m = r["raw"] if not math.isfinite(b) else (1 - w) * r["raw"] + w * b
+        out.append({**r, "model": m})
     return out
 
 
@@ -351,20 +336,70 @@ def summarize(rows: list[dict]) -> dict:
     return res
 
 
-def interval_quantiles(rows: list[dict]) -> dict[int, tuple[float, float]]:
-    """10%/90% quantiles of log((actual+1)/(forecast+1)) per lead, from the test years."""
-    q = {}
-    for h in HORIZONS:
-        r = np.array([math.log((x["actual"] + 1) / (x["model"] + 1)) for x in rows if x["h"] == h])
-        q[h] = (float(np.quantile(r, 0.1)), float(np.quantile(r, 0.9))) if len(r) else (0.0, 0.0)
-    return q
+def band_quantiles(rows: list[dict]) -> tuple[float, float]:
+    """BAND quantiles of log((actual+1)/(forecast+1)): how far real months fell from the forecast."""
+    r = np.array([math.log((x["actual"] + 1) / (x["model"] + 1)) for x in rows])
+    return (float(np.quantile(r, BAND[0])), float(np.quantile(r, BAND[1]))) if len(r) else (0.0, 0.0)
+
+
+def coverage(rows: list[dict], q: tuple[float, float]) -> float | None:
+    """Share of months whose actual value fell inside the likely range."""
+    if not rows:
+        return None
+    hits = []
+    for r in rows:
+        lo, hi = _band(r["model"], q)
+        hits.append(lo <= r["actual"] <= hi)
+    return float(np.mean(hits))
 
 
 def _band(p: float, q: tuple[float, float]) -> tuple[float, float]:
     return max(0.0, (p + 1) * math.exp(q[0]) - 1), (p + 1) * math.exp(q[1]) - 1
 
 
+def _rel(rows: list[dict]) -> float:
+    s = summarize(rows)
+    return s["model"]["mae"] / s["seasonal_5y"]["mae"] if s and s["seasonal_5y"]["mae"] else math.inf
+
+
+def select(regions: list[Region], log=print) -> dict:
+    """On the validation years only: pick the shared candidate, then each region's blend weight and likely
+    range. The test years are never used for any choice."""
+    last = {R.name: max(j for j in range(len(R.months)) if R.year(j) < VALIDATION_YEARS[0] and R.ok[j]) for R in regions}
+    val = {R.name: [j for j in range(len(R.months)) if VALIDATION_YEARS[0] <= R.year(j) <= VALIDATION_YEARS[1] and R.ok[j]]
+           for R in regions}
+    best = None
+    table = []
+    for cand in CANDIDATES:
+        m, _ = fit(regions, last, cand)
+        scored = score(m, regions, val)
+        per = {}
+        for name, rows in scored.items():
+            errs = {w: _rel(blended(rows, w)) for w in BLENDS}
+            w = min(errs, key=errs.get)
+            per[name] = {"blend": w, "relative_error": errs[w], "by_blend": {str(k): v for k, v in errs.items()}}
+        mean_err = float(np.mean([v["relative_error"] for v in per.values()]))
+        table.append({"candidate": cand, "mean_relative_error": mean_err, "regions": per})
+        log(f"  validation {VALIDATION_YEARS[0]}-{VALIDATION_YEARS[1]}: {cand:6} -> {100 * mean_err:.0f}% of the 5-year mean's "
+            "error with per-region blends: " + ", ".join(f"{k} {v['blend']:.2f}" for k, v in per.items()))
+        if best is None or mean_err < best[0]:
+            best = (mean_err, cand, per, scored)
+    _, cand, per, scored = best
+    blends = {k: v["blend"] for k, v in per.items()}
+    bands = {k: band_quantiles(blended(scored[k], blends[k])) for k in scored}
+    return {"candidate": cand, "blends": blends, "bands": bands, "table": table,
+            "validation_years": list(VALIDATION_YEARS)}
+
+
 # ---------------------------------------------------------------- whole run
+
+
+def method_text(w: float) -> str:
+    if w >= 1:
+        return "5-year average (the model did not beat it on 2019-2021)"
+    if w <= 0:
+        return "machine-learning model"
+    return f"machine-learning model {100 * (1 - w):.0f}% + 5-year average {100 * w:.0f}%"
 
 
 def run(export_dir: Path, out_dir: Path, names: list[str] | None = None, log=print) -> dict:
@@ -375,67 +410,67 @@ def run(export_dir: Path, out_dir: Path, names: list[str] | None = None, log=pri
     def months_in(R, y0, y1):
         return [j for j, ym in enumerate(R.months) if y0 <= int(ym[:4]) <= y1 and R.ok[j]]
 
-    # 0) choose inputs and blend on the validation years (before the test years)
-    cand, blend, sel_table = select(regions, log)
-    log(f"selected: {cand}, blend {blend:.2f} ({time.time() - t0:.0f}s)")
+    # 0) choose the inputs, each region's blend and its likely range on the validation years
+    sel = select(regions, log)
+    cand, blends, bands = sel["candidate"], sel["blends"], sel["bands"]
+    log(f"selected: {cand} ({time.time() - t0:.0f}s)")
 
-    # 1) test: fit on targets up to the year before the test, score the test years
+    # 1) test: fit on targets up to the year before the test, score the test years once
     last_fit = {R.name: max(j for j in range(len(R.months)) if R.year(j) < TEST_YEARS[0] and R.ok[j]) for R in regions}
-    m_test, n_fit = fit(regions, last_fit, cand, blend)
+    m_test, n_fit = fit(regions, last_fit, cand)
     log(f"test model: {n_fit:,} rows, {m_test.n_iter_} trees ({time.time() - t0:.0f}s)")
     test = score(m_test, regions, {R.name: months_in(R, *TEST_YEARS) for R in regions})
 
     # 2) confirmation: fit up to stats_last_year, score the complete months after it (never seen)
     last_fit = {R.name: max(j for j in range(len(R.months)) if R.year(j) <= R.stats_last_year and R.ok[j]) for R in regions}
-    m_conf, n_conf = fit(regions, last_fit, cand, blend)
+    m_conf, n_conf = fit(regions, last_fit, cand)
     log(f"confirmation model: {n_conf:,} rows, {m_conf.n_iter_} trees ({time.time() - t0:.0f}s)")
     conf = score(m_conf, regions, {R.name: [j for j in range(last_fit[R.name] + 1, len(R.months)) if R.ok[j]]
                                    for R in regions})
 
     # 3) live: fit on every complete month, forecast the next six from the last complete one
-    m_live, n_live = fit(regions, {R.name: R.last_ok for R in regions}, cand, blend)
+    m_live, n_live = fit(regions, {R.name: R.last_ok for R in regions}, cand)
     log(f"live model: {n_live:,} rows, {m_live.n_iter_} trees ({time.time() - t0:.0f}s)")
-    all_test = [r for v in test.values() for r in v["rows"]]
-    q = interval_quantiles(all_test)
 
+    test_b = {k: blended(v, blends[k]) for k, v in test.items()}
+    conf_b = {k: blended(v, blends[k]) for k, v in conf.items()}
+    all_test = [r for v in test_b.values() for r in v]
     report = {
         "model_name": MODEL_NAME, "model_version": MODEL_VERSION, "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "last_complete_month": {R.name: R.months[R.last_ok] for R in regions},
         "target": "harmonized (VIIRS-equivalent fire-days per cell per month); region = sum of cells",
         "features": [FEATURES[k] for k in m_live.cols], "horizons": list(HORIZONS), "test_years": list(TEST_YEARS),
-        "selection": {"validation_years": list(VALIDATION_YEARS), "candidate": cand, "blend": blend, "table": sel_table},
+        "selection": sel,
         "fit_rows": {"test": n_fit, "confirmation": n_conf, "live": n_live},
-        "interval_log_quantiles": {str(h): v for h, v in q.items()},
         "test": {"all": summarize(all_test), "by_horizon": {}, "regions": {}},
-        "confirmation": {"all": summarize([r for v in conf.values() for r in v["rows"]]), "regions": {}},
+        "confirmation": {"all": summarize([r for v in conf_b.values() for r in v]), "regions": {}},
         "live": {},
     }
     for h in HORIZONS:
         report["test"]["by_horizon"][str(h)] = summarize([r for r in all_test if r["h"] == h])
     for R in regions:
-        c = test[R.name]["cell"]
-        report["test"]["regions"][R.name] = {
-            **summarize(test[R.name]["rows"]),
-            "cell_wape": c["model"] / max(c["actual"], 1e-9),
-            "cell_wape_seasonal_5y": c["seasonal_5y"] / max(c["actual"], 1e-9),
+        k = R.name
+        raw = summarize(blended(test[k], 0.0))
+        report["test"]["regions"][k] = {
+            **summarize(test_b[k]), "blend": blends[k], "method": method_text(blends[k]),
+            "model_only_wape": raw.get("model", {}).get("wape"), "interval_coverage": coverage(test_b[k], bands[k]),
         }
-        crow = conf[R.name]["rows"]
-        cov = [_band(r["model"], q[r["h"]]) for r in crow]
-        report["confirmation"]["regions"][R.name] = {
-            **summarize(crow),
-            "months": sorted({r["ym"] for r in crow}),
-            "interval_coverage_10_90": float(np.mean([lo <= r["actual"] <= hi for r, (lo, hi) in zip(crow, cov)])) if crow else None,
+        report["confirmation"]["regions"][k] = {
+            **summarize(conf_b[k]), "months": sorted({r["ym"] for r in conf_b[k]}),
+            "interval_coverage": coverage(conf_b[k], bands[k]),
         }
 
     live = {}
     for code, R in enumerate(regions):
         i = R.last_ok
         y, mo = map(int, R.months[i].split("-"))
+        mdl = m_live.with_blend(blends[R.name])
         months, cells = [], []
         for h in HORIZONS:
-            p = m_live.predict(features(R, code, i, h))
+            p = mdl.predict(features(R, code, i, h))
             mm = mo + h
             ym = f"{y + (mm - 1) // 12:04d}-{(mm - 1) % 12 + 1:02d}"
-            lo, hi = _band(float(p.sum()), q[h])
+            lo, hi = _band(float(p.sum()), bands[R.name])
             months.append({"ym": ym, "h": h, "value": float(p.sum()), "value_low": lo, "value_high": hi})
             cells.append((ym, p))
         live[R.name] = {"issued_after": R.months[i], "months": months, "_cells": cells, "_cell_ids": R.cells}
@@ -445,7 +480,7 @@ def run(export_dir: Path, out_dir: Path, names: list[str] | None = None, log=pri
     (out_dir / "outlook-report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     with open(out_dir / "outlook-model.pkl", "wb") as f:
         pickle.dump({"model": m_live, "features": FEATURES, "regions": [R.name for R in regions],
-                     "interval_log_quantiles": q, "version": MODEL_VERSION}, f)
+                     "blends": blends, "bands": bands, "version": MODEL_VERSION}, f)
     log(f"done in {time.time() - t0:.0f}s -> {out_dir}")
     return {"report": report, "live": live}
 
@@ -455,29 +490,27 @@ def print_summary(report: dict, log=print) -> None:
         return "  n/a" if x is None or (isinstance(x, float) and math.isnan(x)) else f"{100 * x:+5.0f}%"
 
     s = report["selection"]
-    log(f"\nmodel: {s['candidate']} inputs, blended {100 * s['blend']:.0f}% with the 5-year mean "
-        f"(chosen on {s['validation_years'][0]}-{s['validation_years'][1]})")
+    log(f"\nmodel: {s['candidate']} inputs; each region's blend with the 5-year mean and its likely range chosen on "
+        f"{s['validation_years'][0]}-{s['validation_years'][1]}")
     log("err = |forecast - actual| summed / actual summed (lower is better); skill = error saved vs the best "
-        "simple baseline;\n±25% = share of months within 25% (or 5 fire-days) of the actual")
+        "simple baseline;\n±25% = months within 25% (or 5 fire-days); band = share of months inside the 80% range")
     log("\nTEST 2022-2025 (region monthly totals, leads 1-6 months)")
-    log(f"{'region':10} {'avg/mo':>7} {'err model':>9} {'err 5y':>7} {'err typ':>7} {'err LY':>7} "
-        f"{'skill':>7} {'±25%':>5}  verdict")
-    rows = list(report["test"]["regions"].items()) + [("ALL", report["test"]["all"])]
-    for name, s in rows:
-        log(f"{name:10} {s['actual_mean']:7.0f} {100 * s['model']['wape']:8.0f}% {100 * s['seasonal_5y']['wape']:6.0f}% "
-            f"{100 * s['typical_year']['wape']:6.0f}% {100 * s['last_year']['wape']:6.0f}% {pct(s['skill_vs_best']):>7} "
-            f"{100 * s['within_25pct']:4.0f}%  {'beats baselines' if s['beats_baselines'] else 'use typical year'}")
+    log(f"{'region':10} {'avg/mo':>7} {'blend':>5} {'err':>5} {'5y':>5} {'typ':>5} {'LY':>5} {'skill':>7} {'±25%':>5} {'band':>5}")
+    for name, r in list(report["test"]["regions"].items()) + [("ALL", report["test"]["all"])]:
+        cov = r.get("interval_coverage")
+        log(f"{name:10} {r['actual_mean']:7.0f} {r.get('blend', float('nan')):5.2f} {100 * r['model']['wape']:4.0f}% "
+            f"{100 * r['seasonal_5y']['wape']:4.0f}% {100 * r['typical_year']['wape']:4.0f}% {100 * r['last_year']['wape']:4.0f}% "
+            f"{pct(r['skill_vs_best']):>7} {100 * r['within_25pct']:4.0f}% " + (f"{100 * cov:4.0f}%" if cov is not None else "     "))
     log("\nby lead time (all regions):  " + "  ".join(
-        f"{h}m err {100 * s['model']['wape']:.0f}% (5y {100 * s['seasonal_5y']['wape']:.0f}%)"
-        for h, s in report["test"]["by_horizon"].items()))
-    c = report["confirmation"]
-    log(f"\nCONFIRMATION on new 2026 months (never used in fitting or choices)")
-    for name, s in list(c["regions"].items()) + [("ALL", c["all"])]:
-        if not s or "model" not in s:
+        f"{h}m err {100 * r['model']['wape']:.0f}% (5y {100 * r['seasonal_5y']['wape']:.0f}%)"
+        for h, r in report["test"]["by_horizon"].items()))
+    log("\nCONFIRMATION on new 2026 months (never used in fitting or choices)")
+    for name, r in list(report["confirmation"]["regions"].items()) + [("ALL", report["confirmation"]["all"])]:
+        if not r or "model" not in r:
             continue
-        cov = s.get("interval_coverage_10_90")
-        log(f"{name:10} err model {100 * s['model']['wape']:4.0f}%  5y {100 * s['seasonal_5y']['wape']:4.0f}%  "
-            f"skill {pct(s['skill_vs_best'])}" + (f"  80%-band coverage {100 * cov:.0f}%" if cov is not None else ""))
+        cov = r.get("interval_coverage")
+        log(f"{name:10} err {100 * r['model']['wape']:4.0f}%  5y {100 * r['seasonal_5y']['wape']:4.0f}%  "
+            f"skill {pct(r['skill_vs_best'])}" + (f"  band {100 * cov:.0f}%" if cov is not None else ""))
 
 
 async def save(live: dict, report: dict, database_url: str, artifact_uri: str | None = None, log=print) -> None:
@@ -488,23 +521,26 @@ async def save(live: dict, report: dict, database_url: str, artifact_uri: str | 
     conn = await connect(database_url)
     try:
         for name, L in live.items():
-            if not await conn.fetchval("select 1 from release where region_id = $1 and is_current", name):
+            rel = await conn.fetchrow("select release_id from release where region_id = $1 and is_current", name)
+            if not rel:
                 log(f"{name}: no current release in the database, skipped")
                 continue
             cell_rows = [(cid, ym, float(v), None, None)
                          for ym, p in L["_cells"] for cid, v in zip(L["_cell_ids"], p) if v >= 0.005]
-            metrics = {"test": report["test"]["regions"].get(name), "confirmation": report["confirmation"]["regions"].get(name),
-                       "issued_after": L["issued_after"]}
+            t = report["test"]["regions"].get(name) or {}
+            metrics = {"test": t, "confirmation": report["confirmation"]["regions"].get(name),
+                       "issued_after": L["issued_after"], "method": t.get("method"), "blend": t.get("blend")}
             run_id = await ml.save_run(
-                conn, region=name, model_name=MODEL_NAME, model_version=MODEL_VERSION,
+                conn, region=name, model_name=MODEL_NAME, model_version=MODEL_VERSION, release_id=rel["release_id"],
                 region_predictions=[(m["ym"], m["value"], m["value_low"], m["value_high"]) for m in L["months"]],
                 cell_predictions=cell_rows,
                 params={"features": report["features"], "horizons": list(HORIZONS),
-                        "candidate": report["selection"]["candidate"], "blend": report["selection"]["blend"]},
+                        "candidate": report["selection"]["candidate"], "blend": t.get("blend")},
                 metrics=metrics, artifact_uri=artifact_uri,
-                notes="Shared gradient-boosting outlook; region = sum of cells; band = 10-90% from 2022-2025 errors.",
+                notes="Shared gradient-boosting outlook blended per region with the 5-year mean; region = sum of "
+                      "cells; likely range = 10-90% of 2019-2021 errors.",
             )
-            log(f"{name}: saved run {run_id} ({len(L['months'])} months, {len(cell_rows)} cell values)")
+            log(f"{name}: saved run {run_id} on release {rel['release_id']} ({len(L['months'])} months, {len(cell_rows)} cell values)")
     finally:
         await conn.close()
 

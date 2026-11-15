@@ -104,6 +104,12 @@ export function ForecastPage(p: Props) {
   return (
     <>
       {head}
+      {!run.is_current && (
+        <div className="banner">
+          <b>Made from an earlier data release</b> ({new Date(run.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}). Newer
+          satellite data has arrived since; the outlook updates the next time the model runs.
+        </div>
+      )}
       {test && !test.beats_baselines && (
         <div className="banner banner-soft">
           <b>Read this as a seasonal guide.</b> In testing on 2022–2025, this forecast was no better here than the {BASELINE[test.best_baseline]} (typical error{" "}
@@ -186,7 +192,10 @@ export function ForecastPage(p: Props) {
               or quiet.
             </li>
             <li>
-              <b>Blended with the 5-year average</b>, which kept it steadier when tested on years it never saw.
+              <b>Tuned for {p.regionName}.</b>{" "}
+              {run.metrics.method
+                ? `Here the outlook is the ${run.metrics.method}: the mix that worked best on 2019–2021, before the test years.`
+                : "Blended with the 5-year average, which kept it steadier on years it never saw."}
             </li>
             <li>
               <b>Tested honestly.</b>{" "}
