@@ -1,0 +1,27 @@
+# Written by `python -m firecal add-country` on 2026-11-14. Merged over config.yaml (paths.config_d).
+# Turkey: auto_strategy rich -> local (0/12 months thin (n < n_month 149): share 0.00 < n_country 0.72); NOAA-20 transfer single (lowest mean hold-out WAPE).
+regions:
+  turkey:
+    bbox: [25.98, 35.77, 44.86, 42.15]
+    countries: [Turkey]
+donors:
+  eastmed_pool_ex_turkey:
+    region: eastmed
+    countries: [Cyprus, Syria, Israel, Palestine]
+    for_regions: [turkey]
+calibration:
+  composites:
+    affine_shape_single_level_pool_ex_turkey: {shape: 'affine_blend:eastmed_pool_ex_turkey', level: single}
+  strategy: {turkey: local}
+auto_strategy:
+  by_region:
+    turkey:
+      outcomes: {donor_only: 'donor:eastmed_pool_ex_turkey', thin: affine_shape_single_level_pool_ex_turkey, rich: local}
+terra:
+  strategy: {turkey: local}
+add_country:
+  regions:
+    turkey: {added: '2026-11-14', outcome: rich, reason: '0/12 months thin (n < n_month 149): share 0.00 < n_country
+        0.72'}
+continuation:
+  strategy: {turkey: single}

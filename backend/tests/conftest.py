@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 BACKEND = Path(__file__).resolve().parent.parent
 load_dotenv(BACKEND / ".env")
 
-EXPORT_DIR = Path(os.environ.get("EXPORT_DIR", "../export/export"))
+EXPORT_DIR = Path(os.environ.get("EXPORT_DIR", "../pipeline/data/export"))
 if not EXPORT_DIR.is_absolute():
     EXPORT_DIR = (BACKEND / EXPORT_DIR).resolve()
 LEBANON = EXPORT_DIR / "lebanon"

@@ -15,6 +15,10 @@ export interface MonthPoint {
   gap?: boolean;
   /** Anomaly z from the source against its documented baseline; overrides the in-range z. */
   zRef?: number | null;
+  /** The feeding sensor covers only part of the month. */
+  partialMonth?: boolean;
+  /** What feeds the harmonized value (contract v0.5), e.g. "SNPP" or "SNPP+NOAA20". */
+  source?: string | null;
 }
 
 /** Month-by-month values of one sensor in the range, with missing months as null. */
@@ -28,12 +32,15 @@ export function toMonthPoints(series: AreaSeries, sensor: Sensor, range: [number
       i,
       year: ymYear(i),
       month: ymMonth(i),
-      value: v === null ? null : +v.toFixed(2),
+      // Exact values: rounding each month here made yearly sums drift from the exported totals.
+      value: v,
       partial: m?.partial ?? false,
       estimate: sensor === "harmonized" && !!m?.estimate,
       lowConfidence: sensor === "harmonized" && !!m?.lowConfidence,
       gap: !!m?.gap,
       zRef: sensor === "harmonized" && m ? m.z : undefined,
+      partialMonth: m?.partialMonth ?? false,
+      source: sensor === "harmonized" ? (m?.source ?? null) : undefined,
     });
   }
   return out;
@@ -97,9 +104,10 @@ export function anomalies(series: MonthPoint[], clim: MonthClimatology[]): Anoma
     const c = clim[p.month - 1];
     if (p.value === null || p.partial || !c.n) return { ...p, pct: null, z: null };
     const pct = c.median > 0 ? ((p.value - c.median) / c.median) * 100 : p.value > 0 ? 100 : 0;
-    // The source's z (fixed baseline years, per the data contract) when it has one.
-    const z = p.zRef !== undefined && p.zRef !== null ? p.zRef : c.sd > 0 ? (p.value - c.mean) / c.sd : 0;
-    return { ...p, pct: +pct.toFixed(1), z: +z.toFixed(2) };
+    // The source's z (fixed baseline years, per the data contract) whenever the source provides z:
+    // a null there means "sd = 0 or no data" and stays null rather than being replaced by a local z.
+    const z = p.zRef !== undefined ? p.zRef : c.sd > 0 ? (p.value - c.mean) / c.sd : 0;
+    return { ...p, pct: +pct.toFixed(1), z: z === null ? null : +z.toFixed(2) };
   });
 }
 

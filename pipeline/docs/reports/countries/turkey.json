@@ -1,0 +1,254 @@
+{
+ "region": "turkey",
+ "countries": [
+  "Turkey"
+ ],
+ "bbox": [
+  25.98,
+  35.77,
+  44.86,
+  42.15
+ ],
+ "detections": {
+  "raw": 1255497,
+  "clean": 879340,
+  "by_source": {
+   "MODIS_SP": 256980,
+   "VIIRS_NOAA20_NRT": 20688,
+   "VIIRS_NOAA20_SP": 340373,
+   "VIIRS_SNPP_NRT": 18600,
+   "VIIRS_SNPP_SP": 618856
+  }
+ },
+ "strategy": "local",
+ "auto": {
+  "outcome": "rich",
+  "reason": "0/12 months thin (n < n_month 149): share 0.00 < n_country 0.72",
+  "inputs": {
+   "overlap_years": [
+    2012,
+    2020
+   ],
+   "exclude_persistent": true,
+   "annual": 6561.89,
+   "thin_share": 0.0
+  },
+  "thresholds": {
+   "n_month": 149,
+   "n_country": 0.72,
+   "n_country_annual": 132,
+   "n_min_annual": 3.6
+  }
+ },
+ "auto_months": [
+  {
+   "name": "Jan",
+   "n": 1009,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Feb",
+   "n": 1047,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Mar",
+   "n": 1479,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Apr",
+   "n": 1311,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "May",
+   "n": 1445,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Jun",
+   "n": 9761,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Jul",
+   "n": 5564,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Aug",
+   "n": 7379,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Sep",
+   "n": 10423,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Oct",
+   "n": 9342,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Nov",
+   "n": 7939,
+   "thin": false,
+   "rule": "rich_month"
+  },
+  {
+   "name": "Dec",
+   "n": 2358,
+   "thin": false,
+   "rule": "rich_month"
+  }
+ ],
+ "terra_strategy": "local",
+ "continuation_strategy": "single",
+ "continuation_ranking": [
+  {
+   "strategy": "single",
+   "mean_wape": 0.0602
+  },
+  {
+   "strategy": "blend:cyprus",
+   "mean_wape": 0.0701
+  },
+  {
+   "strategy": "blend:syria",
+   "mean_wape": 0.0703
+  },
+  {
+   "strategy": "local",
+   "mean_wape": 0.0703
+  },
+  {
+   "strategy": "blend:israel_palestine",
+   "mean_wape": 0.0703
+  },
+  {
+   "strategy": "blend:eastmed_pool_ex_turkey",
+   "mean_wape": 0.0741
+  }
+ ],
+ "ratio": {
+  "viirs_over_modis_2012_2020": 2.463,
+  "a_by_month": [
+   2.834,
+   2.967,
+   3.023,
+   2.969,
+   1.451,
+   1.3,
+   2.23,
+   2.778,
+   3.031,
+   2.989,
+   2.273,
+   2.493
+  ],
+  "a_band_by_month": [
+   [
+    2.437,
+    3.389
+   ],
+   [
+    2.554,
+    3.334
+   ],
+   [
+    2.469,
+    3.772
+   ],
+   [
+    2.482,
+    3.336
+   ],
+   [
+    1.254,
+    1.655
+   ],
+   [
+    1.213,
+    1.403
+   ],
+   [
+    2.015,
+    2.508
+   ],
+   [
+    2.623,
+    3.034
+   ],
+   [
+    2.874,
+    3.243
+   ],
+   [
+    2.895,
+    3.126
+   ],
+   [
+    2.181,
+    2.434
+   ],
+   [
+    2.269,
+    2.909
+   ]
+  ]
+ },
+ "holdout": {
+  "forward": {
+   "wape": 0.143,
+   "bias": -0.074
+  },
+  "reverse": {
+   "wape": 0.157,
+   "bias": 0.104
+  }
+ },
+ "continuity_2012": {
+  "step_index": 0.962,
+  "band": [
+   0.884,
+   1.039
+  ],
+  "flagged": false
+ },
+ "continuation": {
+  "step_index": 1.039408691290833,
+  "band": [
+   0.9982651268932078,
+   1.1267817152324116
+  ],
+  "step_flagged": false
+ },
+ "n_cells": 32894,
+ "timings_s": {
+  "download": 485.2,
+  "ingest_clean_grid": 30.5,
+  "terra_calibrate_continuation": 2.2,
+  "continuation_final": 1.3,
+  "validate_splice_anomalies_export": 423.1,
+  "total": 943.3
+ },
+ "grade": "B",
+ "grade_reason": "mean hold-out WAPE 0.150 <= 0.4, worst |bias| 10.4% <= 20%, no step at 2012",
+ "backend": {
+  "loaded": false,
+  "listed_by_api": false,
+  "error": "teammate repo is on 'monorepo', expected 'contract-0.5'; not loaded"
+ }
+}

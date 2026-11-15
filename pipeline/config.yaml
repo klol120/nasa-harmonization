@@ -1,0 +1,214 @@
+# Every pipeline choice lives here. See CLAUDE.md for the meaning of each section.
+
+paths:
+  raw: data/raw
+  ext: data/ext
+  interim: data/interim
+  processed: data/processed
+  export: data/export
+  reports: docs/reports
+  boundaries: data/ext/ne_10m_admin_0_countries.zip
+  # One file per country added by `python -m firecal add-country` (region, donors, strategies), merged
+  # over this file in name order. Edit those files to change an added country's choices.
+  config_d: config.d
+
+regions:
+  lebanon:
+    bbox: [35.00, 33.00, 36.70, 34.75]   # west, south, east, north
+    countries: [Lebanon]
+  greece:
+    bbox: [19.20, 34.70, 29.80, 41.80]
+    countries: [Greece]
+  eastmed:
+    bbox: [30.00, 29.40, 42.40, 38.00]
+    countries: [Lebanon, Syria, Israel, Palestine, Cyprus, Turkey]
+
+# Inputs per region; "{region}" is substituted. format: firms_archive_csv | firms_api_csv |
+# firms_nrt_csv | shapefile | json | generic | auto. source: e.g. MODIS_SP, or auto (from instrument/version).
+inputs:
+  - {path: "{raw}/{region}/MODIS_SP_[0-9][0-9][0-9][0-9].csv", format: firms_archive_csv, source: MODIS_SP}
+  - {path: "{raw}/{region}/VIIRS_SNPP_SP_[0-9][0-9][0-9][0-9].csv", format: firms_archive_csv, source: VIIRS_SNPP_SP}
+  - {path: "{raw}/{region}/MODIS_SP_2026_api.csv", format: firms_api_csv, source: MODIS_SP}
+  - {path: "{raw}/{region}/VIIRS_SNPP_SP_2026_api.csv", format: firms_api_csv, source: VIIRS_SNPP_SP}
+  - {path: "{raw}/{region}/VIIRS_NOAA20_SP_[0-9][0-9][0-9][0-9].csv", format: firms_archive_csv, source: VIIRS_NOAA20_SP}
+  - {path: "{raw}/{region}/VIIRS_NOAA20_SP_2026_api.csv", format: firms_api_csv, source: VIIRS_NOAA20_SP}
+  # NRT after the SP max_date (no `type`: the empirical persistence filter applies, clean rule 5)
+  - {path: "{raw}/{region}/VIIRS_SNPP_NRT_2026_api.csv", format: firms_nrt_csv, source: VIIRS_SNPP_NRT}
+  - {path: "{raw}/{region}/VIIRS_NOAA20_NRT_2026_api.csv", format: firms_nrt_csv, source: VIIRS_NOAA20_NRT}
+
+# First/last date each product has data (FIRMS /api/data_availability, 2026-11-13). A satellite has
+# data from its SP start to its NRT end (SP, then NRT after the SP max_date); SP takes precedence
+# over NRT where both exist. Used for data_available / partial_month.
+coverage:
+  MODIS_SP: [2000-11-01, 2026-08-31]
+  VIIRS_SNPP_SP: [2012-01-20, 2026-07-31]
+  VIIRS_SNPP_NRT: [2026-08-01, 2026-11-02]   # S-NPP stopped delivering data on 2026-11-02 (NASA Earthdata)
+  VIIRS_NOAA20_SP: [2018-04-01, 2026-07-31]
+  VIIRS_NOAA20_NRT: [2026-08-01, 2026-11-13]
+
+# Clip every input to the archive footprint (Phase 0): Natural Earth country tag; a point in NE's sea
+# takes the nearest country within max_sea_km.
+footprint:
+  max_sea_km: 12
+
+grid:
+  size_deg: 0.05
+
+sensors:
+  satellites: [Terra, Aqua, SNPP, NOAA20]   # NOAA-21 excluded. NOAA20 is kept apart from SNPP (own flag)
+  terra_only_until: 2002-07-04          # first day of Aqua MODIS data
+  viirs_start: 2012-01-20
+  # VIIRS continuation: from switch_date the harmonized series is NOAA-20 calibrated to S-NPP units.
+  # NOAA-20 never enters the MODIS->VIIRS calibration, persistence statistics or Table 1 checks.
+  continuation: {satellite: NOAA20, replaces: SNPP, switch_date: 2026-11-03}   # first day without S-NPP
+
+clean:
+  fire_types: [0]                       # vegetation fires
+  confidence_classes: [nominal, high]
+  modis_confidence_bins: {low: [0, 29], nominal: [30, 79], high: [80, 100]}
+  dedup_keys: [lat, lon, datetime_utc, satellite]
+  origin_priority: [archive, api, shapefile, json, generic, nrt]
+
+# Persistent sources (fine cells detected most years, mostly at night): industrial sites, open dumps.
+persistence:
+  mode: auto                            # remove in clean: auto = only rows without fire_type; always; off
+  exclude_from_calibration: true        # drop flagged cells when fitting kT/a_m, locally and in donors
+  cell_deg: 0.01
+  min_year_frac: 0.6                    # share of that sensor's years with a detection
+  min_night_frac: 0.8
+  # Untyped rows (NRT) have no `type` to drop static land sources (type 2) the way rule 1 does for SP.
+  # They are dropped in fine cells where at least this share of the typed (SP) detections is type 2.
+  static_min_share: 0.5
+  diagnostic_regions: [lebanon]         # report top cells, never remove
+  diagnostic_top_n: 20
+
+gaps:
+  reference_regions: [greece, eastmed]
+  p_threshold: 0.001                    # suspect if P(0 | Poisson(lambda)) below this
+  window_days: 31
+  use_suspects: false
+  review_first:                         # pinned to the top of docs/reports/outage_suspects.md
+    - {satellite: Aqua, start: 2020-08-26, end: 2020-08-28, why: "in the 2012-2020 calibration window"}
+  known:                                # confirmed outages (inclusive dates)
+    - {satellite: Terra, start: 2001-06-15, end: 2001-07-02, note: "Terra MODIS outage"}
+    - {satellite: Terra, start: 2016-02-19, end: 2016-02-27, note: "Terra safe mode"}
+    - {satellite: SNPP,  start: 2022-07-27, end: 2022-08-10, note: "S-NPP safe mode"}
+
+terra:
+  fit_years: [2003, 2020]
+  strategies: [single, local, "donor:*", "pooled:*", "blend:*"]
+  strategy: {greece: local, eastmed: local, lebanon: single}   # Lebanon: winter Terra counts too thin for monthly kT
+
+# NOAA-20 -> S-NPP transfer (stage `continuation`): c_m = sum_y N_SNPP / sum_y N_NOAA20 per calendar month on
+# overlap_years, same strategy machinery and year bootstrap as calibration. Strategy chosen from the
+# hold-out table in docs/reports/{region}_continuation.md.
+continuation:
+  overlap_years: [2018, 2025]           # NOAA-20 SP starts 2018-04-01; 2018 Jan-Mar contribute nothing
+  holdout: {fit: [2018, 2021], test: [2022, 2025]}
+  strategies: [single, local, "blend:*"]
+  # 2026-11-13: `single` has the lowest hold-out WAPE on both folds in Lebanon (0.177/0.206 vs local
+  # 0.190/0.215) and Greece (0.115/0.079 vs 0.135/0.103); EastMed ties (local 0.087/0.082, single 0.088/0.078).
+  strategy: {greece: single, lebanon: single, eastmed: local}
+  # continuity check window: from Jan 1 after the overlap years to the day before the switch (out of sample)
+
+calibration:
+  overlap_years: [2012, 2020]
+  holdout: {fit: [2012, 2016], test: [2017, 2020]}
+  strategies: [single, local, "donor:*", "pooled:*", "blend:*"]
+  # Lebanon: see composites below (was `single`, the top-ranked plain strategy, Phase 5).
+  # Alternatives stay selectable: local, "blend:<group>", affine_local, "affine_blend:<group>", ...
+  strategy: {greece: local, lebanon: affine_shape_single_level_pool, eastmed: local}
+  # Composite strategies: monthly shape from `shape`, each year's estimated total from `level`.
+  # Lebanon (2026-11-12): adopted because it passed continuity, matched single's bias on both folds and
+  # cut WAPE by >= 0.10 on both folds (tools/lebanon_experiment.py). Shape = best-ranked affine model.
+  # To revert: lebanon: single.
+  composites:
+    affine_shape_single_level: {shape: "affine_blend:cyprus", level: single}
+    # Robustness check (2026-11-12): shape from the whole EastMed pool. WAPE fwd 0.342 vs 0.338 (Cyprus),
+    # rev 0.379 vs 0.417; bias and continuity identical. Within 0.03 (no worse than Cyprus + 0.03) on
+    # both folds, so the pool version (more donor data) is Lebanon's default.
+    affine_shape_single_level_pool: {shape: "affine_blend:eastmed_pool", level: single}
+  blend_k_grid: [0, 5, 10, 20, 50, 100, 1000000000]   # last ~ donor only
+  bootstrap: {n: 1000, seed: 2026, ci: 0.90}
+
+# Automatic strategy choice for a new region (add-country). The thresholds are DERIVED, not hand-set:
+# docs/reports/thresholds.md (tools/thresholds_experiment.py + tools/thresholds_analysis.py, cell
+# subsampling of Greece and EastMed, pooled estimates, 90% ranges in the report). n = local MODIS fire-days
+# in a calendar month summed over calibration.overlap_years (fitting inputs); annual = sum of n / years.
+# Rule: annual < n_min_annual -> donor_only; thin share (months with n < n_month) >= n_country -> thin;
+# otherwise rich. The configured calibration.strategy stays the one used; the rule's pick is recorded in
+# meta.calibration.auto_strategy (with the rule that fired per month) and compared with it.
+auto_strategy:
+  n_month: 149              # 90%: 146-156 (Greece alone 61, EastMed alone 426)
+  n_country: 0.72           # thin-month share; 90%: 0.71-0.77 (Greece 0.62, EastMed 0.68)
+  n_country_annual: 132     # the same crossing on the annual total; reported, not used by the rule
+  n_min_annual: 3.6         # 90%: 2.4-4.9 (Greece 3.6, EastMed 17)
+  outcomes: {donor_only: "donor:eastmed_pool", thin: affine_shape_single_level_pool, rich: local}
+  report: docs/reports/thresholds.md
+
+# `python -m firecal add-country <Country>` (src/firecal/add_country.py).
+add_country:
+  bbox_min_part_share: 0.01   # polygon parts smaller than 1% of the largest (remote islands) don't widen the bbox
+  bbox_pad_deg: 0.05
+  thin_anomalies: {baseline_years: [2012, 2025], sensitivity_baselines: [[2001, 2025]]}   # as Lebanon
+  # Quality grade on the chosen strategy's hold-out (mean WAPE of both folds, worst |bias|) and the 2012
+  # continuity check (a flagged step, or donor_only, is D). JUDGEMENT thresholds, not derived;
+  # with them the v1.0 regions grade Greece A, EastMed B (reverse-fold bias 11.5%), Lebanon B.
+  grades:
+    A: {max_wape: 0.25, max_abs_bias: 0.10}
+    B: {max_wape: 0.40, max_abs_bias: 0.20}
+    C: {max_wape: 0.60, max_abs_bias: 0.35}
+  # teammate backend (local branch only, never pushed); the API must be running to confirm the region shows
+  backend: {repo: .., branch: null, python: backend/.venv/bin/python, api: "http://127.0.0.1:8000"}
+
+donors:
+  cyprus:           {region: eastmed, countries: [Cyprus]}
+  southern_turkey:  {region: eastmed, countries: [Turkey]}
+  syria:            {region: eastmed, countries: [Syria]}
+  israel_palestine: {region: eastmed, countries: [Israel, Palestine]}
+  eastmed_pool:     {region: eastmed, countries: [Cyprus, Turkey, Syria, Israel, Palestine]}
+
+# Pre-2012 estimates are low_confidence in calendar months where, on the overlap years, the local
+# region has < min_modis_fire_days MODIS fire-days, or >= max_zero_modis_share of VIIRS fire-days
+# fall in cell-days with no MODIS detection (tools/lebanon_experiment.py, Phase 4 experiment).
+low_confidence:
+  min_modis_fire_days: 20
+  max_zero_modis_share: 0.95
+  by_region:
+    # 80% for Lebanon only: at 80% Greece and EastMed would flag 10 of 12 calendar months each
+    # (limit was 3), so they keep 95%. Lebanon at 80%: all 12 months (2026-11-12 decision).
+    lebanon: {max_zero_modis_share: 0.80}
+
+years:
+  stats_last_year: 2025                 # 2026 partial: display only
+  display_last_month: 2026-12
+
+anomalies:
+  baseline_years: [2001, 2025]
+  sensitivity_baselines: [[2012, 2025]]
+  min_sd: 0
+  by_region:
+    # Lebanon: observed-VIIRS-era baseline (pre-2012 estimates are all low_confidence there)
+    lebanon: {baseline_years: [2012, 2025], sensitivity_baselines: [[2001, 2025]]}
+
+# Phase 0 downloader (tools/download_firms.py)
+download:
+  raw_dir: data/raw
+  sources:
+    MODIS_SP:
+      archive_prefix: modis          # /data/country/modis/{y}/modis_{y}_{Country}.csv
+      first_year: 2000
+    VIIRS_SNPP_SP:
+      archive_prefix: viirs-snpp
+      first_year: 2012
+    VIIRS_NOAA20_SP:
+      archive_prefix: viirs-jpss1    # NOAA-20 = JPSS-1; SP starts 2018-04-01
+      first_year: 2018
+    VIIRS_SNPP_NRT: {}               # area API only (no country archives); S-NPP's last data 2026-11-02
+    VIIRS_NOAA20_NRT: {}             # area API only; fills NOAA-20 after its SP max_date
+  archive_last_year: 2025            # last full year published as country archives
+  api_year: 2026                     # pulled via area API up to the SP max_date
+  api_day_range: 5                   # API rejects >5
+  archive_pause_s: 0.5
+  api_pause_s: 1.0
+  max_retries: 5

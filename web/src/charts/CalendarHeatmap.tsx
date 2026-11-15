@@ -54,8 +54,10 @@ export function CalendarHeatmap({ cells, mode, unit, selected, onSelect, markers
         if (!c) return "";
         const head = `<b>${MONTH_ABBR[c.month - 1]} ${c.year}</b>`;
         if (c.value === null) return `${head}<br/><span style="color:${UI.muted}">No data for this month. Not counted as zero.</span>`;
-        const lines = [`${head}`, `${fmt(c.value)} ${unit}${c.partial ? " <i>(partial year, not in medians)</i>" : ""}`];
-        if (c.pct !== null) lines.push(`${fmtPct(c.pct)} vs ${MONTH_ABBR[c.month - 1]} median · z ${c.z!.toFixed(1)}`);
+        const partialNote = c.partialMonth ? " <i>(partial month: data still arriving, not in medians)</i>" : c.partial ? " <i>(partial year, not in medians)</i>" : "";
+        const lines = [`${head}`, `${fmt(c.value)} ${unit}${partialNote}`];
+        if (c.pct !== null) lines.push(`${fmtPct(c.pct)} vs ${MONTH_ABBR[c.month - 1]} median${c.z !== null ? ` · z ${c.z.toFixed(1)}` : ""}`);
+        if (c.source?.includes("NOAA20")) lines.push(`<span style="color:${UI.muted}">${c.source === "NOAA20" ? "VIIRS NOAA-20, calibrated to S-NPP" : "S-NPP, then VIIRS NOAA-20 calibrated to S-NPP"}</span>`);
         if (c.estimate) lines.push(`<span style="color:${UI.muted}">Modelled estimate from MODIS (not detections)${c.lowConfidence ? " · <b>low confidence</b>" : ""}</span>`);
         if (c.gap) lines.push(`<span style="color:${UI.muted}">A satellite outage touched this month</span>`);
         const ev = events?.get(c.i);

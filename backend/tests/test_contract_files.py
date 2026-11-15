@@ -44,7 +44,7 @@ def test_export_files_parse(region):
     assert len(months) == len(C.month_range(C.parse_ym(meta["time"]["first_month"]), C.parse_ym(meta["time"]["last_month"])))
 
 
-@pytest.mark.parametrize("region", ["lebanon", "greece"])
+@pytest.mark.parametrize("region", ["lebanon", "greece", "eastmed"])
 def test_z_recompute_matches_export(region):
     """The aggregation z formula reproduces the exported region z (so it is the contract's method)."""
     folder = EXPORT_DIR / region
