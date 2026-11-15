@@ -25,6 +25,7 @@ web/       VITE_API_URL=http://127.0.0.1:8000     <-  backend API
 | [`data_contract.md`](data_contract.md) | units, flags and rules of the exported data | |
 | [`backend/`](backend/README.md) | FastAPI + PostgreSQL: database, ingest, API, accounts, alerts, tests | `backend/README.md` |
 | [`web/`](web/README.md) | the website / desktop app (React + MapLibre + ECharts, also an Electron app); reads only the backend API | `web/README.md` |
+| [`forecasting/`](forecasting/README.md) | isolated research pipeline (Ali): next-24-hour satellite-detected fire occurrence in Lebanon, NASA-only inputs, global pretraining, conflict-filtered evaluation. Not approved for operational use. | `forecasting/README.md` |
 | [`infra/azure/`](infra/azure) | one-time setup for GitHub → Azure deploys | |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | branches, pull requests, how deploys work | |
 

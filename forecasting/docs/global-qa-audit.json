@@ -1,0 +1,32 @@
+{
+  "original_lebanon_archive": {
+    "raw_archive": "Original Lebanese NOAA-20 2018-2025",
+    "eligible_fire_pixels_with_incompatible_qa": [],
+    "files_checked": 5825
+  },
+  "global_selected_2018_2025": {
+    "files": 4608,
+    "fire_pixels": 42106,
+    "incompatible_land_qa_fire_pixels": 2,
+    "affected_cell_windows": 1,
+    "cell": {
+      "region": "central_chile",
+      "cell_id": "530_1070",
+      "prediction_time": "2023-02-03T00:00:00Z",
+      "old_status": "uncertain",
+      "old_y": null
+    },
+    "effect": "Already null under both fitting policies; no supervised target, selected fit or numerical metric changes. The guard now explicitly quarantines incompatible-QA fire rather than relying on other uncertainty."
+  },
+  "global_selected_2026": {
+    "files": 479,
+    "fire_pixels": 5233,
+    "incompatible_land_qa_fire_pixels": 0
+  },
+  "lebanon_2026": {
+    "files": 608,
+    "fire_pixels": 145,
+    "incompatible_land_qa_fire_pixels": 0
+  },
+  "note": "Counts describe native sampled fire pixels, not independent ground incidents. QA disagreement is a quality exclusion, not a cause attribution."
+}

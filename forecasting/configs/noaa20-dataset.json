@@ -1,0 +1,37 @@
+{
+  "grid_deg": 0.1,
+  "bbox": [
+    35.0,
+    33.0,
+    36.7,
+    34.75
+  ],
+  "scope": "NASA_FIRMS_country_geometry_and_MCD12Q1_vegetation",
+  "tiles": [
+    "h20v05",
+    "h21v05"
+  ],
+  "start": "2018-01-01T00:00:00Z",
+  "end_exclusive": "2026-01-01T00:00:00Z",
+  "horizon_hours": 24,
+  "primary_product": "viirs-jpss1",
+  "min_vegetation_fraction_per_pixel": 0.25,
+  "min_eligible_pixels_per_cell": 5,
+  "min_processed_fraction": 0.8,
+  "recurrence_fit_end_exclusive": "2021-01-01T00:00:00Z",
+  "recurrence_round_degrees": 0.01,
+  "recurrence_min_active_days": 30,
+  "recurrence_min_years": 3,
+  "train_end_exclusive": "2021-01-01T00:00:00Z",
+  "validation_end_exclusive": "2023-01-01T00:00:00Z",
+  "weather_features": [
+    "temperature_c",
+    "humidity_pct",
+    "precip_mm",
+    "wind_u_ms",
+    "wind_v_ms",
+    "rain7_mm"
+  ],
+  "history_lag_days": 3,
+  "label_product": "VJ114A1"
+}

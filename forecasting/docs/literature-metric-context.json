@@ -1,0 +1,56 @@
+{
+  "kind": "post_test_reporting_only",
+  "model": "refit_validation_global_winner",
+  "model_sha256": "647ea8d9f874e095461d8fb849daae78071caa0321c57a0598f88de1777d70ec",
+  "refit_manifest_sha256": "05a550eec12e95c96a7da22027cd8785089f6436a7ea689436568be60de03c6d",
+  "training_or_threshold_selection_performed": false,
+  "comparability": "Different labels, sampling and test populations prevent paper leaderboard comparisons.",
+  "domains": {
+    "global_2026_temporal": {
+      "observations": 113942,
+      "positive_windows": 1402,
+      "prevalence": 0.0123045058011971,
+      "average_precision": 0.16497315315524796,
+      "roc_auc": 0.902297724796915,
+      "always_negative_accuracy": 0.9876954941988029,
+      "frozen_threshold": 0.17735184132439022,
+      "accuracy_at_frozen_threshold": 0.9825788559091467,
+      "precision_at_frozen_threshold": 0.2702915681639086,
+      "recall_at_frozen_threshold": 0.24465049928673324
+    },
+    "global_2026_geographic": {
+      "observations": 34407,
+      "positive_windows": 604,
+      "prevalence": 0.01755456738454384,
+      "average_precision": 0.09079816101136233,
+      "roc_auc": 0.8779332156928742,
+      "always_negative_accuracy": 0.9824454326154561,
+      "frozen_threshold": 0.17735184132439022,
+      "accuracy_at_frozen_threshold": 0.9821547940825994,
+      "precision_at_frozen_threshold": 0.2222222222222222,
+      "recall_at_frozen_threshold": 0.006622516556291391
+    },
+    "lebanon_2026_fixed_fold": {
+      "observations": 24237,
+      "positive_windows": 15,
+      "prevalence": 0.0006188884762965714,
+      "average_precision": 0.0006880133187455608,
+      "roc_auc": 0.551732584702612,
+      "always_negative_accuracy": 0.9993811115237035,
+      "frozen_threshold": 0.006069894754709886,
+      "accuracy_at_frozen_threshold": 0.9871271196930314,
+      "precision_at_frozen_threshold": 0.0,
+      "recall_at_frozen_threshold": 0.0
+    }
+  },
+  "hypothetical_prevalence_shift": {
+    "note": "Arithmetic illustration only; does not assert any model retains these rates after transfer.",
+    "recall": 0.8,
+    "false_positive_rate": 0.01,
+    "precision": {
+      "one_positive_two_negatives": 0.9756097560975611,
+      "our_global": 0.49915442812639077,
+      "our_lebanon": 0.04720320981826764
+    }
+  }
+}

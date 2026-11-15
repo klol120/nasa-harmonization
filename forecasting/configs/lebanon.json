@@ -1,0 +1,15 @@
+{
+  "seed": 42,
+  "grid_deg": 0.1,
+  "horizon_hours": 24,
+  "mode": "archived_forecast",
+  "min_observable_fraction": 0.8,
+  "train_end": "2021-01-01T00:00:00Z",
+  "validation_end": "2022-01-01T00:00:00Z",
+  "embargo_days": 7,
+  "allow_tree": false,
+  "synthetic": false,
+  "regional_cells": [],
+  "heldout_cells": [],
+  "primary_policy": "conservative"
+}

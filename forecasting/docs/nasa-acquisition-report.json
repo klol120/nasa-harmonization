@@ -1,0 +1,1456 @@
+{
+  "schema_version": 1,
+  "retrieved_at": "2026-11-14T15:16:13.354360+00:00",
+  "config": {
+    "countries": [
+      "Lebanon"
+    ],
+    "fire_start_year": 2000,
+    "fire_end_year": 2025,
+    "fire_products": [
+      "modis",
+      "viirs-snpp",
+      "viirs-jpss1"
+    ],
+    "weather_start": "20120101",
+    "weather_end": "20251231",
+    "weather_latitudes": [
+      33.25,
+      33.75,
+      34.25,
+      34.75
+    ],
+    "weather_longitudes": [
+      35.3125,
+      35.9375,
+      36.5625
+    ],
+    "weather_parameters": [
+      "T2M",
+      "T2M_MAX",
+      "RH2M",
+      "PRECTOTCORR",
+      "WS10M",
+      "WD10M"
+    ],
+    "weather_time_standard": "UTC",
+    "notes": "NASA-only acquisition. POWER sample points cover Lebanon's bounding rectangle at coarse meteorological spacing; they are not a national mask and do not establish independent weather cells. No forecast or negative-label coverage is implied.",
+    "download_geos_snapshot": true,
+    "geos_issue": "20261114_00",
+    "geos_valid": "20261115_0030"
+  },
+  "fire_detection_rows": 17946,
+  "duplicates_within_product": 0,
+  "fire_first_detection": "2000-11-13 08:41:00+00:00",
+  "fire_last_detection": "2025-12-29 23:47:00+00:00",
+  "beirut_review": {
+    "radius_km": 3,
+    "center": [
+      35.519,
+      33.901
+    ],
+    "start": "2020-08-04T14:00:00Z",
+    "end_exclusive": "2020-08-05T18:00:00Z",
+    "detections": 1,
+    "attribution": "Spatial-temporal association only; no cause inferred"
+  },
+  "forecast_snapshot": {
+    "url": "https://portal.nccs.nasa.gov/datashare/gmao/geos-fp/forecast/Y2026/M11/D14/H00/GEOS.fp.fcst.tavg1_2d_slv_Nx.20261114_00%2B20261115_0030.V01.nc4",
+    "path": "forecasting/data/nasa-lebanon/raw/geos/GEOS.fp.fcst.tavg1_2d_slv_Nx.20261114_00+20261115_0030.V01.nc4",
+    "issue_time": "2026-11-14T00:00:00+00:00",
+    "valid_midpoint": "2026-11-15T00:30:00+00:00",
+    "lead_hours": 24.5,
+    "available_at_evidence": "download timestamp in manifest only; historical dissemination lag not verified",
+    "sha256": "942a6940e55e79e809e6aa6f18840ae5e50ca6710b94023aa9fcb3c9ca7fd739",
+    "bytes": 48333556,
+    "status": "Real global one-hour-mean forecast sample; not a complete daily window or historical training archive",
+    "spatial_resolution_deg": [
+      0.25,
+      0.3125
+    ],
+    "collection": "tavg1_2d_slv_Nx",
+    "regional_decoding": "Not performed; preserve raw NetCDF4"
+  },
+  "limitations": [
+    "POWER is historical observed/reanalysis-derived weather, NOT a forecast",
+    "FIRMS country fire detections do not supply clear-land coverage or negative labels",
+    "Do not train operational risk probabilities without the missing label/forecast evidence",
+    "Country membership follows NASA country files; the weather bounding rectangle includes non-Lebanese points",
+    "Dates not containing detections do not prove a fire did not occur",
+    "No real incident-model training or evaluation performed by this acquisition command"
+  ],
+  "failures": [],
+  "fire_files": [
+    {
+      "file": "modis_2000_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2000/modis_2000_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 2,
+      "bytes": 277,
+      "sha256": "9974a8fa3b4a0f37d9b16af7d6db94243587aaa24ef0163ebf5dba09beb0ac86",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2001_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2001/modis_2001_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 13,
+      "bytes": 1150,
+      "sha256": "c7e936a1725caaadbe6095e7e52835e07bc4d9bafeb7bea5cd9261c1c09542c3",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2002_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2002/modis_2002_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 103,
+      "bytes": 8075,
+      "sha256": "1d2c65f7a09ef2ee79497549b2eee671d56c26d3ff31745dfb9a54bdc7574497",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2003_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2003/modis_2003_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 52,
+      "bytes": 4143,
+      "sha256": "4fc6435eeb3dc827bbc1dc3e2af5c40bd547fa2f3ec8e7c7a1b176f5262a4a90",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2004_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2004/modis_2004_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 79,
+      "bytes": 6252,
+      "sha256": "fbbe5517a0965173a460239b0d891d632431fff4c8b3bbd9f8cbf3f56e84fc74",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2005_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2005/modis_2005_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 39,
+      "bytes": 3152,
+      "sha256": "8033cd4318e8df5003a241092eb75f93db6d19c9f5160272de1593675d68f2bc",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2006_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2006/modis_2006_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 193,
+      "bytes": 14947,
+      "sha256": "e246fddab34a3fb0f4a22c55479886aa483794985f06642fa3fd763f55faeb8e",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2007_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2007/modis_2007_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 195,
+      "bytes": 15311,
+      "sha256": "00ca6b29da8f9c0b2313b972fd943db60d4ae16f64acf813be357c37d2ba9859",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2008_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2008/modis_2008_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 42,
+      "bytes": 3357,
+      "sha256": "1e5305c5b72690c5b1a3c7ddb309a0c5fbdc9e112a344f6232cad26489d05ed1",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2009_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2009/modis_2009_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 70,
+      "bytes": 5517,
+      "sha256": "f5b884cc11865ed5a331faeccac7c5dcbf20a14dc56230691e26d8f0002133ef",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2010_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2010/modis_2010_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 160,
+      "bytes": 12459,
+      "sha256": "c4a6269c7acdd45919fe2373175189593d5b7b1034e30c4c7daad45569a56a20",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2011_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2011/modis_2011_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 39,
+      "bytes": 3117,
+      "sha256": "12086f0436fbc1114887d70572e714129c50ec955fa833ab6ec50c8c91ae8f84",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2012_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2012/modis_2012_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 56,
+      "bytes": 4435,
+      "sha256": "6f50e8a62a15476d35225609f0aa7426b96c97fabc2ad8f5f5f4e1877f89a044",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2013_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2013/modis_2013_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 132,
+      "bytes": 10256,
+      "sha256": "f6509cd7a5b48bb389cebe9cb9b36f6c626a00b16d2f7a82346bd1e3390f9ca6",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2014_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2014/modis_2014_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 39,
+      "bytes": 3110,
+      "sha256": "b9a3e66ac6c2cd3f94c5c91d1986a4ab1f2911f937ba9377f8785f65be0a96d1",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2015_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2015/modis_2015_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 58,
+      "bytes": 4596,
+      "sha256": "c93a1bda27eed39fcf3d3aecda2e23814dbea7244cde4a844da961cbc4fe5238",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2016_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2016/modis_2016_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 105,
+      "bytes": 8137,
+      "sha256": "e3c82bccd4226ecf1cd63e544a9c882946395f8c574b0b6a392ecf19f68fd404",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2017_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2017/modis_2017_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 42,
+      "bytes": 3395,
+      "sha256": "d1f8768a0b4c5c99ce786aa0399b47501ef250c625a6f4a6200c952283bca6a5",
+      "versions": [
+        "6.2"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2018_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2018/modis_2018_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 38,
+      "bytes": 3034,
+      "sha256": "362b9d81ad16090c5512267114129401dd2429c90c4662689a879d849c7a19b5",
+      "versions": [
+        "6.03"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2019_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2019/modis_2019_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 74,
+      "bytes": 5928,
+      "sha256": "67e17739f37e94f85c9c12ccfc04fec7b8225324b16193bab6b79402faf41fec",
+      "versions": [
+        "6.03"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2020_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2020/modis_2020_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 142,
+      "bytes": 11265,
+      "sha256": "ce12267ef193a5c91026d57fb0d309d672cf93da19eaa6d13eaf1bd7ebdb495d",
+      "versions": [
+        "6.03"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2021_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2021/modis_2021_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 134,
+      "bytes": 10569,
+      "sha256": "c1049310ee89c44c57f40b12137b535687f1e0438b1bf188c144b298dbd8b908",
+      "versions": [
+        "6.03"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2022_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2022/modis_2022_Lebanon.csv",
+      "listing_updated_at": "2023-12-14 11:15:07",
+      "rows": 29,
+      "bytes": 2357,
+      "sha256": "06acdc83746c947d05be01df8f201d3103493d17101dfadaf19565849aeb68ef",
+      "versions": [
+        "6.03"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2023_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2023/modis_2023_Lebanon.csv",
+      "listing_updated_at": "2024-06-03 14:07:28",
+      "rows": 78,
+      "bytes": 6253,
+      "sha256": "700e16bdaa70e9a73aefe365377590b2dcf50544358c3e0e768d18c6bc2a9ce5",
+      "versions": [
+        "61.03"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2024_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2024/modis_2024_Lebanon.csv",
+      "listing_updated_at": "2025-05-30 10:28:44",
+      "rows": 229,
+      "bytes": 18087,
+      "sha256": "6991a28db3c8c94d90c8f5b086b493e48dacdd37aaf0ab37257ffa7d79eaffb2",
+      "versions": [
+        "61.03"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "modis_2025_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/modis/2025/modis_2025_Lebanon.csv",
+      "listing_updated_at": "2026-10-10 08:56:42",
+      "rows": 91,
+      "bytes": 7325,
+      "sha256": "24a13a2913892dee7df05649d7ef0b5db1651d354de9f100c73cf30685c6ad75",
+      "versions": [
+        "61.03"
+      ],
+      "satellites": [
+        "Aqua",
+        "Terra"
+      ]
+    },
+    {
+      "file": "viirs-jpss1_2018_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2018/viirs-jpss1_2018_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 13:28:41",
+      "rows": 511,
+      "bytes": 41110,
+      "sha256": "ae3fe2f0ad57713768428b7ffd337da48d29a81346ee73460acc79204bdebe29",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N20"
+      ]
+    },
+    {
+      "file": "viirs-jpss1_2019_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2019/viirs-jpss1_2019_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 13:04:50",
+      "rows": 638,
+      "bytes": 51324,
+      "sha256": "17eeab67dfe8a3fd4329bf7b1af125bd77755a71997eeb9b5b66a9251076b73b",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N20"
+      ]
+    },
+    {
+      "file": "viirs-jpss1_2020_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2020/viirs-jpss1_2020_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 14:03:33",
+      "rows": 849,
+      "bytes": 68269,
+      "sha256": "358c603863e1cc9c55b1a4a7adface8664ed0b0ae4de13eff0da131dc1a49c7d",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N20"
+      ]
+    },
+    {
+      "file": "viirs-jpss1_2021_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2021/viirs-jpss1_2021_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 14:38:19",
+      "rows": 901,
+      "bytes": 72423,
+      "sha256": "1156113631962a66dbaa0243bef78aa88ae1d4443dda32619db55bf3d914d645",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N20"
+      ]
+    },
+    {
+      "file": "viirs-jpss1_2022_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2022/viirs-jpss1_2022_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 15:04:07",
+      "rows": 422,
+      "bytes": 33994,
+      "sha256": "fc5b182bc1a4293815390b8f5297fd7cb21bfeec99561b3d253ea77e961ee9a7",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N20"
+      ]
+    },
+    {
+      "file": "viirs-jpss1_2023_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2023/viirs-jpss1_2023_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 15:33:42",
+      "rows": 628,
+      "bytes": 50518,
+      "sha256": "edf2d21cffc629aab80124d3c7ed6fd26f75f892f64d1f88a98ef7fd78723610",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N20"
+      ]
+    },
+    {
+      "file": "viirs-jpss1_2024_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2024/viirs-jpss1_2024_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 16:06:57",
+      "rows": 1223,
+      "bytes": 98312,
+      "sha256": "2e689bb93a4482968764816234f19f634889a4580e6e59fbc3263bcaf7af65d6",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N20"
+      ]
+    },
+    {
+      "file": "viirs-jpss1_2025_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-jpss1/2025/viirs-jpss1_2025_Lebanon.csv",
+      "listing_updated_at": "2026-10-10 08:57:30",
+      "rows": 614,
+      "bytes": 49478,
+      "sha256": "a23c088b4df5eb2bf8dc7edc10d5aa19c2edbc65d6b40d01df4e5cae4f44a6ed",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N20"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2012_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2012/viirs-snpp_2012_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 10:22:29",
+      "rows": 637,
+      "bytes": 49946,
+      "sha256": "a81a459a70143ed15b5e0ff2d66d6d335ee75abcb5de5094992f711f11d0367a",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2013_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2013/viirs-snpp_2013_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 09:46:53",
+      "rows": 946,
+      "bytes": 74174,
+      "sha256": "941082f4690ab5ce97a9f7459c4e1163f538af44a0939f63e685c0a93aa78087",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2014_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2014/viirs-snpp_2014_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 09:06:03",
+      "rows": 595,
+      "bytes": 46669,
+      "sha256": "bcebf023816cef34cc5c5a8d68052607b89200d5fb771870619f8ec9df9edf17",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2015_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2015/viirs-snpp_2015_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 08:35:49",
+      "rows": 677,
+      "bytes": 53051,
+      "sha256": "d859d8163c529def0ff9309821995fdf46f99f7f6187e94f69552a0c32e2f4cc",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2016_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2016/viirs-snpp_2016_Lebanon.csv",
+      "listing_updated_at": "2025-06-20 08:05:48",
+      "rows": 880,
+      "bytes": 68972,
+      "sha256": "1903ca6385ba05a5b2c40de44d8f831df2ca349688b95c409cd113746587083a",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2017_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2017/viirs-snpp_2017_Lebanon.csv",
+      "listing_updated_at": "2025-06-19 19:43:47",
+      "rows": 553,
+      "bytes": 43374,
+      "sha256": "ad8c5af2e98243e69ceb595237ebd88304337b094ba7c404379f1c182d13360d",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2018_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2018/viirs-snpp_2018_Lebanon.csv",
+      "listing_updated_at": "2025-06-19 18:52:50",
+      "rows": 511,
+      "bytes": 40078,
+      "sha256": "1529e603a76cad59a4327ed29c09d01052fcbb400ad18e52d3059f417f8a08f7",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2019_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2019/viirs-snpp_2019_Lebanon.csv",
+      "listing_updated_at": "2025-06-19 17:54:53",
+      "rows": 590,
+      "bytes": 46236,
+      "sha256": "e5af64c1dfc39e5b10d3e76ae7d41589ea93780832670fe22b657717c010e9b1",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2020_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2020/viirs-snpp_2020_Lebanon.csv",
+      "listing_updated_at": "2025-06-19 15:28:37",
+      "rows": 701,
+      "bytes": 55053,
+      "sha256": "30635e3b8a91a99e739722e824ed16ea74586e9f6631dff7174008c261077733",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2021_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2021/viirs-snpp_2021_Lebanon.csv",
+      "listing_updated_at": "2025-06-19 14:57:46",
+      "rows": 891,
+      "bytes": 69874,
+      "sha256": "e6fa95dad482c245cd92a00c6fe7b5fa12bb3489bf312c940602a4208cf5f404",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2022_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2022/viirs-snpp_2022_Lebanon.csv",
+      "listing_updated_at": "2025-06-19 14:25:55",
+      "rows": 447,
+      "bytes": 35094,
+      "sha256": "deb8cd62868f89619d3435140e10a471435a8f73e14a41c68b160b98316dc2f5",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2023_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2023/viirs-snpp_2023_Lebanon.csv",
+      "listing_updated_at": "2025-06-19 14:01:42",
+      "rows": 657,
+      "bytes": 51533,
+      "sha256": "686c8ef72c04f8be2e6daa4b3c20d282a1f5cd7d0be68c68d3032f74186285ef",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2024_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2024/viirs-snpp_2024_Lebanon.csv",
+      "listing_updated_at": "2025-06-19 13:27:55",
+      "rows": 1257,
+      "bytes": 98451,
+      "sha256": "1997ad36a7731bbc08ae2d231aede3b6ab881f57fe1d321dd24f2801390db0b5",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    },
+    {
+      "file": "viirs-snpp_2025_Lebanon.csv",
+      "url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2025/viirs-snpp_2025_Lebanon.csv",
+      "listing_updated_at": "2026-10-10 08:57:09",
+      "rows": 584,
+      "bytes": 45835,
+      "sha256": "b9e2c7b90729e63edc4b2b022b304cdd8b5bac58dcc712708ac386662c04be57",
+      "versions": [
+        "2"
+      ],
+      "satellites": [
+        "N"
+      ]
+    }
+  ],
+  "weather_files": [
+    {
+      "file": "power_33.25_35.3125_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=35.3125&latitude=33.25&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 504562,
+      "sha256": "2b4e4269cd6882a2af5a3a88666a73d0f444ccfcd3a100c6a7f8bc3969c340d4"
+    },
+    {
+      "file": "power_33.25_35.9375_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=35.9375&latitude=33.25&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 503808,
+      "sha256": "da4703637912e2416a3f5fe7a0cb72e747bb0070fa2641372ab6e6f375ef9421"
+    },
+    {
+      "file": "power_33.25_36.5625_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=36.5625&latitude=33.25&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 503926,
+      "sha256": "db681ff82f517a776820d79856b8c062cd1bddeb483e37f166b340428dc2e799"
+    },
+    {
+      "file": "power_33.75_35.3125_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=35.3125&latitude=33.75&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 506091,
+      "sha256": "e0931ff2bc4c3f26eadfd93cedb37e50d4b6ba7dd6d2f381dcb7e74d1e0b21d9"
+    },
+    {
+      "file": "power_33.75_35.9375_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=35.9375&latitude=33.75&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 503964,
+      "sha256": "059d5a8bc83f383ef0017b8d14982432465121696a75df399217ddf6309e8cdf"
+    },
+    {
+      "file": "power_33.75_36.5625_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=36.5625&latitude=33.75&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 503795,
+      "sha256": "0c27b90661819efc42d149d965591a32e3051a6464bce788e4d8c15ade9e2bc6"
+    },
+    {
+      "file": "power_34.25_35.3125_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=35.3125&latitude=34.25&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 506420,
+      "sha256": "adb90ff0cc885797b3b1bc32f776755908e1182f2b956ead9508d4d923cdf760"
+    },
+    {
+      "file": "power_34.25_35.9375_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=35.9375&latitude=34.25&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 505459,
+      "sha256": "37005972f807a1afe15c86654a86e8e3f3d32d95413fff282096b34f9ec3effb"
+    },
+    {
+      "file": "power_34.25_36.5625_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=36.5625&latitude=34.25&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 505012,
+      "sha256": "ac0815da500758814e5a0efcfe3afe21c85a7bc696fa125a2a81be81c1b8212f"
+    },
+    {
+      "file": "power_34.75_35.3125_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=35.3125&latitude=34.75&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 506001,
+      "sha256": "047a4c7007ab6ecdd02dacf434c2c76c9c3d8417c9833e907a1421f2ed734cdb"
+    },
+    {
+      "file": "power_34.75_35.9375_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=35.9375&latitude=34.75&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 506035,
+      "sha256": "a571c8ff259e744810fa67f7e2e59380a97422d04802108c1eefad591df3d2fd"
+    },
+    {
+      "file": "power_34.75_36.5625_20120101_20251231.json",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M%2CT2M_MAX%2CRH2M%2CPRECTOTCORR%2CWS10M%2CWD10M&community=AG&longitude=36.5625&latitude=34.75&start=20120101&end=20251231&format=JSON&time-standard=UTC",
+      "rows": 5114,
+      "missing_by_variable": {
+        "T2M": 0,
+        "T2M_MAX": 0,
+        "RH2M": 0,
+        "PRECTOTCORR": 0,
+        "WS10M": 0,
+        "WD10M": 0
+      },
+      "parameters": {
+        "T2M": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters"
+        },
+        "T2M_MAX": {
+          "units": "C",
+          "longname": "Temperature at 2 Meters Maximum"
+        },
+        "RH2M": {
+          "units": "%",
+          "longname": "Relative Humidity at 2 Meters"
+        },
+        "PRECTOTCORR": {
+          "units": "mm/day",
+          "longname": "Precipitation Corrected"
+        },
+        "WS10M": {
+          "units": "m/s",
+          "longname": "Wind Speed at 10 Meters"
+        },
+        "WD10M": {
+          "units": "Degrees",
+          "longname": "Wind Direction at 10 Meters"
+        }
+      },
+      "header": {
+        "title": "NASA/POWER Source Native Resolution Daily Data",
+        "api": {
+          "version": "v2.10.3",
+          "name": "POWER Daily API"
+        },
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "UTC",
+        "start": "20120101",
+        "end": "20251231"
+      },
+      "bytes": 505444,
+      "sha256": "cdf98a4dfec57023bfd3b249ed5a577952eb8f44eb9dc8522fffeea0564f9354"
+    }
+  ],
+  "historical_snapshot_note": "Initial stage evidence only; see current-results.json and production-status.json for completed actual acquisition and real training."
+}
