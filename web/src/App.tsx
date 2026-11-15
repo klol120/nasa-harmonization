@@ -43,6 +43,8 @@ import { AccountMenu } from "./account/AccountMenu";
 import { MyAreasPanel } from "./account/MyAreasPanel";
 import { NewsletterForm } from "./account/NewsletterForm";
 import { SignInDialog } from "./account/SignInDialog";
+import { ChatWidget } from "./chat/ChatWidget";
+import { type ViewState, buildChatContext, suggestionsFor } from "./chat/context";
 import {
   anomalies,
   annualTotals,
@@ -117,6 +119,7 @@ export default function App() {
   const [mobileNav, setMobileNav] = useState(false);
   useEffect(() => savePref("wel3a.sidebar", sidebarCollapsed ? "collapsed" : "open"), [sidebarCollapsed]);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   // What the global shortcuts act on; refreshed every render so the listener never goes stale.
   const keys = useRef<{ step?: (months: number) => void }>({});
   useEffect(() => {
@@ -565,6 +568,45 @@ export default function App() {
   const dataPage = regionPage && ready && page !== "methods";
   keys.current.step = dataPage ? stepMonths : undefined;
 
+  // ---- assistant -------------------------------------------------------
+  // What the assistant is told about the view. Kept in a ref and read when a question is sent,
+  // so the answer always matches what is on screen at that moment.
+  const chatView: ViewState = {
+    pageLabel: shownPage === "explore" ? "World map" : PAGE_LABEL[shownPage],
+    regions,
+    region:
+      regionPage && ready
+        ? {
+            meta: meta!,
+            area: area!,
+            isWhole,
+            cellCount,
+            sensor,
+            metric,
+            unit,
+            range: r,
+            selected: sel,
+            excludePersistent,
+            series: a!.series,
+            clim: a!.clim,
+            anoms: a!.anoms,
+            totals: a!.totals,
+            trend: a!.trend,
+            seasons: a!.seasons,
+            total: a!.total,
+            cvm,
+            documented,
+            forecast,
+            forecastStatus,
+            weather,
+          }
+        : undefined,
+  };
+  const chatViewRef = useRef(chatView);
+  chatViewRef.current = chatView;
+  const getChatContext = useCallback(() => buildChatContext(chatViewRef.current), []);
+  const chatScope = chatView.region ? `${isWhole ? meta!.name : area!.name} · ${MONTH_ABBR[ymMonth(sel) - 1]} ${ymYear(sel)}` : "the world map";
+
   // ---- command palette -------------------------------------------------
   const commands: Command[] = [];
   const cmd = (group: string, id: string, label: string, run: () => void, extra: Partial<Command> = {}) => commands.push({ group, id: `${group}:${id}`, label, run, ...extra });
@@ -590,6 +632,7 @@ export default function App() {
     cmd("Actions", "share", "Copy a link to this view", share, { keywords: "share url link" });
     for (const x of exportsList.filter((x) => !x.disabled)) cmd("Export", x.id, `Export ${x.label}`, () => void x.run(), { hint: x.hint, keywords: "download save csv png" });
   }
+  cmd("Actions", "assistant", "Ask the assistant", () => setChatOpen(true), { keywords: "chat ai bot question help explain phoenical" });
   cmd("Actions", "sidebar", sidebarCollapsed ? "Expand the sidebar" : "Collapse the sidebar", () => setSidebarCollapsed(!sidebarCollapsed), { hint: `${MOD_KEY} B` });
   for (const t of ["light", "dark", "auto"] as const)
     cmd("Appearance", t, t === "auto" ? "Match the system appearance" : `${t === "light" ? "Light" : "Dark"} appearance`, () => setTheme(t), {
@@ -602,6 +645,7 @@ export default function App() {
       {/* Mounted fresh on every open, so it always starts with an empty search. */}
       {paletteOpen && <CommandPalette open onClose={() => setPaletteOpen(false)} commands={commands} />}
       <SignInDialog />
+      <ChatWidget open={chatOpen} onOpenChange={setChatOpen} getContext={getChatContext} scope={chatScope} suggestions={suggestionsFor(chatView)} />
       {loading && regionPage && <div className="loading-bar" aria-hidden />}
       {toast && (
         <div className="toast" role="status">

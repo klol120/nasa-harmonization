@@ -41,6 +41,11 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:-}
+      # The assistant (see .env.example). The key stays in this container, never in the web build.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CHAT_MODEL: ${CHAT_MODEL:-claude-haiku-5-5}
+      CHAT_DAILY_CAP: ${CHAT_DAILY_CAP:-2000}
+      CHAT_BASE_URL: ${CHAT_BASE_URL:-}
     volumes:
       - ./pipeline/data/export:/data/export:ro
       - ./weather:/data/weather
