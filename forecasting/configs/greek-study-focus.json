@@ -1,0 +1,31 @@
+{
+  "status": "research_design_not_trained",
+  "reference_doi": "10.1029/2022GL099368",
+  "reference_code_commit": "2b18bcf194284d56bd4e1774f7d5315db94cba34",
+  "development_start": "2018-01-01",
+  "development_end_exclusive": "2021-01-01",
+  "candidate_panels": ["greece", "southern_turkey", "portugal", "morocco"],
+  "target_region": "lebanon",
+  "profile_variables": ["T2M", "T2M_MAX", "RH2M", "PRECTOTCORR"],
+  "distance_blocks": ["temperature_c", "monthly_rain_mm", "humidity_pct", "terrain_vegetation"],
+  "distance_block_weights": [0.25, 0.25, 0.25, 0.25],
+  "distance_fit": "Standardize each dimension across candidate development profiles only; target excluded from scale fitting",
+  "past_weather_sequence_days": 10,
+  "history_availability": "Every input requires available_at <= prediction_time; three-day POWER lag is not a guaranteed availability timestamp",
+  "primary_target": "Next-24-hour satellite-detected vegetation-associated fire occurrence; unchanged",
+  "reference_target_difference": "Paper predicts large-fire danger from eventual burned cells of >30ha events",
+  "proposed_comparisons": ["seasonal", "logistic", "random_forest", "xgboost", "lstm", "convlstm_if_spatial_sequences_support_it"],
+  "reference_lstm_initialization": {
+    "hidden_size": 64, "lstm_layers": 1, "dense_sizes_from_pinned_code": [64, 32],
+    "dense_sizes_stated_in_paper_supplement": [32, 16],
+    "architecture_discrepancy_requires_explicit_variant_label": true,
+    "dropout": 0.5, "learning_rate": 0.001,
+    "weight_decay": 0.001, "batch_size": 256, "max_epochs": 30
+  },
+  "training_arms": ["global_baseline", "global_then_comparable_mediterranean_then_lebanon", "mediterranean_then_lebanon", "lebanon_only"],
+  "evaluation": "Representative cell-windows, separate calibration and validation, full later-year and geographic/incident holdouts; source and Lebanon evaluated before/after adaptation",
+  "existing_greece_role": "Previously held-out geographic panel: never silently move into existing training or relabel its old scores as independent",
+  "fresh_confirmation": "Must reserve genuinely unviewed future outcomes before a new model search; existing 2026 results are known",
+  "sources": "NASA-only predictors; original mixed-agency archive is not an authorized training replacement",
+  "label_quality": "Retain cloud, missing-data, sensor, heat-source and southern-conflict exclusions; uncertain positives never become negatives"
+}

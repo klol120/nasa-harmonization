@@ -17,10 +17,11 @@ def digest(path):
     return h.hexdigest()
 
 
-def pack(raw_dir,packed_dir,target_free=400000000,batch_size=200):
+def pack(raw_dir,packed_dir,target_free=400000000,batch_size=200,product='VNP14A1'):
+    if product not in {'VNP14A1','VJ114A1'}:raise ValueError('Unsupported raw daily fire product')
     raw_dir=Path(raw_dir);packed_dir=Path(packed_dir);packed_dir.mkdir(parents=True,exist_ok=True)
     if raw_dir.resolve()==packed_dir.resolve():raise ValueError('Packed directory must differ from raw input')
-    files=sorted(raw_dir.glob('VNP14A1*.h5'));done=0
+    files=sorted(raw_dir.glob(product+'*.h5'));done=0
     for offset in range(0,len(files),batch_size):
         if shutil.disk_usage(raw_dir).free>=target_free:break
         source=files[offset:offset+batch_size];paths=[]
@@ -36,7 +37,7 @@ def pack(raw_dir,packed_dir,target_free=400000000,batch_size=200):
                     for p in paths:
                         info=tar.gettarinfo(str(p),arcname=p.name);info.mtime=0;info.uid=info.gid=0;info.uname=info.gname=''
                         with p.open('rb') as f:tar.addfile(info,f)
-                    raw=json.dumps({'files':records,'original_dir_role':'Unfiltered NASA VNP14A1 original files and provenance'},sort_keys=True).encode()
+                    raw=json.dumps({'files':records,'original_dir_role':'Unfiltered NASA '+product+' original files and provenance'},sort_keys=True).encode()
                     info=tarfile.TarInfo('PACK-MANIFEST.json');info.size=len(raw);info.mtime=0;tar.addfile(info,io.BytesIO(raw))
         # Verify ALL members against pre-compression original hashes before any unlink.
         with tarfile.open(temp,'r:gz') as tar:
@@ -70,8 +71,8 @@ def restore(packed_dir,raw_dir):
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('operation',choices=['pack','restore']);p.add_argument('--raw',required=True);p.add_argument('--packed',required=True);p.add_argument('--target-free',type=int,default=400000000);a=p.parse_args()
-    if a.operation=='pack':pack(a.raw,a.packed,a.target_free)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('operation',choices=['pack','restore']);p.add_argument('--raw',required=True);p.add_argument('--packed',required=True);p.add_argument('--target-free',type=int,default=400000000);p.add_argument('--product',choices=['VNP14A1','VJ114A1'],default='VNP14A1');a=p.parse_args()
+    if a.operation=='pack':pack(a.raw,a.packed,a.target_free,product=a.product)
     else:restore(a.packed,a.raw)
 
 if __name__=='__main__':main()

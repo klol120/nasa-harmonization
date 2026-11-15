@@ -1,4 +1,23 @@
-# NASA source ledger: actual acquisition, 14 November 2026
+# NASA source ledger: actual acquisition, 14–15 November 2026
+
+The Greek-inspired temporal extension adds the following actual NASA acquisitions.
+Its raw subset and API manifests carry exact URLs, versions, download timestamps
+and hashes; totals do not count retained full source containers that were transient.
+
+| Added source | NASA reference | Obtained coverage | Access, units and limitations |
+|---|---|---|---|
+| MODIS monthly vegetation | [MOD13C2.061](https://doi.org/10.5067/MODIS/MOD13C2.061), [C6.1 guide](https://modis-land.gsfc.nasa.gov/pdf/MOD13_User_Guide_V61.pdf) | 110 monthly composites, September 2017–October 2026, selected raw NDVI/QA/reliability at 9,411 cell samples; 0.05° CMG | Earthdata token. NDVI scale 0.0001; CMG bits 14–15 describe spatial contribution, not tiled-product snow/shadow. Reliability=4 uses historical filling and is excluded. Composite/reprocessing availability is not proved by a nominal date. |
+| Daily soil wetness | [NASA POWER hydrology sources](https://power.larc.nasa.gov/docs/methodology/data/sources_hydrology/), [GMAO MERRA-2 units](https://gmao.gsfc.nasa.gov/gmao-products/merra-2/faq_merra-2/) | 1,293,732 point-days at 396 coarse-grid sampling points, December 2017–10 November 2026; plus 516 recent Lebanese point-days for the future-input demonstration | Public POWER API, GWETROOT/GWETTOP dimensionless modeled relative wetness. Standard MERRA-2 meteorological grid, roughly 0.5° × 0.625°. Not SMAP retrievals, volumetric moisture or direct fuel moisture. Missing values remain missing; point samples are not independent weather grids. |
+| Daily Greek fire/coverage | [VJ114A1.002](https://doi.org/10.5067/VIIRS/VJ114A1.002), [NASA CMR](https://cmr.earthdata.nasa.gov/search/) | 1,819 available daily h19v05 sources, 2018–2022, native FireMask and QA subsets; 163 matched training cells from a 326-cell panel | Earthdata token. Seven requested calendar dates have no catalogue source. Daily nominal 1 km target; cloud/processed-area screening is not continuous observability or true incident ground truth. |
+| Additional issued weather | [NASA GEOS-FP forecast archive](https://portal.nccs.nasa.gov/datashare/gmao/geos-fp/forecast/) | 72 hourly regional field subsets from issue 2026-11-14 00 UTC, valid 2026-11-16 00 UTC through 2026-11-17 00 UTC | Public range reads. Actual issue/valid/retrieval timestamps retained. Approximately 0.25° × 0.3125° inputs; actual future inputs do not establish historical operational performance. |
+
+NASA open-data policy and dataset-specific attribution requirements below also
+apply to these additions. The Greek paper, supplement and MIT-licensed source code
+are methodological references, not permission to substitute its mixed-agency data
+for the requested NASA-only predictors.
+
+The 516 recent Lebanese soil point-days overlap the historical archive through
+10 November; these are acquisition counts, not 516 additional unique observations.
 
 This supersedes the initial access-only reports. Download manifests alongside raw files record exact NASA URLs, retrieval times, byte sizes and SHA256. CMR catalogues retain collection/granule metadata and processing identities. Retain source citations and consult each collection's current use constraints; this repository does not grant additional rights.
 

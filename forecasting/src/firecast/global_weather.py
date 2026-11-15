@@ -44,7 +44,7 @@ def acquire(config_path,out,lebanon_data=None):
     config=json.loads(Path(config_path).read_text());out=Path(out);out.mkdir(parents=True,exist_ok=True);tasks=[]
     if lebanon_data:
         old=pd.read_csv(Path(lebanon_data)/'weather_historical.csv',usecols=['weather_point_id','lat','lon']).drop_duplicates()
-        tasks=[(p.lat,p.lon,'20251201','20261031','lebanon') for p in old.itertuples()]
+        tasks=[(p.lat,p.lon,config.get('weather_start','20251201'),config.get('weather_end','20261031'),'lebanon') for p in old.itertuples()]
     else:
         for site in config['sites']:
             for dy in [.25,.75,1.25,1.75]:

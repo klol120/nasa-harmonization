@@ -61,7 +61,7 @@
     "Full time-varying vegetation and authoritative non-target incident/facility adjudication"
   ],
   "publication_status_note": "This validation snapshot predates the user-requested branch publication; github_pushed describes the snapshot time.",
-  "historical_note": "Earlier local-only validation details are retained; global_extension is the latest completed stage.",
+  "historical_note": "Earlier local-only and global validation snapshots are retained; greek_temporal_extension is the latest completed stage.",
   "global_extension": {
     "completed": true,
     "model_architecture_groups": 8,
@@ -91,5 +91,29 @@
     "report": "global-results.md",
     "release": "global-release.json"
   },
-  "operational_model_validated": false
+  "operational_model_validated": false,
+  "greek_temporal_extension": {
+    "production_approved": false,
+    "validation_candidates": 45,
+    "true_recurrent_architectures": [
+      32,
+      64
+    ],
+    "full_suite_passed": 88,
+    "full_suite_warnings": 1,
+    "focused_temporal_tests_after_final_changes": 10,
+    "notebook_10_executed": true,
+    "all_notebook_schemas_validated": 10,
+    "actual_issued_forecast": {
+      "cells": 124,
+      "probabilities_returned": 88,
+      "conflict_scope_withheld": 32,
+      "prediction_time": "2026-11-16T00:00:00+00:00"
+    },
+    "new_lebanese_confirmation_positive_windows": 0,
+    "known_years_are_not_fresh_confirmation": true,
+    "github_ci_executed": false,
+    "fresh_container_build_executed": false,
+    "report": "greek-experiment-results.md"
+  }
 }

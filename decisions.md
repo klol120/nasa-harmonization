@@ -408,3 +408,141 @@ windows and record actual family/candidate counts and selected parameters.
   comparative metrics/figures, licences, statecharts and limitations on the existing
   user-requested feature branch. Provide a clearly named research-only model bundle;
   no secret, NASA raw archive or claim of production approval belongs in that bundle.
+
+## 2026-11-14 — Literature review and comparable metrics
+
+* Review six primary fire-modeling studies, including global PoF, Mediterranean
+  temporal models, western-US ignition models and a separately identified spread
+  benchmark. Record tasks, sampling, split design, metric definitions and source
+  versions in `forecasting/docs/literature-review.md`. Reading non-NASA research
+  does not change the NASA-only predictor constraint.
+* Add a reporting-only diagnostic script. Reuse the frozen global validation winner
+  and verified splits; do not train, select, calibrate or change thresholds. Its
+  ROC-AUC is 0.90230 on later global source-site dates, 0.87793 on held-out global
+  panels, and 0.55173 on the repeated Lebanese fold. Prior average precision exactly
+  reproduces. High ROC-AUC does not solve the poor alert precision/recall problem.
+* Treat published case-control AUPRC and all-cell natural-prevalence AP as different
+  evaluations. Mesogeos paper-v2 scores differ from its project-page leaderboard;
+  retain both versions explicitly. Do not claim that protocol differences prove
+  leakage or erase our genuine Lebanese performance deficit.
+* Prioritize event/persistence audits, contiguous daily histories, NASA vegetation
+  and soil-moisture proxies, and controlled XGBoost/temporal-model comparisons.
+  These are proposed experiments, not completed improvements. Preserve existing
+  conflict/cloud exclusions and freeze genuinely fresh confirmation before further
+  development. No threshold tuning or renewed selection against viewed 2026 data.
+* Account for composite completion, processing/version availability and actual
+  release latency. SMAP soil moisture is not direct fuel moisture, and its normal
+  mean latency is not a delivery guarantee. Storage expansion is needed before a
+  substantial new multi-variable acquisition in this almost-full workspace.
+
+## 2026-11-15 — Prioritize the Greek study and measure regional similarity
+
+* Make Kondylatos et al. (2022), DOI 10.1029/2022GL099368, the main methodological
+  reference. Inspect its supplement and pin released code to commit
+  2b18bcf194284d56bd4e1774f7d5315db94cba34. Preserve the global baseline and
+  global/region/Lebanon before-and-after comparisons requested earlier.
+* Execute a development-only NASA comparison using 2018–2020 POWER and existing
+  terrain/vegetation data. Weight actual weather points by their assigned eligible
+  cells, not by unused ocean sample locations. Compare monthly temperature, rainfall,
+  humidity and terrain. Greece has similar seasonal temperatures, but the sampled
+  Greek panel has summer precipitation 105.83 mm versus 8.46 mm for our Lebanese
+  grid, and mean sampled elevation 463 m versus 945 m. Do not call either sampled
+  domain representative of every part of its country or assert climate equivalence.
+* Four-panel standardized distances are exploratory and do not determine final
+  training weights. Within-Greece matching needs broader Greek coverage and
+  vegetation/fuel history. Do not select source regions from test fire outcomes.
+* The existing Greek panel is a geographic holdout. A new Greek-trained model needs
+  newly registered splits; it cannot inherit the old independent-geography claim.
+  The audit reads no fire labels or test scores. Current frozen artifacts remain
+  unchanged and their known 2026 outcomes cannot be fresh confirmation again.
+* The supplement assumes historical weather represents available forecasts. Do not
+  reproduce that assumption as operational validation. Preserve actual issue,
+  availability and composite-end timestamps in a NASA adaptation. Keep the existing
+  next-day detected-occurrence target and cloud/conflict exclusions.
+* Distinguish the supplement's stated LSTM dense head (32/16) from the pinned code
+  and hidden-size-64 experiment, which yields 64/32. Record variants explicitly.
+  Prioritize a ten-day LSTM against matched trees; defer ConvLSTM until coherent
+  spatial sequences and compute support a meaningful comparison. No new temporal
+  model was trained during the review; no expected precision is promised.
+* The authors' mixed-source archive needs at least 250 GB decompressed and would
+  violate the requested NASA-only training provenance. Do not download it into a
+  workspace with about 286 MB free. Reuse our NASA caches for the actual audit and
+  document new-data/storage/confirmation prerequisites for later experiments.
+
+## 2026-11-15 — Execute the Greek-inspired NASA temporal experiment
+
+* Acquire actual NASA MOD13C2.061 monthly NDVI/quality/reliability and NASA POWER
+  MERRA-2 root/surface wetness. The completed history has 110 monthly composites
+  sampled at 9,411 cell locations and 1,293,732 soil-wetness point-days at 396 points.
+  These coarse products are fitness/resource compromises, not exact substitutes
+  for the Greek paper's 1 km vegetation and EDO moisture. Retain full selected raw
+  arrays, original/subset hashes and URL/timestamp provenance; global containers
+  are transient. Public modeled wetness has missing values; never zero-fill them.
+* The CMG guide redefines QA bits 14–15 as spatial contribution. The initial audit
+  caught an incorrect tiled-product interpretation before fitting. Correct it,
+  require good clear land/reliability and sufficient contribution, and regression-
+  test the actual bit pattern. Exclude climatology-filled reliability=4. Add NDVI
+  age and a missing-prior-change indicator; never use future composites.
+* Fit 10-day histories ending four days before target, plus historical current-day
+  weather proxies/static environment. These are retrospective perfect-weather
+  experiments. A declared three-day weather lag or sixteen-day NDVI lag does not
+  establish historical release/version availability. Operational backtesting still
+  requires actual issued meteorology and historically available land products.
+* Match 163 of 326 Greek cells using development-only weather/terrain, without fire
+  outcomes. Two sampled dates/month yielded zero positive training windows there;
+  expand all Greek dates in 2018–2022 instead of selecting fire days. Obtain 1,819
+  available daily sources; preserve seven missing catalogue days as uncertainty.
+  The prepared Greek training set has 118,678 examples and only 67 positive windows.
+* Keep source/global fitting in 2018–2020, separate 2021 calibration and 2022
+  validation, with fourteen-day gaps. Common feature-qualified fitting populations
+  have 379,751 global windows/5,605 positives and 109,567 Lebanese windows/197
+  positives. Feature exclusions preserve their positive counts separately.
+* Benchmark 45 source/Greek/local/transfer-stage candidates: seasonal, logistic,
+  RF, XGBoost, true LSTM32/LSTM64, and matched weather-only linear/XGBoost controls.
+  Neural stages continue weights with frozen parent scalers; tree/linear stages
+  refit with a frozen parent score. No claim of continued tree weights. Class-
+  weighted neural fitting requires separate natural-prevalence calibration.
+* Use a CPU-only optional PyTorch/XGBoost environment. Source LSTM pretraining took
+  307.68 seconds; the subsequent full comparison including cache reuse took 415.65
+  seconds. Source-data/tuning hashes check cached weights. Fit/calibration sources,
+  seed, runtime versions, model hashes and source-code hashes are retained. ConvLSTM
+  is not justified by the current coarse spatial inputs and sparse incidents.
+* Source validation selects `lstm64-global`; Lebanese overall validation selects
+  `lstm64-lebanon`; transfer validation selects `logistic-global_greek_lebanon`.
+  Freeze every candidate and threshold before new November label acquisition.
+  Register 1/7 November 2026 beforehand; five geographic panels stay held out and
+  Greece becomes a declared source region in regional arms. A fixed geographic
+  router preserves the selected global model outside Lebanon and transfer inside.
+* New November confirmation has 38 source-panel positive windows, 53 geographic-
+  holdout positives, and zero Lebanese positives among 172 qualified examples.
+  Local AP/recall cannot be established there. Missing local events are not evidence
+  of useful detection. Keep weak global November scores and frozen thresholds.
+* Add separately labelled known-year diagnostics without refitting or reselection.
+  On 2023–2025, global LSTM AP is 0.17338 on designated source panels but only
+  0.05939 on independent geographic panels. The neural global→Greek→Lebanon chain
+  reaches Lebanese AP 0.01414 versus 0.00775 for local-only LSTM, but it did not win
+  validation and is not promoted from known test results. On known 2026 data it
+  detects 3/15 with 508 false alerts; the selected local model still misses 15/15.
+  No production readiness or high precision is demonstrated.
+* Complete a real future-input path using 72 NASA GEOS subsets for 16 November UTC,
+  actual antecedent weather/wetness and MODIS availability records. The local
+  research model returns 88 probabilities over 124 cells. Withhold all 32 southern
+  scope cells and six missing-vegetation cases, with two overlapping reasons.
+  Inputs contain no future fire label. CSV/GeoJSON/map outputs retain warnings,
+  model hashes and timestamps; missing/future/wrong-window inputs suppress scores.
+* Fit new work into limited disk by losslessly packing/verifying every remaining
+  S-NPP and original NOAA-20 file, using memory-backed temporary MODIS reads and a
+  persistent symlinked CPU software cache. Preserve archive/member checksums and
+  restore commands. Do not describe packed original files as discarded data.
+* Release stays false: no multi-year issued-forecast backtest, uncertain historical
+  processing availability, limited independent incidents and poor practical local
+  performance. Publish measured results, notebooks and all statecharts, not secrets
+  or large raw/model archives in Git. Existing API production gates remain closed.
+
+* Final engineering verification: full suite 88 passed with one existing Starlette
+  deprecation warning; ten temporal tests rerun after final timestamp/scope guards.
+  Notebook 10 executed real frozen-result reproduction and actual forecast-output
+  inspection; all ten notebook schemas validated. Compilation, JSON, whitespace,
+  frozen-artifact hashes and research-bundle member hashes passed. No fresh Docker
+  build or remote GitHub CI result is claimed. Post-fit changes add reporting and
+  safer label-free inference; frozen weights/calibrators/thresholds never change.

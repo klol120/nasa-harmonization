@@ -1,6 +1,20 @@
 # Lebanon satellite-detected vegetation-fire occurrence
 
-**Completed: global NASA pretraining, Lebanon adaptation, multi-algorithm benchmarks and southern-conflict exclusions. Production release remains blocked.** Read the [latest global results](docs/global-results.md), [global statecharts](docs/global-statecharts.md), [source ledger](docs/sources.md) and [decisions](../decisions.md). The [earlier Lebanon-only results](docs/current-results.md) remain a historical baseline.
+**Completed: global NASA pretraining, Greek/Lebanese adaptation, temporal LSTM benchmarks and southern-conflict exclusions. Production release remains blocked.** Read the [latest measured results](docs/greek-experiment-results.md), [pipeline statecharts](docs/greek-temporal-statecharts.md), [source ledger](docs/sources.md) and [decisions](../decisions.md). The [earlier global results](docs/global-results.md) and [Lebanon-only results](docs/current-results.md) remain historical baselines.
+
+The [literature review](docs/literature-review.md) compares six published fire-model
+studies and explains high reported scores, task/sampling differences and proposed
+NASA-only improvements. Its [metric diagnostic](docs/literature-metric-context.json)
+reuses the frozen global model without training or changing thresholds.
+
+The [Greek-study focus](docs/greek-study-focus.md) is the main methodological
+reference for the completed temporal experiments. It includes an executed NASA comparison of
+Greek and Lebanese development weather/terrain, pinned source-code settings and
+explicit differences from the paper's target, sampling and forecast assumptions.
+
+The [Greek-inspired temporal experiment](docs/greek-experiment-results.md) now fits
+actual LSTM models, tree/linear controls, daily Greek labels, NASA NDVI/wetness
+histories and frozen transfer stages. Read its [statecharts](docs/greek-temporal-statecharts.md).
 
 Estimate whether vegetation-associated fire will be **detected by the configured satellite product** in an eligible Lebanese grid cell during the next 24-hour UTC window. This includes continuing fires and agricultural burning. It does not predict fire spread, damage or whether fire will reach infrastructure. It is not an emergency warning system.
 
@@ -97,15 +111,110 @@ CC BY-IGO, used solely for historical label/evaluation quality; it is not a mode
 predictor. Environmental inputs remain NASA-only. A full strike catalogue has not
 been obtained; other Lebanese areas may still contain conflict-related detections.
 
-To restore the inactive S-NPP cache after lossless disk compaction:
+To restore the original daily fire caches after lossless disk compaction:
 
 ```sh
 uv run --frozen python -m firecast.cache_pack restore --raw data/gridded-fire/raw --packed data/gridded-fire/packed-raw
+uv run --frozen python -m firecast.cache_pack restore --raw data/gridded-fire/raw --packed data/gridded-fire/packed-originals
+uv run --frozen python -m firecast.cache_pack restore --raw data/gridded-noaa20/raw --packed data/gridded-noaa20/packed-originals
 ```
 
 Both archive/member hashes are verified. Packed copies are retained. Ensure enough
 free disk for restoration; all original science files and provenance bytes are
-recoverable. This operation is unnecessary for the active NOAA-20/global benchmark.
+recoverable. Restoration is required before rebuilding either original daily-file
+adapter from those packed caches; the prepared global/temporal tensors and their
+scientific subset archives can be used directly without restoration.
+
+## Greek-inspired temporal experiment
+
+This is a NASA-only retrospective adaptation of the Greek methodology. It preserves
+the next-24-hour satellite-detected occurrence target, representative evaluation
+negatives, QA/cloud exclusions and southern conflict quarantine. It does not
+reproduce the paper's selected-negative large-fire-danger target or promise its
+precision. Forty-five candidates compare source, local, Greek and continued-transfer
+stages. LSTM weights genuinely continue; tree/linear transfer adds a parent score.
+
+Use the base locked environment plus the optional CPU dependencies. Allow at least
+16 GB disk and 8–12 GB RAM for a comfortable reproduction; source downloads and
+temporary rasters add costs beyond fitting. This workspace used verified raw packing,
+Linux memory-backed raster reads and a persistent software cache with symlinks.
+Do not delete that software cache while the installed environment references it.
+
+```sh
+uv sync --frozen --extra dev
+uv pip install --python .venv/bin/python -r requirements-temporal-cpu.txt
+uv run --no-sync python -m firecast.temporal_confirmation register
+uv run --no-sync python -m firecast.greek_environment soil --out data/greek-soil
+uv run --no-sync python -m firecast.greek_environment ndvi --out data/greek-ndvi --token-file "$EARTHDATA_TOKEN_FILE"
+uv run --no-sync python -m firecast.global_acquire --config configs/greek-daily-acquisition.json --out data/greek-daily-panel --token-file "$EARTHDATA_TOKEN_FILE" --environment data/environment --existing-archive data/gridded-noaa20 --stage fire --reuse-static-from data/global-panel
+uv run --no-sync python -m firecast.temporal_data
+uv run --no-sync python -m firecast.benchmark_temporal
+```
+
+These commands assume the documented original NASA global/Lebanese caches already
+exist. The experiment separately records natural-prevalence calibration in 2021,
+validation in 2022 and fourteen-day gaps. A frozen experiment refuses overwriting;
+use a new output directory for a new run. `--pretrain-only` may precompute source
+LSTMs; numerical training-data/settings hashes verify reuse. Notebook 10 calls the
+same modules and reproduces frozen metrics without retraining by default.
+
+The completed registered confirmation can be reproduced after freezing, using its
+actual weather and fire caches. This does **not** provide fresh independent evidence:
+
+```sh
+uv run --no-sync python -m firecast.global_weather --config configs/greek-confirmation.json --out data/greek-confirmation-weather
+uv run --no-sync python -m firecast.global_weather --config configs/greek-confirmation.json --out data/greek-confirmation-local-weather --lebanon-data data/nasa-lebanon
+uv run --no-sync python -m firecast.temporal_confirmation prepare --token-file "$EARTHDATA_TOKEN_FILE"
+uv run --no-sync python -m firecast.temporal_confirmation score
+```
+
+The historical November dates are now viewed. Reproducing them does not make them
+fresh again. For a new study, register untouched confirmation dates/scope and their
+configuration hashes before fire collection, freeze all model choices, then use
+`temporal_confirmation prepare` and `score`. The completed initial registration is
+retained in local benchmark artifacts and the result JSON. The November cohort has
+zero Lebanese positives and cannot establish recall. The separately identified
+known-year benchmark covers 2023–2025 and January–October 2026; it never reselects.
+
+```sh
+uv run --no-sync python -m firecast.greek_environment soil --config configs/greek-known-benchmark.json --out data/greek-soil-known
+uv run --no-sync python -m firecast.greek_environment ndvi --config configs/greek-known-benchmark.json --out data/greek-ndvi-known --token-file "$EARTHDATA_TOKEN_FILE"
+uv run --no-sync python -m firecast.temporal_known_benchmark prepare
+uv run --no-sync python -m firecast.temporal_known_benchmark score
+uv run --no-sync python -m firecast.publish_temporal
+```
+
+Research inference accepts `sequence`/`static` NumPy tensors in the artifact's
+recorded feature order, plus CSV location/availability metadata. It never needs a
+fire label. Forecast issue and retrieval, history retrieval, vegetation retrieval
+and composite end must be available before prediction. The 24-hour forecast window
+and ten-day history ending four days before target are checked. Invalid/missing
+rows and the attached southern scope yield null probabilities. Use only trusted
+local joblib artifacts. This optional interface does not bypass the production API.
+
+```sh
+uv run --no-sync python -m firecast.temporal_inference --model outputs/greek-temporal-benchmark/research-lebanon.joblib --inputs inputs.npz --metadata metadata.csv --out outputs/temporal-research --research-only
+```
+
+Metadata columns: `cell_id`, `region`, `lat`, `lon`, `prediction_time`,
+`forecast_issued_at`, `forecast_available_at`, `forecast_valid_start`,
+`forecast_valid_end`, `history_start`, `history_end`, `history_latest_available_at`,
+`vegetation_available_at`, `vegetation_composite_end`. All times require a timezone.
+Include `static_available_at` for the actual terrain/land-cover snapshot as well.
+History variables are temperature °C, max temperature °C, humidity %, daily rain mm,
+wind u/v m/s, VPD kPa, and root/surface relative wetness (dimensionless). Static/
+current inputs follow the exact feature list in each artifact, including NDVI age
+and its previous-value indicator. Missing history is never zero-filled.
+
+`temporal_live` assembled actual NASA GEOS inputs for 16 November 2026 UTC using
+the 14 November 00 UTC issue, observed POWER histories and MODIS vegetation. This
+is a reproducible research demonstration; a rolling NASA archive may later require
+its retained cache. Acquire a complete appropriate GEOS cycle and fresh local
+POWER weather/soil files before using it for another future window. It writes CSV,
+GeoJSON, JSON and a country-clipped probability map with provenance and limitations.
+Actual forecast inputs do not validate a model trained on historical perfect-weather
+proxies. Release remains false; ConvLSTM and emergency-warning deployment are not
+claimed as completed.
 
 The benchmark measured 89 validation candidates in eight model/architecture groups
 and retained 58 stage winners, plus nine conservative-policy controls. The latest

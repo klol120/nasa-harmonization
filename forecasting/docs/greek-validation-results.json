@@ -1,0 +1,5285 @@
+[
+  {
+    "id": "seasonal-global",
+    "family": "seasonal",
+    "stage": "global",
+    "calibration_domain": "global",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.04796075741375594,
+        "precision": 0.05740318906605923,
+        "recall": 0.47368421052631576,
+        "f1": 0.10239739943112555,
+        "brier": 0.014389454770301137,
+        "threshold": 0.05011492758890102,
+        "confusion_matrix_tn_fp_fn_tp": [
+          108538,
+          14483,
+          980,
+          882
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.01381025896523821,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.8004203211190154,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.01381025896523821,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.05011492758890102,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.000720084166375906,
+        "precision": 0.0009482268158543523,
+        "recall": 0.9375,
+        "f1": 0.001894537417113988,
+        "brier": 0.0009466968843407812,
+        "threshold": 0.001075510471166032,
+        "confusion_matrix_tn_fp_fn_tp": [
+          3446,
+          31608,
+          2,
+          30
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0047279001063487034,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.351538429993724,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0047279001063487034,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.00046866963782086503,
+        "precision": 0.0005354608979679259,
+        "recall": 1.0,
+        "f1": 0.001070348666077975,
+        "brier": 0.0005715190535491006,
+        "threshold": 0.0007312035489761115,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          37331,
+          0,
+          20
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.00481004350498336,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.3842898663309314,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.00481004350498336,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.05011492758890102,
+      "lebanon": 0.001075510471166032,
+      "greek": 0.0007312035489761115
+    },
+    "training": null,
+    "training_windows": null,
+    "training_positive_windows": null
+  },
+  {
+    "id": "seasonal-lebanon",
+    "family": "seasonal",
+    "stage": "lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.01685900625073406,
+        "precision": 0.017775725062469654,
+        "recall": 0.8061224489795918,
+        "f1": 0.03478442232599099,
+        "brier": 0.01485154087960927,
+        "threshold": 0.002584226340119252,
+        "confusion_matrix_tn_fp_fn_tp": [
+          40081,
+          82940,
+          361,
+          1501
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0025834759715713516,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.4629335943106689,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0025834759715713516,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0013947264085670933,
+        "precision": 0.0017548785624034817,
+        "recall": 0.78125,
+        "f1": 0.003501891021151422,
+        "brier": 0.0009160578818533873,
+        "threshold": 0.004867355138314121,
+        "confusion_matrix_tn_fp_fn_tp": [
+          20833,
+          14221,
+          7,
+          25
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0027647349519253303,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6578078642950876,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0027647349519253303,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0009078687755200269,
+        "precision": 0.001584786053882726,
+        "recall": 0.3,
+        "f1": 0.0031529164477141357,
+        "brier": 0.0005434411381908228,
+        "threshold": 0.00518831490319519,
+        "confusion_matrix_tn_fp_fn_tp": [
+          33551,
+          3780,
+          14,
+          6
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.002728207844496207,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5834889234148563,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.002728207844496207,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.002584226340119252,
+      "lebanon": 0.004867355138314121,
+      "greek": 0.00518831490319519
+    },
+    "training": null,
+    "training_windows": null,
+    "training_positive_windows": null
+  },
+  {
+    "id": "seasonal-greek",
+    "family": "seasonal",
+    "stage": "greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.017167520401860484,
+        "precision": 0.01839975018615935,
+        "recall": 0.8227712137486574,
+        "f1": 0.03599454912833044,
+        "brier": 0.014875190954715439,
+        "threshold": 0.0012742467945054319,
+        "confusion_matrix_tn_fp_fn_tp": [
+          41291,
+          81730,
+          330,
+          1532
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0013762699236316987,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.4809718505265808,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0013762699236316987,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.001146111975846551,
+        "precision": 0.001436639254929159,
+        "recall": 0.90625,
+        "f1": 0.002868730833910377,
+        "brier": 0.0009117564228974995,
+        "threshold": 0.0012502946336470488,
+        "confusion_matrix_tn_fp_fn_tp": [
+          14897,
+          20157,
+          3,
+          29
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0015069569741884494,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.5947836730472985,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0015069569741884494,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0007791278615931995,
+        "precision": 0.0011342691053452432,
+        "recall": 0.4,
+        "f1": 0.0022621235684999294,
+        "brier": 0.0005364074844519092,
+        "threshold": 0.0024924056924645536,
+        "confusion_matrix_tn_fp_fn_tp": [
+          30286,
+          7045,
+          12,
+          8
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0014876024375863094,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5809293884439205,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0014876024375863094,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0012742467945054319,
+      "lebanon": 0.0012502946336470488,
+      "greek": 0.0024924056924645536
+    },
+    "training": null,
+    "training_windows": null,
+    "training_positive_windows": null
+  },
+  {
+    "id": "logistic_weather-global",
+    "family": "logistic_weather",
+    "stage": "global",
+    "calibration_domain": "global",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.08878209443789689,
+        "precision": 0.1864218141346689,
+        "recall": 0.1799140708915145,
+        "f1": 0.1831101393823449,
+        "brier": 0.014092741534113884,
+        "threshold": 0.10860726237297058,
+        "confusion_matrix_tn_fp_fn_tp": [
+          121559,
+          1462,
+          1527,
+          335
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 122577,
+            "mean_probability": 0.010391213931143284,
+            "observed_fraction": 0.012359578061137081
+          },
+          {
+            "lower": 0.1,
+            "n": 2306,
+            "mean_probability": 0.12956371903419495,
+            "observed_fraction": 0.15047701647875109
+          }
+        ],
+        "roc_auc": 0.8256918026736346,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.012591768056154251,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.014244343154132366,
+          "0.1": 0.061125192791223526
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0014531716355321088,
+        "precision": 0.0029585798816568047,
+        "recall": 0.0625,
+        "f1": 0.005649717514124294,
+        "brier": 0.0009159863693639636,
+        "threshold": 0.007970718666911125,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34380,
+          674,
+          30,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0022754801902920008,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.604459815570263,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0022754801902920008,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0005455130653991619,
+        "precision": 0.001455604075691412,
+        "recall": 0.05,
+        "f1": 0.002828854314002829,
+        "brier": 0.0005365458782762289,
+        "threshold": 0.004150015767663717,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36645,
+          686,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0010937090264633298,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.44734202137633605,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0010937090264633298,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.10860726237297058,
+      "lebanon": 0.007970718666911125,
+      "greek": 0.004150015767663717
+    },
+    "training": null,
+    "training_windows": 379751,
+    "training_positive_windows": 5605
+  },
+  {
+    "id": "logistic_weather-lebanon",
+    "family": "logistic_weather",
+    "stage": "lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.02400704209232657,
+        "precision": 0.026298080328681733,
+        "recall": 0.7975295381310419,
+        "f1": 0.050917195268301046,
+        "brier": 0.01477758213877678,
+        "threshold": 0.0023525087162852287,
+        "confusion_matrix_tn_fp_fn_tp": [
+          68038,
+          54983,
+          377,
+          1485
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0038114904891699553,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.6586015708320336,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0038114904891699553,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.031203502789139748,
+          "0.1": 0.04128243029117584
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0025674272743979845,
+        "precision": 0.006112469437652812,
+        "recall": 0.15625,
+        "f1": 0.011764705882352941,
+        "brier": 0.000922539213206619,
+        "threshold": 0.012703675776720047,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34241,
+          813,
+          27,
+          5
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0031084951478987932,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7204576332230272,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0031084951478987932,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0008231035668260987,
+        "precision": 0.0015255530129672007,
+        "recall": 0.2,
+        "f1": 0.003028009084027252,
+        "brier": 0.0005540083511732519,
+        "threshold": 0.009057587943971157,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34713,
+          2618,
+          16,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0031399379950016737,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.602850847820846,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0031399379950016737,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0023525087162852287,
+      "lebanon": 0.012703675776720047,
+      "greek": 0.009057587943971157
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "logistic_weather-greek",
+    "family": "logistic_weather",
+    "stage": "greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.01951642997176665,
+        "precision": 0.022217487037431635,
+        "recall": 0.8399570354457573,
+        "f1": 0.04328992346762251,
+        "brier": 0.01485417503863573,
+        "threshold": 0.0011230171658098698,
+        "confusion_matrix_tn_fp_fn_tp": [
+          54190,
+          68831,
+          298,
+          1564
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.001675034174695611,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.6238679517406366,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.001675034174695611,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0015274239401975231,
+        "precision": 0.002002002002002002,
+        "recall": 0.375,
+        "f1": 0.003982741453700631,
+        "brier": 0.0009128226083703339,
+        "threshold": 0.0030574374832212925,
+        "confusion_matrix_tn_fp_fn_tp": [
+          29072,
+          5982,
+          20,
+          12
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0019171838648617268,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6847047590859816,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0019171838648617268,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0007596301797435363,
+        "precision": 0.0010465724751439038,
+        "recall": 0.6,
+        "f1": 0.0020895002611875328,
+        "brier": 0.0005361454095691442,
+        "threshold": 0.0016537177143618464,
+        "confusion_matrix_tn_fp_fn_tp": [
+          25877,
+          11454,
+          8,
+          12
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0013058228651061654,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5914300447349388,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0013058228651061654,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0011230171658098698,
+      "lebanon": 0.0030574374832212925,
+      "greek": 0.0016537177143618464
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "logistic_weather-greek_lebanon",
+    "family": "logistic_weather",
+    "stage": "greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.024128367077577373,
+        "precision": 0.026675540525956037,
+        "recall": 0.7964554242749732,
+        "f1": 0.051622110832637146,
+        "brier": 0.014773333445191383,
+        "threshold": 0.002466981764882803,
+        "confusion_matrix_tn_fp_fn_tp": [
+          68910,
+          54111,
+          379,
+          1483
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.003898106049746275,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.6614155656063226,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.003898106049746275,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.029056983068585396,
+          "0.1": 0.0391802042722702
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.002637746830730697,
+        "precision": 0.006482982171799027,
+        "recall": 0.125,
+        "f1": 0.012326656394453005,
+        "brier": 0.0009226972470059991,
+        "threshold": 0.013731674291193485,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34441,
+          613,
+          28,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0031159964855760336,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7202392202031151,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0031159964855760336,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.000821037607915203,
+        "precision": 0.0015296367112810707,
+        "recall": 0.2,
+        "f1": 0.0030360531309297912,
+        "brier": 0.0005557042313739657,
+        "threshold": 0.00943708699196577,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34720,
+          2611,
+          16,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0032419508788734674,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.603887519755699,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0032419508788734674,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.002466981764882803,
+      "lebanon": 0.013731674291193485,
+      "greek": 0.00943708699196577
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "logistic_weather-global_greek",
+    "family": "logistic_weather",
+    "stage": "global_greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.03126460498817467,
+        "precision": 0.03535482407643673,
+        "recall": 0.6697099892588615,
+        "f1": 0.06716397813265829,
+        "brier": 0.01481344923377037,
+        "threshold": 0.002600662177428603,
+        "confusion_matrix_tn_fp_fn_tp": [
+          88997,
+          34024,
+          615,
+          1247
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.002138980198651552,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.7363613903963424,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.002138980198651552,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.009834409691393375,
+          "0.1": 0.013859808444976807
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0016601100207185,
+        "precision": 0.0026531063453460093,
+        "recall": 0.375,
+        "f1": 0.005268935236004391,
+        "brier": 0.0009124408825300634,
+        "threshold": 0.003253174712881446,
+        "confusion_matrix_tn_fp_fn_tp": [
+          30543,
+          4511,
+          20,
+          12
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0018115221755579114,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.694749975038512,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0018115221755579114,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0009126930480634557,
+        "precision": 0.0022123893805309734,
+        "recall": 0.05,
+        "f1": 0.00423728813559322,
+        "brier": 0.0005362869706004858,
+        "threshold": 0.0037433875259011984,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36880,
+          451,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0013672481290996075,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5958191583402533,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0013672481290996075,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.002600662177428603,
+      "lebanon": 0.003253174712881446,
+      "greek": 0.0037433875259011984
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "logistic_weather-global_greek_lebanon",
+    "family": "logistic_weather",
+    "stage": "global_greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.024031716391351293,
+        "precision": 0.026693970750801908,
+        "recall": 0.7910848549946294,
+        "f1": 0.0516452500745052,
+        "brier": 0.01477630902081728,
+        "threshold": 0.002463752403855324,
+        "confusion_matrix_tn_fp_fn_tp": [
+          69313,
+          53708,
+          389,
+          1473
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.003820169484242797,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.6605634475914188,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.003820169484242797,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.024028899148106575,
+          "0.1": 0.03581048175692558
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.002677727716227714,
+        "precision": 0.0066555740432612314,
+        "recall": 0.125,
+        "f1": 0.01263823064770932,
+        "brier": 0.0009226672700606287,
+        "threshold": 0.013759483583271503,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34457,
+          597,
+          28,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.003112304024398327,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7197417734067438,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.003112304024398327,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0008157416480799962,
+        "precision": 0.001448225923244026,
+        "recall": 0.2,
+        "f1": 0.002875629043853343,
+        "brier": 0.0005563917220570147,
+        "threshold": 0.009458561427891254,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34573,
+          2758,
+          16,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0032698623836040497,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6045170233853902,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0032698623836040497,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.002463752403855324,
+      "lebanon": 0.013759483583271503,
+      "greek": 0.009458561427891254
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "xgboost_weather-global",
+    "family": "xgboost_weather",
+    "stage": "global",
+    "calibration_domain": "global",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.10955848374624085,
+        "precision": 0.14317817014446227,
+        "recall": 0.23952738990332975,
+        "f1": 0.17922443238898936,
+        "brier": 0.014055106788873672,
+        "threshold": 0.0704578161239624,
+        "confusion_matrix_tn_fp_fn_tp": [
+          120352,
+          2669,
+          1416,
+          446
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 122711,
+            "mean_probability": 0.008403651416301727,
+            "observed_fraction": 0.012378678358093406
+          },
+          {
+            "lower": 0.1,
+            "n": 1415,
+            "mean_probability": 0.1284404695034027,
+            "observed_fraction": 0.09469964664310954
+          },
+          {
+            "lower": 0.2,
+            "n": 72,
+            "mean_probability": 0.22446486353874207,
+            "observed_fraction": 0.3611111111111111
+          },
+          {
+            "lower": 0.30000000000000004,
+            "n": 162,
+            "mean_probability": 0.3717568814754486,
+            "observed_fraction": 0.11728395061728394
+          },
+          {
+            "lower": 0.4,
+            "n": 523,
+            "mean_probability": 0.4391014873981476,
+            "observed_fraction": 0.3135755258126195
+          }
+        ],
+        "roc_auc": 0.8433617116412608,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.012163384817540646,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.010124029591679573,
+          "0.1": 0.04035660997033119
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0010082424808778993,
+        "precision": 0.0011767474699929394,
+        "recall": 0.78125,
+        "f1": 0.002349955350848334,
+        "brier": 0.0009227884002029896,
+        "threshold": 0.0015916078118607402,
+        "confusion_matrix_tn_fp_fn_tp": [
+          13834,
+          21220,
+          7,
+          25
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0028197700157761574,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.54607935257032,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0028197700157761574,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0005781522377486851,
+        "precision": 0.0007295128475318149,
+        "recall": 0.45,
+        "f1": 0.0014566642388929353,
+        "brier": 0.0005428726435638964,
+        "threshold": 0.002974048489704728,
+        "confusion_matrix_tn_fp_fn_tp": [
+          25003,
+          12328,
+          11,
+          9
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.002664357889443636,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5507453590849428,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.002664357889443636,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0704578161239624,
+      "lebanon": 0.0015916078118607402,
+      "greek": 0.002974048489704728
+    },
+    "training": null,
+    "training_windows": 379751,
+    "training_positive_windows": 5605
+  },
+  {
+    "id": "xgboost_weather-lebanon",
+    "family": "xgboost_weather",
+    "stage": "lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.03002527200494408,
+        "precision": 0.04340921122286924,
+        "recall": 0.1761546723952739,
+        "f1": 0.069653854321512,
+        "brier": 0.014811529777944088,
+        "threshold": 0.005685119889676571,
+        "confusion_matrix_tn_fp_fn_tp": [
+          115793,
+          7228,
+          1534,
+          328
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0024476773105561733,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.689845830378824,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0024476773105561733,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.008411044254899025,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.002490592777043414,
+        "precision": 0.009708737864077669,
+        "recall": 0.03125,
+        "f1": 0.014814814814814815,
+        "brier": 0.0009154864819720387,
+        "threshold": 0.011255518533289433,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34952,
+          102,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0026562490966171026,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.727920226650311,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0026562490966171026,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0008147696173690876,
+        "precision": 0.001170433060232286,
+        "recall": 0.65,
+        "f1": 0.0023366585782331264,
+        "brier": 0.0005408367142081261,
+        "threshold": 0.0033190364483743906,
+        "confusion_matrix_tn_fp_fn_tp": [
+          26237,
+          11094,
+          7,
+          13
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.002421759534627199,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6192273177787898,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.002421759534627199,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.005685119889676571,
+      "lebanon": 0.011255518533289433,
+      "greek": 0.0033190364483743906
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "xgboost_weather-greek",
+    "family": "xgboost_weather",
+    "stage": "greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.014458259245343087,
+        "precision": 0.018558704884640474,
+        "recall": 0.748657357679914,
+        "f1": 0.03621955180253329,
+        "brier": 0.014872021041810513,
+        "threshold": 0.0009462431771680713,
+        "confusion_matrix_tn_fp_fn_tp": [
+          49302,
+          73719,
+          468,
+          1394
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0015681918011978269,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.5230010003880905,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0015681918011978269,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0011077264966103078,
+        "precision": 0.0024449877750611247,
+        "recall": 0.03125,
+        "f1": 0.0045351473922902496,
+        "brier": 0.0009134969441220164,
+        "threshold": 0.0061622802168130875,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34646,
+          408,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.00198407843708992,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.5374480266160782,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.00198407843708992,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0010305284944302601,
+        "precision": 0.0036809815950920245,
+        "recall": 0.15,
+        "f1": 0.00718562874251497,
+        "brier": 0.0005398493376560509,
+        "threshold": 0.007768210023641586,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36519,
+          812,
+          17,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0019619264639914036,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5449552650612091,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0019619264639914036,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0009462431771680713,
+      "lebanon": 0.0061622802168130875,
+      "greek": 0.007768210023641586
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "xgboost_weather-greek_lebanon",
+    "family": "xgboost_weather",
+    "stage": "greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.030688995612591127,
+        "precision": 0.04439252336448598,
+        "recall": 0.19387755102040816,
+        "f1": 0.07224334600760456,
+        "brier": 0.014811880886554718,
+        "threshold": 0.0054670521058142185,
+        "confusion_matrix_tn_fp_fn_tp": [
+          115250,
+          7771,
+          1501,
+          361
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0024110814556479454,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.6948563120714913,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0024110814556479454,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.008069018833339214,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0022207699766911126,
+        "precision": 0.003816793893129771,
+        "recall": 0.03125,
+        "f1": 0.006802721088435374,
+        "brier": 0.0009154402650892735,
+        "threshold": 0.009541167877614498,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34793,
+          261,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0026279694866389036,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7308523100074171,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0026279694866389036,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0008452986531290919,
+        "precision": 0.001156190876602901,
+        "recall": 0.55,
+        "f1": 0.0023075309418921753,
+        "brier": 0.0005404017865657806,
+        "threshold": 0.0035239660646766424,
+        "confusion_matrix_tn_fp_fn_tp": [
+          27828,
+          9503,
+          9,
+          11
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0024004175793379545,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6286511210522087,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0024004175793379545,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0054670521058142185,
+      "lebanon": 0.009541167877614498,
+      "greek": 0.0035239660646766424
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "xgboost_weather-global_greek",
+    "family": "xgboost_weather",
+    "stage": "global_greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.014019988557962406,
+        "precision": 0.017932253445498477,
+        "recall": 0.8609022556390977,
+        "f1": 0.03513270651149539,
+        "brier": 0.014873550273478031,
+        "threshold": 0.0007548425928689539,
+        "confusion_matrix_tn_fp_fn_tp": [
+          35232,
+          87789,
+          259,
+          1603
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0015254458412528038,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.5096754568052885,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0015254458412528038,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0011672004325448569,
+        "precision": 0.0022471910112359553,
+        "recall": 0.03125,
+        "f1": 0.0041928721174004195,
+        "brier": 0.0009130959515459836,
+        "threshold": 0.005466904491186142,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34610,
+          444,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.001880186260677874,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.5488326938437839,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.001880186260677874,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0009754623733432748,
+        "precision": 0.0032537960954446853,
+        "recall": 0.15,
+        "f1": 0.006369426751592357,
+        "brier": 0.0005403089453466237,
+        "threshold": 0.007401010487228632,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36412,
+          919,
+          17,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.002004265319555998,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5484724491709303,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.002004265319555998,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0007548425928689539,
+      "lebanon": 0.005466904491186142,
+      "greek": 0.007401010487228632
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "xgboost_weather-global_greek_lebanon",
+    "family": "xgboost_weather",
+    "stage": "global_greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.03081293357266,
+        "precision": 0.04260218767990789,
+        "recall": 0.23845327604726102,
+        "f1": 0.07228915662650602,
+        "brier": 0.01481150183826685,
+        "threshold": 0.005156002007424831,
+        "confusion_matrix_tn_fp_fn_tp": [
+          113043,
+          9978,
+          1418,
+          444
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0024091468658298254,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.6969650379131082,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0024091468658298254,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.008573576807975769,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.002162213651365452,
+        "precision": 0.0035714285714285713,
+        "recall": 0.03125,
+        "f1": 0.00641025641025641,
+        "brier": 0.0009154158178716898,
+        "threshold": 0.009432652965188026,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34775,
+          279,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0026253785472363234,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7300116427511839,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0026253785472363234,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0009126674040772305,
+        "precision": 0.0011829652996845426,
+        "recall": 0.3,
+        "f1": 0.002356637863315004,
+        "brier": 0.0005408431752584875,
+        "threshold": 0.004441488068550825,
+        "confusion_matrix_tn_fp_fn_tp": [
+          32265,
+          5066,
+          14,
+          6
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0024658567272126675,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6311490450296,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0024658567272126675,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.005156002007424831,
+      "lebanon": 0.009432652965188026,
+      "greek": 0.004441488068550825
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "logistic-global",
+    "family": "logistic",
+    "stage": "global",
+    "calibration_domain": "global",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.12075994540316887,
+        "precision": 0.2196828358208955,
+        "recall": 0.252953813104189,
+        "f1": 0.23514727908137795,
+        "brier": 0.013832198455929756,
+        "threshold": 0.12331490963697433,
+        "confusion_matrix_tn_fp_fn_tp": [
+          121348,
+          1673,
+          1391,
+          471
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 122110,
+            "mean_probability": 0.009492921642959118,
+            "observed_fraction": 0.011022848251576447
+          },
+          {
+            "lower": 0.1,
+            "n": 2490,
+            "mean_probability": 0.14564979076385498,
+            "observed_fraction": 0.17269076305220885
+          },
+          {
+            "lower": 0.2,
+            "n": 283,
+            "mean_probability": 0.21369165182113647,
+            "observed_fraction": 0.303886925795053
+          }
+        ],
+        "roc_auc": 0.8311506765443477,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.012670447118580341,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.01444200798869133,
+          "0.1": 0.04684772714972496
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0009199994032767567,
+        "precision": 0.002564102564102564,
+        "recall": 0.03125,
+        "f1": 0.004739336492890996,
+        "brier": 0.0009123757481575012,
+        "threshold": 0.0046325381845235825,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34665,
+          389,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0010329724755138159,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.468542284760655,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0010329724755138159,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0006453475507888062,
+        "precision": 0.000996512207274539,
+        "recall": 0.2,
+        "f1": 0.0019831432821021317,
+        "brier": 0.0005358969792723656,
+        "threshold": 0.0017508050659671426,
+        "confusion_matrix_tn_fp_fn_tp": [
+          33321,
+          4010,
+          16,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0008138205157592893,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5401422410329217,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0008138205157592893,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.12331490963697433,
+      "lebanon": 0.0046325381845235825,
+      "greek": 0.0017508050659671426
+    },
+    "training": null,
+    "training_windows": 379751,
+    "training_positive_windows": 5605
+  },
+  {
+    "id": "logistic-lebanon",
+    "family": "logistic",
+    "stage": "lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.010551762040686908,
+        "precision": 0.01665136087031113,
+        "recall": 0.8861439312567132,
+        "f1": 0.03268847879706398,
+        "brier": 0.014963219873607159,
+        "threshold": 2.796439048324828e-06,
+        "confusion_matrix_tn_fp_fn_tp": [
+          25580,
+          97441,
+          212,
+          1650
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124833,
+            "mean_probability": 0.0026782271452248096,
+            "observed_fraction": 0.01491592767937965
+          },
+          {
+            "lower": 0.1,
+            "n": 49,
+            "mean_probability": 0.12828034162521362,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.2,
+            "n": 1,
+            "mean_probability": 0.27566543221473694,
+            "observed_fraction": 0.0
+          }
+        ],
+        "roc_auc": 0.366868360855771,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0027296950574964285,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.003229028500914755,
+        "precision": 0.006648936170212766,
+        "recall": 0.15625,
+        "f1": 0.012755102040816327,
+        "brier": 0.0009232345619238913,
+        "threshold": 0.014459820464253426,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34307,
+          747,
+          27,
+          5
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0028656423091888428,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7723440976778684,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0028656423091888428,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.001032689411007762,
+        "precision": 0.002173913043478261,
+        "recall": 0.1,
+        "f1": 0.00425531914893617,
+        "brier": 0.0006664455868303776,
+        "threshold": 0.034203190356492996,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36413,
+          918,
+          18,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37341,
+            "mean_probability": 0.006946925539523363,
+            "observed_fraction": 0.0005356042955464502
+          },
+          {
+            "lower": 0.1,
+            "n": 10,
+            "mean_probability": 0.11041941493749619,
+            "observed_fraction": 0.0
+          }
+        ],
+        "roc_auc": 0.6359721143285741,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.006974628195166588,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 2.796439048324828e-06,
+      "lebanon": 0.014459820464253426,
+      "greek": 0.034203190356492996
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "logistic-greek",
+    "family": "logistic",
+    "stage": "greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.012670322725016196,
+        "precision": 0.014909955718552565,
+        "recall": 1.0,
+        "f1": 0.029381829657974673,
+        "brier": 0.01723654754459858,
+        "threshold": 6.128481118139462e-07,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          123021,
+          0,
+          1862
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 119416,
+            "mean_probability": 0.0030595820862799883,
+            "observed_fraction": 0.015584176324780598
+          },
+          {
+            "lower": 0.1,
+            "n": 3701,
+            "mean_probability": 0.13634663820266724,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.2,
+            "n": 938,
+            "mean_probability": 0.24492457509040833,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.30000000000000004,
+            "n": 507,
+            "mean_probability": 0.34434619545936584,
+            "observed_fraction": 0.0019723865877712033
+          },
+          {
+            "lower": 0.4,
+            "n": 187,
+            "mean_probability": 0.4386518895626068,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.5,
+            "n": 102,
+            "mean_probability": 0.549917995929718,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.6000000000000001,
+            "n": 31,
+            "mean_probability": 0.6276545524597168,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.7000000000000001,
+            "n": 1,
+            "mean_probability": 0.7187165021896362,
+            "observed_fraction": 0.0
+          }
+        ],
+        "roc_auc": 0.29640391926658466,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.011471539735794067,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0012444296990448632,
+        "precision": 0.0016306563391765185,
+        "recall": 0.25,
+        "f1": 0.0032401782098015392,
+        "brier": 0.0009114529239013791,
+        "threshold": 0.0007084824028424919,
+        "confusion_matrix_tn_fp_fn_tp": [
+          30156,
+          4898,
+          24,
+          8
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0004285789327695966,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6021392886689109,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0004285789327695966,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0027827175964152155,
+        "precision": 0.012195121951219513,
+        "recall": 0.15,
+        "f1": 0.022556390977443608,
+        "brier": 0.0005361001240089536,
+        "threshold": 0.006560102570801973,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37088,
+          243,
+          17,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0014505109284073114,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.7044145616243872,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0014505109284073114,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 6.128481118139462e-07,
+      "lebanon": 0.0007084824028424919,
+      "greek": 0.006560102570801973
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "logistic-greek_lebanon",
+    "family": "logistic",
+    "stage": "greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.01066704889884285,
+        "precision": 0.016576981451914927,
+        "recall": 0.9033297529538131,
+        "f1": 0.03255651904614432,
+        "brier": 0.01497565396130085,
+        "threshold": 4.970891041011782e-06,
+        "confusion_matrix_tn_fp_fn_tp": [
+          23237,
+          99784,
+          180,
+          1682
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124817,
+            "mean_probability": 0.002901146886870265,
+            "observed_fraction": 0.014917839717346195
+          },
+          {
+            "lower": 0.1,
+            "n": 65,
+            "mean_probability": 0.12625524401664734,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.2,
+            "n": 1,
+            "mean_probability": 0.23449532687664032,
+            "observed_fraction": 0.0
+          }
+        ],
+        "roc_auc": 0.37366591965632545,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.002967205597087741,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0033247678573044546,
+        "precision": 0.007246376811594203,
+        "recall": 0.15625,
+        "f1": 0.013850415512465374,
+        "brier": 0.0009232806623913348,
+        "threshold": 0.015024610795080662,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34369,
+          685,
+          27,
+          5
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0028728111647069454,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7738948301192446,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0028728111647069454,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.001064902801826772,
+        "precision": 0.0025974025974025974,
+        "recall": 0.05,
+        "f1": 0.0049382716049382715,
+        "brier": 0.0006893854588270187,
+        "threshold": 0.04898829385638237,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36947,
+          384,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37332,
+            "mean_probability": 0.007393063977360725,
+            "observed_fraction": 0.0005357334190506804
+          },
+          {
+            "lower": 0.1,
+            "n": 19,
+            "mean_probability": 0.11328724771738052,
+            "observed_fraction": 0.0
+          }
+        ],
+        "roc_auc": 0.6372438455974927,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.007446930278092623,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 4.970891041011782e-06,
+      "lebanon": 0.015024610795080662,
+      "greek": 0.04898829385638237
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "logistic-global_greek",
+    "family": "logistic",
+    "stage": "global_greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.012561805812282452,
+        "precision": 0.014909955718552565,
+        "recall": 1.0,
+        "f1": 0.029381829657974673,
+        "brier": 0.016589950770139694,
+        "threshold": 6.369871243805392e-07,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          123021,
+          0,
+          1862
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 120617,
+            "mean_probability": 0.003649516496807337,
+            "observed_fraction": 0.015429002545246524
+          },
+          {
+            "lower": 0.1,
+            "n": 2878,
+            "mean_probability": 0.13309802114963531,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.2,
+            "n": 874,
+            "mean_probability": 0.2440905123949051,
+            "observed_fraction": 0.0011441647597254005
+          },
+          {
+            "lower": 0.30000000000000004,
+            "n": 350,
+            "mean_probability": 0.33881375193595886,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.4,
+            "n": 109,
+            "mean_probability": 0.4457255005836487,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.5,
+            "n": 52,
+            "mean_probability": 0.527790904045105,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.6000000000000001,
+            "n": 3,
+            "mean_probability": 0.6238858103752136,
+            "observed_fraction": 0.0
+          }
+        ],
+        "roc_auc": 0.29583830058932326,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.00987380649894476,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0012498440985956086,
+        "precision": 0.001664816870144284,
+        "recall": 0.375,
+        "f1": 0.0033149171270718232,
+        "brier": 0.000911439536139369,
+        "threshold": 0.0006307830917648971,
+        "confusion_matrix_tn_fp_fn_tp": [
+          27858,
+          7196,
+          20,
+          12
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.00045409880112856627,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6010802083927654,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.00045409880112856627,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.003525936561746439,
+        "precision": 0.016129032258064516,
+        "recall": 0.15,
+        "f1": 0.02912621359223301,
+        "brier": 0.0005360785871744156,
+        "threshold": 0.00708908773958683,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37148,
+          183,
+          17,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0014696959406137466,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.7041011491789666,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0014696959406137466,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 6.369871243805392e-07,
+      "lebanon": 0.0006307830917648971,
+      "greek": 0.00708908773958683
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "logistic-global_greek_lebanon",
+    "family": "logistic",
+    "stage": "global_greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.010557135857483729,
+        "precision": 0.0165616958215262,
+        "recall": 0.8882921589688507,
+        "f1": 0.03251712850556861,
+        "brier": 0.014974533580243587,
+        "threshold": 3.167377599311294e-06,
+        "confusion_matrix_tn_fp_fn_tp": [
+          24806,
+          98215,
+          208,
+          1654
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124818,
+            "mean_probability": 0.0028756428509950638,
+            "observed_fraction": 0.014917720200612092
+          },
+          {
+            "lower": 0.1,
+            "n": 64,
+            "mean_probability": 0.12377448379993439,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.2,
+            "n": 1,
+            "mean_probability": 0.21313148736953735,
+            "observed_fraction": 0.0
+          }
+        ],
+        "roc_auc": 0.3666804666736184,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.002939284546300769,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0033348956581035604,
+        "precision": 0.007331378299120235,
+        "recall": 0.15625,
+        "f1": 0.014005602240896359,
+        "brier": 0.0009232801385223866,
+        "threshold": 0.01506722066551447,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34377,
+          677,
+          27,
+          5
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.002874694997444749,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7739104310492384,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.002874694997444749,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.00105814149363035,
+        "precision": 0.0025188916876574307,
+        "recall": 0.05,
+        "f1": 0.004796163069544364,
+        "brier": 0.0006875779363326728,
+        "threshold": 0.048281230032444,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36935,
+          396,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37334,
+            "mean_probability": 0.007362872827798128,
+            "observed_fraction": 0.0005357047195585793
+          },
+          {
+            "lower": 0.1,
+            "n": 17,
+            "mean_probability": 0.11419732123613358,
+            "observed_fraction": 0.0
+          }
+        ],
+        "roc_auc": 0.6367241702606413,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.00741149764508009,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 3.167377599311294e-06,
+      "lebanon": 0.01506722066551447,
+      "greek": 0.048281230032444
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "random_forest-global",
+    "family": "random_forest",
+    "stage": "global",
+    "calibration_domain": "global",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.14572938125376542,
+        "precision": 0.2116443745082612,
+        "recall": 0.2889366272824919,
+        "f1": 0.24432334241598547,
+        "brier": 0.013603943586135711,
+        "threshold": 0.10311761213592686,
+        "confusion_matrix_tn_fp_fn_tp": [
+          121017,
+          2004,
+          1324,
+          538
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 122207,
+            "mean_probability": 0.008800950569197543,
+            "observed_fraction": 0.010735882559918827
+          },
+          {
+            "lower": 0.1,
+            "n": 1754,
+            "mean_probability": 0.14242318511110988,
+            "observed_fraction": 0.16020524515393386
+          },
+          {
+            "lower": 0.2,
+            "n": 529,
+            "mean_probability": 0.2306314793432862,
+            "observed_fraction": 0.28544423440453687
+          },
+          {
+            "lower": 0.30000000000000004,
+            "n": 142,
+            "mean_probability": 0.35404520530723105,
+            "observed_fraction": 0.23943661971830985
+          },
+          {
+            "lower": 0.4,
+            "n": 208,
+            "mean_probability": 0.4467741426920059,
+            "observed_fraction": 0.32211538461538464
+          },
+          {
+            "lower": 0.5,
+            "n": 43,
+            "mean_probability": 0.5195163523405821,
+            "observed_fraction": 0.3953488372093023
+          }
+        ],
+        "roc_auc": 0.8616230834673367,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.012915246506342888,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.010519374732061082,
+          "0.1": 0.031523771860018666
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0014933235617094877,
+        "precision": 0.002336448598130841,
+        "recall": 0.09375,
+        "f1": 0.004559270516717325,
+        "brier": 0.0009235969597251423,
+        "threshold": 0.009491468632863195,
+        "confusion_matrix_tn_fp_fn_tp": [
+          33773,
+          1281,
+          29,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.003042866290951638,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6499227085354025,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.003042866290951638,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0009553586677965226,
+        "precision": 0.0024752475247524753,
+        "recall": 0.05,
+        "f1": 0.0047169811320754715,
+        "brier": 0.0005465237809983339,
+        "threshold": 0.011842464338834152,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36928,
+          403,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0029329147254351286,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6064430366183601,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0029329147254351286,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.10311761213592686,
+      "lebanon": 0.009491468632863195,
+      "greek": 0.011842464338834152
+    },
+    "training": null,
+    "training_windows": 379751,
+    "training_positive_windows": 5605
+  },
+  {
+    "id": "random_forest-lebanon",
+    "family": "random_forest",
+    "stage": "lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.01675815150782462,
+        "precision": 0.017930519237952934,
+        "recall": 0.644468313641246,
+        "f1": 0.03489031357669327,
+        "brier": 0.014781025182106307,
+        "threshold": 0.00455430340808227,
+        "confusion_matrix_tn_fp_fn_tp": [
+          57296,
+          65725,
+          662,
+          1200
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.005097161447300323,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.5378330196277563,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.005097161447300323,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0022905932793815384,
+        "precision": 0.0048134777376654635,
+        "recall": 0.125,
+        "f1": 0.009269988412514484,
+        "brier": 0.0009146728878650299,
+        "threshold": 0.006354620843227928,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34227,
+          827,
+          28,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0025803575788895406,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.721403495321504,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0025803575788895406,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0013260018575998076,
+        "precision": 0.002911208151382824,
+        "recall": 0.2,
+        "f1": 0.005738880918220947,
+        "brier": 0.0005490666324078786,
+        "threshold": 0.007463626521477935,
+        "confusion_matrix_tn_fp_fn_tp": [
+          35961,
+          1370,
+          16,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0036320122206917682,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6155909297902548,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0036320122206917682,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.00455430340808227,
+      "lebanon": 0.006354620843227928,
+      "greek": 0.007463626521477935
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "random_forest-greek",
+    "family": "random_forest",
+    "stage": "greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.01779015678107334,
+        "precision": 0.023589026734230297,
+        "recall": 0.07250268528464017,
+        "f1": 0.035596572181938034,
+        "brier": 0.014828312491921309,
+        "threshold": 0.0064164370689384805,
+        "confusion_matrix_tn_fp_fn_tp": [
+          117433,
+          5588,
+          1727,
+          135
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0029850541978823147,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.5197998427538735,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0029850541978823147,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.007875183285339144,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0013247896423015859,
+        "precision": 0.0017331022530329288,
+        "recall": 0.09375,
+        "f1": 0.003403289846851957,
+        "brier": 0.0009164060570650914,
+        "threshold": 0.005273578863716758,
+        "confusion_matrix_tn_fp_fn_tp": [
+          33326,
+          1728,
+          29,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0029362921360946235,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6248631575569121,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0029362921360946235,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.001404482791741013,
+        "precision": 0.00558659217877095,
+        "recall": 0.1,
+        "f1": 0.010582010582010581,
+        "brier": 0.0005365847680083767,
+        "threshold": 0.004619350322637748,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36975,
+          356,
+          18,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0013492452274298486,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5854256516032252,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0013492452274298486,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0064164370689384805,
+      "lebanon": 0.005273578863716758,
+      "greek": 0.004619350322637748
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "random_forest-greek_lebanon",
+    "family": "random_forest",
+    "stage": "greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.019499525092870208,
+        "precision": 0.035333333333333335,
+        "recall": 0.05692803437164339,
+        "f1": 0.04360345536816125,
+        "brier": 0.014766388525676142,
+        "threshold": 0.009818686604650847,
+        "confusion_matrix_tn_fp_fn_tp": [
+          120127,
+          2894,
+          1756,
+          106
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0052165770699878575,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.5832790256282688,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0052165770699878575,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.01201481276171355,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.003099629758822817,
+        "precision": 0.012121212121212121,
+        "recall": 0.125,
+        "f1": 0.022099447513812154,
+        "brier": 0.0009149382283447713,
+        "threshold": 0.007362313945028581,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34728,
+          326,
+          28,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0026753655204879287,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7124458870599646,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0026753655204879287,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.001814493471622385,
+        "precision": 0.004201680672268907,
+        "recall": 0.2,
+        "f1": 0.00823045267489712,
+        "brier": 0.0005519361806927081,
+        "threshold": 0.00824884302887022,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36383,
+          948,
+          16,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.004159280986842535,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6641343655407035,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.004159280986842535,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.009818686604650847,
+      "lebanon": 0.007362313945028581,
+      "greek": 0.00824884302887022
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "random_forest-global_greek",
+    "family": "random_forest",
+    "stage": "global_greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.016572614105187098,
+        "precision": 0.017377591328046053,
+        "recall": 0.6095596133190118,
+        "f1": 0.03379183041562463,
+        "brier": 0.014834443629960973,
+        "threshold": 0.002505154759235853,
+        "confusion_matrix_tn_fp_fn_tp": [
+          58842,
+          64179,
+          727,
+          1135
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0026328187084327303,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.5442100975293914,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0026328187084327303,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0014052793712056217,
+        "precision": 0.0017784101013693758,
+        "recall": 0.625,
+        "f1": 0.003546728143287817,
+        "brier": 0.0009140974666223481,
+        "threshold": 0.0031827729359928144,
+        "confusion_matrix_tn_fp_fn_tp": [
+          23828,
+          11226,
+          12,
+          20
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.002514802153488879,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6557810806184743,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.002514802153488879,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0010686152684063048,
+        "precision": 0.0024291497975708503,
+        "recall": 0.15,
+        "f1": 0.004780876494023904,
+        "brier": 0.0005364577932710959,
+        "threshold": 0.003329684146241707,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36099,
+          1232,
+          17,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0013379522506058083,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5532426133776218,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0013379522506058083,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.002505154759235853,
+      "lebanon": 0.0031827729359928144,
+      "greek": 0.003329684146241707
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "random_forest-global_greek_lebanon",
+    "family": "random_forest",
+    "stage": "global_greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.018793264725423024,
+        "precision": 0.026989482040087318,
+        "recall": 0.07303974221267455,
+        "f1": 0.039414577597449645,
+        "brier": 0.014756403546198763,
+        "threshold": 0.011549137582009256,
+        "confusion_matrix_tn_fp_fn_tp": [
+          118118,
+          4903,
+          1726,
+          136
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0057726725905975365,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.5787011436600238,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0057726725905975365,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.015365027206429835,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.003085932071933884,
+        "precision": 0.017699115044247787,
+        "recall": 0.0625,
+        "f1": 0.027586206896551724,
+        "brier": 0.0009152440297902987,
+        "threshold": 0.009786804786474167,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34943,
+          111,
+          30,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.002681345132405811,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7293613068408741,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.002681345132405811,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0017884626522267856,
+        "precision": 0.005309734513274336,
+        "recall": 0.15,
+        "f1": 0.010256410256410256,
+        "brier": 0.0005548991261243891,
+        "threshold": 0.009813977618112962,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36769,
+          562,
+          17,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0043195193230610935,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6642140580214835,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0043195193230610935,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.011549137582009256,
+      "lebanon": 0.009786804786474167,
+      "greek": 0.009813977618112962
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "xgboost-global",
+    "family": "xgboost",
+    "stage": "global",
+    "calibration_domain": "global",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.1490997208402949,
+        "precision": 0.21716801173881145,
+        "recall": 0.317937701396348,
+        "f1": 0.25806451612903225,
+        "brier": 0.013624411076307297,
+        "threshold": 0.09694229066371918,
+        "confusion_matrix_tn_fp_fn_tp": [
+          120887,
+          2134,
+          1270,
+          592
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 122241,
+            "mean_probability": 0.008282027207314968,
+            "observed_fraction": 0.010512021334904002
+          },
+          {
+            "lower": 0.1,
+            "n": 1040,
+            "mean_probability": 0.13546684384346008,
+            "observed_fraction": 0.1673076923076923
+          },
+          {
+            "lower": 0.2,
+            "n": 643,
+            "mean_probability": 0.2436838299036026,
+            "observed_fraction": 0.20217729393468117
+          },
+          {
+            "lower": 0.30000000000000004,
+            "n": 564,
+            "mean_probability": 0.3393055200576782,
+            "observed_fraction": 0.2730496453900709
+          },
+          {
+            "lower": 0.4,
+            "n": 267,
+            "mean_probability": 0.4583769738674164,
+            "observed_fraction": 0.2808988764044944
+          },
+          {
+            "lower": 0.5,
+            "n": 128,
+            "mean_probability": 0.5084946155548096,
+            "observed_fraction": 0.34375
+          }
+        ],
+        "roc_auc": 0.8811663703360628,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.013523216359317303,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.008876294828951359,
+          "0.1": 0.03369109332561493
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0017852199751951397,
+        "precision": 0.00267379679144385,
+        "recall": 0.03125,
+        "f1": 0.0049261083743842365,
+        "brier": 0.0009111114195547998,
+        "threshold": 0.0038421275094151497,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34681,
+          373,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0010930367279797792,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6914675393678325,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0010930367279797792,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0006204088062691324,
+        "precision": 0.0008347245409015025,
+        "recall": 0.05,
+        "f1": 0.0016420361247947454,
+        "brier": 0.0005358653143048286,
+        "threshold": 0.00255679152905941,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36134,
+          1197,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0010589167941361666,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5422939380139831,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0010589167941361666,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.09694229066371918,
+      "lebanon": 0.0038421275094151497,
+      "greek": 0.00255679152905941
+    },
+    "training": null,
+    "training_windows": 379751,
+    "training_positive_windows": 5605
+  },
+  {
+    "id": "xgboost-lebanon",
+    "family": "xgboost",
+    "stage": "lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.02233302937859067,
+        "precision": 0.028761785788644002,
+        "recall": 0.5193340494092373,
+        "f1": 0.05450497421300341,
+        "brier": 0.014844122342765331,
+        "threshold": 0.0022079022601246834,
+        "confusion_matrix_tn_fp_fn_tp": [
+          90367,
+          32654,
+          895,
+          967
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.002005293034017086,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.6666917315934053,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.002005293034017086,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.002524693151950568,
+        "precision": 0.003931847968545216,
+        "recall": 0.09375,
+        "f1": 0.007547169811320755,
+        "brier": 0.0009219719795510173,
+        "threshold": 0.013975434936583042,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34294,
+          760,
+          29,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.002610923256725073,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7681527963998402,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.002610923256725073,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0011476013888799944,
+        "precision": 0.0020632737276478678,
+        "recall": 0.15,
+        "f1": 0.004070556309362279,
+        "brier": 0.0005488696624524891,
+        "threshold": 0.009798383340239525,
+        "confusion_matrix_tn_fp_fn_tp": [
+          35880,
+          1451,
+          17,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0029427034314721823,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6452874286785781,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0029427034314721823,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0022079022601246834,
+      "lebanon": 0.013975434936583042,
+      "greek": 0.009798383340239525
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "xgboost-greek",
+    "family": "xgboost",
+    "stage": "greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.01487957157149553,
+        "precision": 0.019041848232472992,
+        "recall": 0.793233082706767,
+        "f1": 0.037190915042554264,
+        "brier": 0.014853419736027718,
+        "threshold": 0.0013193645281717181,
+        "confusion_matrix_tn_fp_fn_tp": [
+          46932,
+          76089,
+          385,
+          1477
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.002486259676516056,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.5412246820556716,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.002486259676516056,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.001124419748058199,
+        "precision": 0.002544529262086514,
+        "recall": 0.03125,
+        "f1": 0.004705882352941176,
+        "brier": 0.0009134644060395658,
+        "threshold": 0.006373974960297346,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34662,
+          392,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.001773744821548462,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.5410776944143322,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.001773744821548462,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0018411902489072615,
+        "precision": 0.006864988558352402,
+        "recall": 0.15,
+        "f1": 0.01312910284463895,
+        "brier": 0.0005408570868894458,
+        "threshold": 0.010875273495912552,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36897,
+          434,
+          17,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0018841063138097525,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6648060593072782,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0018841063138097525,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0013193645281717181,
+      "lebanon": 0.006373974960297346,
+      "greek": 0.010875273495912552
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "xgboost-greek_lebanon",
+    "family": "xgboost",
+    "stage": "greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.02039263403375739,
+        "precision": 0.02480863860032805,
+        "recall": 0.5848549946294307,
+        "f1": 0.047598234188557194,
+        "brier": 0.014846326783299446,
+        "threshold": 0.001745955552905798,
+        "confusion_matrix_tn_fp_fn_tp": [
+          80214,
+          42807,
+          773,
+          1089
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0020734986755996943,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.6424580008699885,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0020734986755996943,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0024864854652481764,
+        "precision": 0.0036663611365719525,
+        "recall": 0.125,
+        "f1": 0.007123775601068566,
+        "brier": 0.0009217998594976962,
+        "threshold": 0.01231031958013773,
+        "confusion_matrix_tn_fp_fn_tp": [
+          33967,
+          1087,
+          28,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0026087227743119,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7683208407029155,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0026087227743119,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0014493060025837275,
+        "precision": 0.0030211480362537764,
+        "recall": 0.3,
+        "f1": 0.005982053838484547,
+        "brier": 0.0005510849878191948,
+        "threshold": 0.010024051181972027,
+        "confusion_matrix_tn_fp_fn_tp": [
+          35351,
+          1980,
+          14,
+          6
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0031993675511330366,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6655253006884359,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0031993675511330366,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.001745955552905798,
+      "lebanon": 0.01231031958013773,
+      "greek": 0.010024051181972027
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "xgboost-global_greek",
+    "family": "xgboost",
+    "stage": "global_greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.01588913602857706,
+        "precision": 0.019862722468565876,
+        "recall": 0.7024704618689581,
+        "f1": 0.03863307440115781,
+        "brier": 0.014847309328615665,
+        "threshold": 0.0017167110927402973,
+        "confusion_matrix_tn_fp_fn_tp": [
+          58477,
+          64544,
+          554,
+          1308
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0025431287940591574,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.5681042173765954,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0025431287940591574,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0009715573118716525,
+        "precision": 0.0015552099533437014,
+        "recall": 0.03125,
+        "f1": 0.002962962962962963,
+        "brier": 0.0009136722655966878,
+        "threshold": 0.0055427104234695435,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34412,
+          642,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0017567003378644586,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.5070698957322987,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0017567003378644586,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.002296052962838382,
+        "precision": 0.011111111111111112,
+        "recall": 0.05,
+        "f1": 0.01818181818181818,
+        "brier": 0.0005396078340709209,
+        "threshold": 0.018877921625971794,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37242,
+          89,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0018393117934465408,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6825473467091694,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0018393117934465408,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0017167110927402973,
+      "lebanon": 0.0055427104234695435,
+      "greek": 0.018877921625971794
+    },
+    "training": null,
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "xgboost-global_greek_lebanon",
+    "family": "xgboost",
+    "stage": "global_greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.021395953691047163,
+        "precision": 0.02711711485927671,
+        "recall": 0.5810955961331902,
+        "f1": 0.051816200943418815,
+        "brier": 0.014843564480543137,
+        "threshold": 0.0018938439898192883,
+        "confusion_matrix_tn_fp_fn_tp": [
+          84202,
+          38819,
+          780,
+          1082
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.002059466205537319,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.6556084785014524,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.002059466205537319,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0023892628419176117,
+        "precision": 0.003071253071253071,
+        "recall": 0.15625,
+        "f1": 0.006024096385542169,
+        "brier": 0.0009215199970640242,
+        "threshold": 0.010514297522604465,
+        "confusion_matrix_tn_fp_fn_tp": [
+          33431,
+          1623,
+          27,
+          5
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.002594830235466361,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7620341116563016,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.002594830235466361,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0015293348126451613,
+        "precision": 0.003189792663476874,
+        "recall": 0.2,
+        "f1": 0.006279434850863423,
+        "brier": 0.0005489070899784565,
+        "threshold": 0.010470123961567879,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36081,
+          1250,
+          16,
+          4
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0030272414442151785,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6707140178404007,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0030272414442151785,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.0018938439898192883,
+      "lebanon": 0.010514297522604465,
+      "greek": 0.010470123961567879
+    },
+    "training": null,
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "lstm32-global",
+    "family": "lstm32",
+    "stage": "global",
+    "calibration_domain": "global",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.14805681554475883,
+        "precision": 0.2192532942898975,
+        "recall": 0.3216970998925886,
+        "f1": 0.26077492381367,
+        "brier": 0.013517158105969429,
+        "threshold": 0.11362007260322571,
+        "confusion_matrix_tn_fp_fn_tp": [
+          120888,
+          2133,
+          1263,
+          599
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 121383,
+            "mean_probability": 0.008502722717821598,
+            "observed_fraction": 0.009762487333481625
+          },
+          {
+            "lower": 0.1,
+            "n": 2005,
+            "mean_probability": 0.12463069707155228,
+            "observed_fraction": 0.1376558603491272
+          },
+          {
+            "lower": 0.2,
+            "n": 1495,
+            "mean_probability": 0.2390763759613037,
+            "observed_fraction": 0.2682274247491639
+          }
+        ],
+        "roc_auc": 0.8641223620348769,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.013127404265105724,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.012148612178862095,
+          "0.1": 0.03601658344268799
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.001283784907859397,
+        "precision": 0.001545833977430824,
+        "recall": 0.3125,
+        "f1": 0.003076449776957391,
+        "brier": 0.0009135697619058192,
+        "threshold": 0.0026640845462679863,
+        "confusion_matrix_tn_fp_fn_tp": [
+          28595,
+          6459,
+          22,
+          10
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0017332491697743535,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6327986820334341,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0017332491697743535,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0007341713971900036,
+        "precision": 0.0025940337224383916,
+        "recall": 0.1,
+        "f1": 0.0050568900126422255,
+        "brier": 0.0005390430451370776,
+        "threshold": 0.00634763203561306,
+        "confusion_matrix_tn_fp_fn_tp": [
+          36562,
+          769,
+          18,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0017663268372416496,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5024242586590233,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0017663268372416496,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.11362007260322571,
+      "lebanon": 0.0026640845462679863,
+      "greek": 0.00634763203561306
+    },
+    "training": {
+      "epochs": 10,
+      "batch_size": 2048,
+      "lr": 0.001,
+      "positive_weight": 8.170201071492507,
+      "seconds": 87.76617159300076,
+      "continued_weights": false,
+      "scalers_frozen_from_parent": false
+    },
+    "training_windows": 379751,
+    "training_positive_windows": 5605
+  },
+  {
+    "id": "lstm32-lebanon",
+    "family": "lstm32",
+    "stage": "lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.012552981969064892,
+        "precision": 0.014909955718552565,
+        "recall": 1.0,
+        "f1": 0.029381829657974673,
+        "brier": 0.0149118946865201,
+        "threshold": 6.263088607738609e-07,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          123021,
+          0,
+          1862
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0010809092782437801,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.3025508769991511,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0010809092782437801,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.00339345607142835,
+        "precision": 0.004834810636583401,
+        "recall": 0.1875,
+        "f1": 0.009426551453260016,
+        "brier": 0.0009188660187646747,
+        "threshold": 0.011251146905124187,
+        "confusion_matrix_tn_fp_fn_tp": [
+          33819,
+          1235,
+          26,
+          6
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0028531409334391356,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7981507103326297,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0028531409334391356,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0007725124229735588,
+        "precision": 0.0010619469026548673,
+        "recall": 0.45,
+        "f1": 0.002118893466745144,
+        "brier": 0.0005507119931280613,
+        "threshold": 0.0053518894128501415,
+        "confusion_matrix_tn_fp_fn_tp": [
+          28865,
+          8466,
+          11,
+          9
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0032954681664705276,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6034609305938764,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0032954681664705276,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 6.263088607738609e-07,
+      "lebanon": 0.011251146905124187,
+      "greek": 0.0053518894128501415
+    },
+    "training": {
+      "epochs": 10,
+      "batch_size": 2048,
+      "lr": 0.001,
+      "positive_weight": 10.0,
+      "seconds": 21.1512134279983,
+      "continued_weights": false,
+      "scalers_frozen_from_parent": false
+    },
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "lstm32-greek",
+    "family": "lstm32",
+    "stage": "greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.01370987598830838,
+        "precision": 0.014909955718552565,
+        "recall": 1.0,
+        "f1": 0.029381829657974673,
+        "brier": 0.014915508218109608,
+        "threshold": 4.836598691326799e-06,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          123021,
+          0,
+          1862
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0011601169826462865,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.3407881201388765,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0011601169826462865,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0015971965293996892,
+        "precision": 0.0023584905660377358,
+        "recall": 0.15625,
+        "f1": 0.004646840148698885,
+        "brier": 0.0009113510022871196,
+        "threshold": 0.0010106469271704555,
+        "confusion_matrix_tn_fp_fn_tp": [
+          32939,
+          2115,
+          27,
+          5
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.00039196712896227837,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6794031173332573,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.00039196712896227837,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0034406862265279102,
+        "precision": 0.022222222222222223,
+        "recall": 0.1,
+        "f1": 0.03636363636363636,
+        "brier": 0.0005368820275180042,
+        "threshold": 0.008632347919046879,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37243,
+          88,
+          18,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0016153549076989293,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.7071187484932094,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0016153549076989293,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 4.836598691326799e-06,
+      "lebanon": 0.0010106469271704555,
+      "greek": 0.008632347919046879
+    },
+    "training": {
+      "epochs": 10,
+      "batch_size": 2048,
+      "lr": 0.001,
+      "positive_weight": 10.0,
+      "seconds": 39.94163675500022,
+      "continued_weights": false,
+      "scalers_frozen_from_parent": false
+    },
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "lstm32-greek_lebanon",
+    "family": "lstm32",
+    "stage": "greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.012484532475969994,
+        "precision": 0.014909955718552565,
+        "recall": 1.0,
+        "f1": 0.029381829657974673,
+        "brier": 0.014958146028220654,
+        "threshold": 4.872552494816773e-07,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          123021,
+          0,
+          1862
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.003209351794794202,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.30404148598768227,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.003209351794794202,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0026874790070554127,
+        "precision": 0.006349206349206349,
+        "recall": 0.0625,
+        "f1": 0.011527377521613832,
+        "brier": 0.0009192994330078363,
+        "threshold": 0.014328778721392155,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34741,
+          313,
+          30,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0028677894733846188,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7620679879614309,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0028677894733846188,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.004788774088767396,
+        "precision": 0.06666666666666667,
+        "recall": 0.05,
+        "f1": 0.05714285714285714,
+        "brier": 0.0006960280006751418,
+        "threshold": 0.03354589641094208,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37317,
+          14,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.010010801255702972,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6791915566151456,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.010010801255702972,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.033387716859579086,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 4.872552494816773e-07,
+      "lebanon": 0.014328778721392155,
+      "greek": 0.03354589641094208
+    },
+    "training": {
+      "epochs": 6,
+      "batch_size": 2048,
+      "lr": 0.0003,
+      "positive_weight": 10.0,
+      "seconds": 13.550290193001274,
+      "continued_weights": true,
+      "scalers_frozen_from_parent": true,
+      "weight_change_l2": 1.3574833869934082
+    },
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "lstm32-global_greek",
+    "family": "lstm32",
+    "stage": "global_greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.11964224922871447,
+        "precision": 0.20404342942718084,
+        "recall": 0.29269602577873255,
+        "f1": 0.24045885726891683,
+        "brier": 0.014244403690099716,
+        "threshold": 0.04689708352088928,
+        "confusion_matrix_tn_fp_fn_tp": [
+          120895,
+          2126,
+          1317,
+          545
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.008045644499361515,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.8524742673373267,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.008045644499361515,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.00972164236009121,
+          "0.1": 0.030754191800951958
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0032414193549227957,
+        "precision": 0.01098901098901099,
+        "recall": 0.0625,
+        "f1": 0.018691588785046728,
+        "brier": 0.0009124591597355902,
+        "threshold": 0.007363712880760431,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34874,
+          180,
+          30,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.002202069154009223,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7429782442802533,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.002202069154009223,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0023953140061749143,
+        "precision": 0.01,
+        "recall": 0.05,
+        "f1": 0.016666666666666666,
+        "brier": 0.0005364501848816872,
+        "threshold": 0.006349671632051468,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37232,
+          99,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0014606988988816738,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6343695588117115,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0014606988988816738,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.04689708352088928,
+      "lebanon": 0.007363712880760431,
+      "greek": 0.006349671632051468
+    },
+    "training": {
+      "epochs": 6,
+      "batch_size": 2048,
+      "lr": 0.0003,
+      "positive_weight": 10.0,
+      "seconds": 13.698527223998099,
+      "continued_weights": true,
+      "scalers_frozen_from_parent": true,
+      "weight_change_l2": 1.5313688516616821
+    },
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "lstm32-global_greek_lebanon",
+    "family": "lstm32",
+    "stage": "global_greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.075972924269689,
+        "precision": 0.09483139449271094,
+        "recall": 0.3458646616541353,
+        "f1": 0.14885010978851265,
+        "brier": 0.014489936642348766,
+        "threshold": 0.02369491569697857,
+        "confusion_matrix_tn_fp_fn_tp": [
+          116874,
+          6147,
+          1218,
+          644
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.006688530091196299,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.8311957445180803,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.006688530091196299,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.01096581295132637,
+          "0.1": 0.02582067809998989
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0031062785365253438,
+        "precision": 0.007692307692307693,
+        "recall": 0.0625,
+        "f1": 0.0136986301369863,
+        "brier": 0.000916419317945838,
+        "threshold": 0.011325242929160595,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34796,
+          258,
+          30,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0027949693612754345,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.77672573030182,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0027949693612754345,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0022163277774389545,
+        "precision": 0.014705882352941176,
+        "recall": 0.05,
+        "f1": 0.022727272727272728,
+        "brier": 0.0005455937352962792,
+        "threshold": 0.012856690213084221,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37264,
+          67,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0027597243897616863,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6531917173394766,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0027597243897616863,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.02369491569697857,
+      "lebanon": 0.011325242929160595,
+      "greek": 0.012856690213084221
+    },
+    "training": {
+      "epochs": 6,
+      "batch_size": 2048,
+      "lr": 0.0003,
+      "positive_weight": 10.0,
+      "seconds": 10.826674293995893,
+      "continued_weights": true,
+      "scalers_frozen_from_parent": true,
+      "weight_change_l2": 0.9813511967658997
+    },
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "lstm64-global",
+    "family": "lstm64",
+    "stage": "global",
+    "calibration_domain": "global",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.15210853025196042,
+        "precision": 0.20630547903275176,
+        "recall": 0.3619763694951665,
+        "f1": 0.2628192630142328,
+        "brier": 0.013486494310200214,
+        "threshold": 0.10487736016511917,
+        "confusion_matrix_tn_fp_fn_tp": [
+          120428,
+          2593,
+          1188,
+          674
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 121381,
+            "mean_probability": 0.008458907715976238,
+            "observed_fraction": 0.009606116278494987
+          },
+          {
+            "lower": 0.1,
+            "n": 1941,
+            "mean_probability": 0.1287660002708435,
+            "observed_fraction": 0.1478619268418341
+          },
+          {
+            "lower": 0.2,
+            "n": 1561,
+            "mean_probability": 0.24094830453395844,
+            "observed_fraction": 0.26201153106982705
+          }
+        ],
+        "roc_auc": 0.8745863741391737,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.013234835118055344,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.010869154706597328,
+          "0.1": 0.03558715060353279
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0016834757782533533,
+        "precision": 0.002581553625909411,
+        "recall": 0.34375,
+        "f1": 0.005124621476822734,
+        "brier": 0.0009148565004579723,
+        "threshold": 0.004273323807865381,
+        "confusion_matrix_tn_fp_fn_tp": [
+          30804,
+          4250,
+          21,
+          11
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0021522659808397293,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6804243096365608,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0021522659808397293,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0005445740396660375,
+        "precision": 0.0007335860129600196,
+        "recall": 0.3,
+        "f1": 0.0014635931211123307,
+        "brier": 0.0005389053840190172,
+        "threshold": 0.002592975040897727,
+        "confusion_matrix_tn_fp_fn_tp": [
+          29158,
+          8173,
+          14,
+          6
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.00176278839353472,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.4756114221424554,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.00176278839353472,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.10487736016511917,
+      "lebanon": 0.004273323807865381,
+      "greek": 0.002592975040897727
+    },
+    "training": {
+      "epochs": 10,
+      "batch_size": 2048,
+      "lr": 0.001,
+      "positive_weight": 8.170201071492507,
+      "seconds": 152.41635180800222,
+      "continued_weights": false,
+      "scalers_frozen_from_parent": false
+    },
+    "training_windows": 379751,
+    "training_positive_windows": 5605
+  },
+  {
+    "id": "lstm64-lebanon",
+    "family": "lstm64",
+    "stage": "lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.012557683541893043,
+        "precision": 0.014909955718552565,
+        "recall": 1.0,
+        "f1": 0.029381829657974673,
+        "brier": 0.014913178980350494,
+        "threshold": 8.15653464769639e-08,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          123021,
+          0,
+          1862
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0010068839183077216,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.30206834605473865,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0010068839183077216,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0034873510589259085,
+        "precision": 0.00684931506849315,
+        "recall": 0.03125,
+        "f1": 0.011235955056179775,
+        "brier": 0.0009211366414092481,
+        "threshold": 0.02096990868449211,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34909,
+          145,
+          31,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.002830014331266284,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.8019466394705312,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.002830014331266284,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0006935620534280178,
+        "precision": 0.0009357454772301934,
+        "recall": 0.45,
+        "f1": 0.001867607387424777,
+        "brier": 0.0005490751937031746,
+        "threshold": 0.003827656852081418,
+        "confusion_matrix_tn_fp_fn_tp": [
+          27722,
+          9609,
+          11,
+          9
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0027233848813921213,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.5802208620181619,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0027233848813921213,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 8.15653464769639e-08,
+      "lebanon": 0.02096990868449211,
+      "greek": 0.003827656852081418
+    },
+    "training": {
+      "epochs": 10,
+      "batch_size": 2048,
+      "lr": 0.001,
+      "positive_weight": 10.0,
+      "seconds": 46.35125503600284,
+      "continued_weights": false,
+      "scalers_frozen_from_parent": false
+    },
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "lstm64-greek",
+    "family": "lstm64",
+    "stage": "greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.013710090010830395,
+        "precision": 0.014909955718552565,
+        "recall": 1.0,
+        "f1": 0.029381829657974673,
+        "brier": 0.014915437437593937,
+        "threshold": 1.585706627338368e-06,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          123021,
+          0,
+          1862
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.0010818274458870292,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.33925372228895867,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.0010818274458870292,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.0013399243597439856,
+        "precision": 0.0018957345971563982,
+        "recall": 0.25,
+        "f1": 0.0037629350893697085,
+        "brier": 0.0009115099674090743,
+        "threshold": 0.0006421038997359574,
+        "confusion_matrix_tn_fp_fn_tp": [
+          30842,
+          4212,
+          24,
+          8
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0003378673573024571,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.6438316597249958,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0003378673573024571,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.002623004896166988,
+        "precision": 0.00904977375565611,
+        "recall": 0.1,
+        "f1": 0.016597510373443983,
+        "brier": 0.0005368787096813321,
+        "threshold": 0.00759748462587595,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37112,
+          219,
+          18,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0015879498096182942,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.7221692427205272,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0015879498096182942,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 1.585706627338368e-06,
+      "lebanon": 0.0006421038997359574,
+      "greek": 0.00759748462587595
+    },
+    "training": {
+      "epochs": 10,
+      "batch_size": 2048,
+      "lr": 0.001,
+      "positive_weight": 10.0,
+      "seconds": 40.60806673800107,
+      "continued_weights": false,
+      "scalers_frozen_from_parent": false
+    },
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "lstm64-greek_lebanon",
+    "family": "lstm64",
+    "stage": "greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.012461394545170316,
+        "precision": 0.014909955718552565,
+        "recall": 1.0,
+        "f1": 0.029381829657974673,
+        "brier": 0.015030914917588234,
+        "threshold": 4.1054725841149775e-08,
+        "confusion_matrix_tn_fp_fn_tp": [
+          0,
+          123021,
+          0,
+          1862
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.00467910710722208,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.3008020248322243,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.00467910710722208,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.003128890158456395,
+        "precision": 0.006224066390041493,
+        "recall": 0.09375,
+        "f1": 0.011673151750972763,
+        "brier": 0.0009197749895974994,
+        "threshold": 0.014110090211033821,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34575,
+          479,
+          29,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.002884719055145979,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7847142979403207,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.002884719055145979,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0017099098197301155,
+        "precision": 0.007352941176470588,
+        "recall": 0.05,
+        "f1": 0.01282051282051282,
+        "brier": 0.0009557793382555246,
+        "threshold": 0.05445077642798424,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37196,
+          135,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.016000494360923767,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.681556213334762,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.016000494360923767,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 4.1054725841149775e-08,
+      "lebanon": 0.014110090211033821,
+      "greek": 0.05445077642798424
+    },
+    "training": {
+      "epochs": 6,
+      "batch_size": 2048,
+      "lr": 0.0003,
+      "positive_weight": 10.0,
+      "seconds": 24.621279505998245,
+      "continued_weights": true,
+      "scalers_frozen_from_parent": true,
+      "weight_change_l2": 1.6731288433074951
+    },
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  },
+  {
+    "id": "lstm64-global_greek",
+    "family": "lstm64",
+    "stage": "global_greek",
+    "calibration_domain": "greek",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.1337326377305153,
+        "precision": 0.23820224719101124,
+        "recall": 0.284640171858217,
+        "f1": 0.2593589429899682,
+        "brier": 0.014978102408349514,
+        "threshold": 0.24576841294765472,
+        "confusion_matrix_tn_fp_fn_tp": [
+          121326,
+          1695,
+          1332,
+          530
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 110323,
+            "mean_probability": 0.01268329843878746,
+            "observed_fraction": 0.00710640573588463
+          },
+          {
+            "lower": 0.1,
+            "n": 10214,
+            "mean_probability": 0.13794036209583282,
+            "observed_fraction": 0.039161934599569216
+          },
+          {
+            "lower": 0.2,
+            "n": 3850,
+            "mean_probability": 0.2450774610042572,
+            "observed_fraction": 0.14363636363636365
+          },
+          {
+            "lower": 0.30000000000000004,
+            "n": 496,
+            "mean_probability": 0.30503514409065247,
+            "observed_fraction": 0.25201612903225806
+          }
+        ],
+        "roc_auc": 0.8584586228241786,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.03125347942113876,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.029896214604377747,
+          "0.1": 0.1378473937511444
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.003131365112806437,
+        "precision": 0.014925373134328358,
+        "recall": 0.09375,
+        "f1": 0.02575107296137339,
+        "brier": 0.0009268252179026604,
+        "threshold": 0.02104724757373333,
+        "confusion_matrix_tn_fp_fn_tp": [
+          34856,
+          198,
+          29,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0035393110010772943,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7207331010726308,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0035393110010772943,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.018647527273893096,
+        "precision": 0.10526315789473684,
+        "recall": 0.1,
+        "f1": 0.10256410256410256,
+        "brier": 0.0005381085211411119,
+        "threshold": 0.01853436604142189,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37314,
+          17,
+          18,
+          2
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0016524114180356264,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.6041473574241247,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0016524114180356264,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.015754912048578262,
+          "0.1": 0.018469493836164474
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.24576841294765472,
+      "lebanon": 0.02104724757373333,
+      "greek": 0.01853436604142189
+    },
+    "training": {
+      "epochs": 6,
+      "batch_size": 2048,
+      "lr": 0.0003,
+      "positive_weight": 10.0,
+      "seconds": 24.894734970999707,
+      "continued_weights": true,
+      "scalers_frozen_from_parent": true,
+      "weight_change_l2": 1.7913601398468018
+    },
+    "training_windows": 118678,
+    "training_positive_windows": 67
+  },
+  {
+    "id": "lstm64-global_greek_lebanon",
+    "family": "lstm64",
+    "stage": "global_greek_lebanon",
+    "calibration_domain": "lebanon",
+    "validation": {
+      "global": {
+        "observations": 124883,
+        "positive_windows": 1862,
+        "pr_auc_average_precision": 0.08484280382986886,
+        "precision": 0.09948263118994827,
+        "recall": 0.36143931256713213,
+        "f1": 0.1560217920482207,
+        "brier": 0.014338883571326733,
+        "threshold": 0.03558187559247017,
+        "confusion_matrix_tn_fp_fn_tp": [
+          116929,
+          6092,
+          1189,
+          673
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 124883,
+            "mean_probability": 0.009060146287083626,
+            "observed_fraction": 0.014909955718552565
+          }
+        ],
+        "roc_auc": 0.8336228034421411,
+        "prevalence": 0.014909955718552565,
+        "mean_probability": 0.009060146287083626,
+        "validation_precision_target_thresholds": {
+          "0.05": 0.014110448770225048,
+          "0.1": 0.03615280240774155
+        }
+      },
+      "lebanon": {
+        "observations": 35086,
+        "positive_windows": 32,
+        "pr_auc_average_precision": 0.003277663089937223,
+        "precision": 0.005654281098546042,
+        "recall": 0.21875,
+        "f1": 0.011023622047244094,
+        "brier": 0.0009185367380268872,
+        "threshold": 0.010818862356245518,
+        "confusion_matrix_tn_fp_fn_tp": [
+          33823,
+          1231,
+          25,
+          7
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 35086,
+            "mean_probability": 0.0028902606572955847,
+            "observed_fraction": 0.0009120446901898193
+          }
+        ],
+        "roc_auc": 0.7925985622182918,
+        "prevalence": 0.0009120446901898193,
+        "mean_probability": 0.0028902606572955847,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      },
+      "greek": {
+        "observations": 37351,
+        "positive_windows": 20,
+        "pr_auc_average_precision": 0.0024411457137844383,
+        "precision": 0.02127659574468085,
+        "recall": 0.05,
+        "f1": 0.029850746268656716,
+        "brier": 0.000546715862583369,
+        "threshold": 0.015320554375648499,
+        "confusion_matrix_tn_fp_fn_tp": [
+          37285,
+          46,
+          19,
+          1
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 37351,
+            "mean_probability": 0.0026660047005861998,
+            "observed_fraction": 0.0005354608979679259
+          }
+        ],
+        "roc_auc": 0.639289732393989,
+        "prevalence": 0.0005354608979679259,
+        "mean_probability": 0.0026660047005861998,
+        "validation_precision_target_thresholds": {
+          "0.05": null,
+          "0.1": null
+        }
+      }
+    },
+    "thresholds": {
+      "global": 0.03558187559247017,
+      "lebanon": 0.010818862356245518,
+      "greek": 0.015320554375648499
+    },
+    "training": {
+      "epochs": 6,
+      "batch_size": 2048,
+      "lr": 0.0003,
+      "positive_weight": 10.0,
+      "seconds": 23.129490832994634,
+      "continued_weights": true,
+      "scalers_frozen_from_parent": true,
+      "weight_change_l2": 1.0529476404190063
+    },
+    "training_windows": 109567,
+    "training_positive_windows": 197
+  }
+]

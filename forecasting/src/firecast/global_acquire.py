@@ -88,6 +88,15 @@ def site_tiles(site):
 
 
 def sample_days(config):
+    if config.get('daily_sampling',False):
+        dates=pd.date_range(config['start'],pd.Timestamp(config['end_exclusive'])-pd.Timedelta(days=1),freq='D')
+        if dates.empty or not dates.equals(dates.normalize()):raise ValueError('Daily sampling requires complete UTC dates')
+        return dates
+    if 'sample_dates' in config:
+        dates=pd.DatetimeIndex(pd.to_datetime(config['sample_dates'],utc=True))
+        if dates.empty or dates.has_duplicates or not dates.equals(dates.normalize()):raise ValueError('Explicit sampled dates must be unique UTC midnights')
+        if dates.min()<pd.Timestamp(config['start']) or dates.max()>=pd.Timestamp(config['end_exclusive']):raise ValueError('Explicit sample date outside configured period')
+        return dates.sort_values()
     # Identical global dates permit fair cross-site comparisons. Outcomes never select dates.
     rng=np.random.default_rng(config['seed']);dates=[]
     for month in pd.date_range(config['start'],pd.Timestamp(config['end_exclusive'])-pd.Timedelta(days=1),freq='MS'):
