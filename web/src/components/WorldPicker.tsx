@@ -385,7 +385,7 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current, extras,
         <div className="world-brand">
           <img src="./emblem.png" alt="" width={44} height={44} />
           <div>
-            <strong>Wel3a</strong>
+            <strong>Phoenical</strong>
             <span>NASA Space Apps 2026 · Challenge #09</span>
           </div>
         </div>
