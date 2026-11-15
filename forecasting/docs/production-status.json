@@ -1,0 +1,119 @@
+{
+  "generated_at": "2026-11-14T22:11:13.038743+00:00",
+  "nasa_data": {
+    "firms_detections": 17946,
+    "power_weather_point_days": 61368,
+    "power_cloud_point_days": 20456,
+    "snpp_daily_tiles": 10119,
+    "noaa20_daily_tiles": 5825,
+    "complete_live_forecast_subsets": 72,
+    "eligible_cells": 124
+  },
+  "earthdata_access": {
+    "authenticated_downloads_succeeded": true,
+    "credentials_committed": false,
+    "note": "Explicit private credential was used; no credential value is retained in this status record."
+  },
+  "real_models_trained": [
+    "NOAA-20 retrospective",
+    "S-NPP retrospective benchmark"
+  ],
+  "synthetic_demonstration_separate": true,
+  "tests": {
+    "passed": 74,
+    "warnings": [
+      "Starlette test-client HTTPX deprecation"
+    ]
+  },
+  "notebooks": {
+    "01_to_03": "Synthetic demonstration executed earlier",
+    "04_to_05": "Earlier real quality/access snapshots executed",
+    "06": "Executed real static transformation, label checks, frozen evaluation and live research inference"
+  },
+  "container": {
+    "latest_build_passed": true,
+    "latest_image_sha256": "9ecd52a47b13123279554b6d4de25230cd1b044e52ed696c2b87a0b0898d2d58",
+    "latest_smoke_test_passed": false,
+    "latest_smoke_test_blocker": "Docker VFS image/container creation exceeded local disk capacity",
+    "earlier_non_root_read_only_smoke_test_passed": true,
+    "disposable_images_removed_after_checks": true
+  },
+  "latest_direct_service_smoke_test": "Latest locked service smoke verified in service-validation.json; valid requests are refused with retrospective artifact.",
+  "production_release_approved": false,
+  "failed_release_checks": [
+    "operational_forecast_mode",
+    "historical_feature_availability",
+    "issued_forecast_backtest",
+    "independent_incident_split_review",
+    "calibration_review",
+    "test_sample_size",
+    "test_span"
+  ],
+  "externally_deployed": false,
+  "github_pushed": false,
+  "pending": [
+    "Multi-year NASA issued-meteorology forecasts and historical availability evidence",
+    "Incident-independent split and external validation review",
+    "Useful calibrated held-out operational skill and observation-selection handling",
+    "Fresh confirmation data for future model development",
+    "Latest container smoke test on host with sufficient free disk",
+    "Regional and buffered geographic generalization experiments",
+    "Full time-varying vegetation and authoritative non-target incident/facility adjudication"
+  ],
+  "publication_status_note": "This validation snapshot predates the user-requested branch publication; github_pushed describes the snapshot time.",
+  "historical_note": "Earlier local-only and global validation snapshots are retained; greek_temporal_extension is the latest completed stage.",
+  "global_extension": {
+    "completed": true,
+    "model_architecture_groups": 8,
+    "algorithm_types": 6,
+    "neural_architectures": 3,
+    "validation_candidates": 89,
+    "frozen_stage_winners": 58,
+    "conservative_sensitivity_controls": 9,
+    "initial_global_fit_windows": 401767,
+    "initial_global_positive_windows": 5769,
+    "recent_global_fit_windows": 949823,
+    "recent_global_positive_windows": 12903,
+    "recent_lebanon_fit_windows": 260804,
+    "recent_lebanon_positive_windows": 428,
+    "sampled_global_panels": 24,
+    "global_geographic_holdout_panels": 6,
+    "exhaustive_global_coverage": false,
+    "conflict_excluded_cells": 32,
+    "conflict_cutoff_utc": "2023-10-07T00:00:00Z",
+    "new_global_2026_confirmation": true,
+    "new_independent_lebanon_2026_confirmation_for_refit": false,
+    "lebanon_2026_qualified_windows": 24237,
+    "lebanon_2026_positive_windows": 15,
+    "notebooks_07_08_executed": true,
+    "latest_container_build_and_smoke_repeated": false,
+    "direct_service_validation": "global-service-validation.json",
+    "report": "global-results.md",
+    "release": "global-release.json"
+  },
+  "operational_model_validated": false,
+  "greek_temporal_extension": {
+    "production_approved": false,
+    "validation_candidates": 45,
+    "true_recurrent_architectures": [
+      32,
+      64
+    ],
+    "full_suite_passed": 88,
+    "full_suite_warnings": 1,
+    "focused_temporal_tests_after_final_changes": 10,
+    "notebook_10_executed": true,
+    "all_notebook_schemas_validated": 10,
+    "actual_issued_forecast": {
+      "cells": 124,
+      "probabilities_returned": 88,
+      "conflict_scope_withheld": 32,
+      "prediction_time": "2026-11-16T00:00:00+00:00"
+    },
+    "new_lebanese_confirmation_positive_windows": 0,
+    "known_years_are_not_fresh_confirmation": true,
+    "github_ci_executed": false,
+    "fresh_container_build_executed": false,
+    "report": "greek-experiment-results.md"
+  }
+}

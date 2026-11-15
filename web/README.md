@@ -1,4 +1,4 @@
-# Wel3a · Burning Calendar (website)
+# Phoenical · Burning Calendar (website)
 
 The browser app (and Electron desktop app) for the harmonized MODIS + VIIRS burning calendar. It reads
 everything from the API in [`../backend`](../backend/README.md), which serves the data contract

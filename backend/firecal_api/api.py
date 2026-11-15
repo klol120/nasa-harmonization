@@ -26,6 +26,7 @@ from . import contract as C
 from . import weather as W
 from .config import settings
 from .db import create_pool
+from .live import store as L
 
 
 @asynccontextmanager
@@ -50,6 +51,8 @@ app.include_router(accounts.router)
 RegionId = Annotated[str, Path(pattern=r"^[a-z0-9_-]{1,64}$")]
 ReleaseQ = Annotated[int | None, Query(description="Release id; defaults to the region's current release")]
 YmQ = Annotated[str | None, Query(pattern=r"^\d{4}-\d{2}$")]
+LiveQ = Annotated[bool, Query(description="Lay the live months (near-real-time detections) over the current release")]
+DemoQ = Annotated[bool, Query(description="With live: include the simulated demo replay, when one is loaded")]
 
 
 async def conn(request: Request):
@@ -114,6 +117,12 @@ def release_summary(r: asyncpg.Record) -> dict:
     }
 
 
+async def live_mode(c: asyncpg.Connection, r: asyncpg.Record, live: bool, demo: bool) -> tuple[bool, bool]:
+    """(serve live months?, from the demo rows?). Live months only ever sit on top of the current release."""
+    on = live and r["is_current"]
+    return on, (await L.use_demo(c, r["region_id"], demo) if on else False)
+
+
 def month_bounds(frm: str | None, to: str | None, rel: asyncpg.Record) -> tuple[date, date]:
     a = C.parse_ym(frm) if frm else rel["first_month"]
     b = C.parse_ym(to) if to else rel["last_month"]
@@ -155,30 +164,53 @@ async def meta(region: RegionId, c: Conn, release: ReleaseQ = None):
 
 
 REGION_MONTH_SQL = """
-    select ym, modis_raw, viirs_raw, harmonized, harmonized_low, harmonized_high, anomaly_z,
+    select ym, modis_raw, viirs_raw, noaa20_raw, harmonized, harmonized_low, harmonized_high, anomaly_z, source,
            is_estimate, has_gap, data_available, partial_month, display_only, low_confidence, n_cells, n_persistent_cells
     from region_month where release_id = $1 order by ym"""
 
 
-def region_month_out(m: asyncpg.Record) -> dict:
+# Fields added in v0.5; left out of responses for releases loaded from a v0.4 export.
+V05_REGION_MONTH_FIELDS = ("noaa20_raw", "source")
+
+
+def region_month_out(m: asyncpg.Record, contract_version: str) -> dict:
     d = dict(m)
     ym = d.pop("ym")
+    if contract_version == "0.4" and not d.get("live"):  # live months carry them on any release
+        for f in V05_REGION_MONTH_FIELDS:
+            d.pop(f, None)
     return {"ym": C.ym_str(ym), "year": ym.year, "month": ym.month, **d}
 
 
+async def region_months(c: asyncpg.Connection, r: asyncpg.Record, live: bool, demo: bool) -> list[dict]:
+    """region_month rows of a release (ym as date), with the live months laid over them when asked."""
+    months = [dict(m) for m in await c.fetch(REGION_MONTH_SQL, r["release_id"])]
+    if live:
+        lv = await L.region_months(c, r["region_id"], r["release_id"], demo)
+        months = [L.overlay_month(m, lv.get(m["ym"])) for m in months]
+    return months
+
+
 @app.get("/regions/{region}/monthly")
-async def monthly(region: RegionId, c: Conn, release: ReleaseQ = None, format: Literal["json", "csv"] = "json"):
-    """region_monthly: region totals and every region-wide flag, one row per month."""
+async def monthly(region: RegionId, c: Conn, release: ReleaseQ = None, format: Literal["json", "csv"] = "json",
+                  live: LiveQ = False, demo: DemoQ = False):
+    """region_monthly: region totals and every region-wide flag, one row per month.
+
+    With `live=1`, months after the release's last day of data come from the live pipeline; those rows
+    carry `live: true`, `live_through`, `live_sensors` and `live_provisional`.
+    """
     r = await release_row(c, region, release)
-    rows = [region_month_out(m) for m in await c.fetch(REGION_MONTH_SQL, r["release_id"])]
+    live, demo = await live_mode(c, r, live, demo)
+    rows = [region_month_out(m, r["contract_version"]) for m in await region_months(c, r, live, demo)]
     if format == "csv":
         buf = io.StringIO()
-        w = csv.DictWriter(buf, fieldnames=C.REGION_MONTH_FIELDS, lineterminator="\n")
+        fields = [f for f in C.REGION_MONTH_FIELDS if not rows or f in rows[0]]
+        w = csv.DictWriter(buf, fieldnames=fields, lineterminator="\n", extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
         return Response(buf.getvalue(), media_type="text/csv",
                         headers={"Content-Disposition": f'attachment; filename="{region}_region_monthly.csv"'})
-    return jsonr(rows, cache=release is not None)
+    return jsonr(rows, cache=release is not None and not live)
 
 
 @app.get("/regions/{region}/cells")
@@ -204,12 +236,20 @@ async def cells_geojson(region: RegionId, request: Request, c: Conn, release: Re
 
 
 @app.get("/regions/{region}/series/{year}")
-async def series(region: RegionId, year: int, request: Request, c: Conn, release: ReleaseQ = None):
+async def series(region: RegionId, year: int, request: Request, c: Conn, release: ReleaseQ = None,
+                 live: LiveQ = False, demo: DemoQ = False):
     """cells_series/{year}.json: compact per-cell monthly values; cells with no fire-days that year are omitted."""
     r = await release_row(c, region, release)
     rid = r["release_id"]
+    live, demo = await live_mode(c, r, live, demo)
+    # A year holding live months changes as detections arrive: its cache entry is tied to the live version.
+    live_version = None
+    if live:
+        lv = await L.region_months(c, region, rid, demo)
+        if any(m.year == year for m in lv):
+            live_version = (demo, max(m["updated_at"] for m in lv.values()))
     cache = request.app.state.series
-    key = (rid, year)
+    key = (rid, year, live_version)
     if key not in cache:
         months = [m for m in C.month_range(r["first_month"], r["last_month"]) if m.year == year]
         if not months:
@@ -223,11 +263,18 @@ async def series(region: RegionId, year: int, request: Request, c: Conn, release
             if cur is not None and any(x not in (0, None) for x in (*h, *mo, *v)):
                 out[ids[cur]] = {"h": h, "m": mo, "v": v}
 
-        rows = await c.fetch(
-            """select cell_key, ym, harmonized, modis_raw, viirs_raw from cell_month
-               where release_id = $1 and ym between $2 and $3 order by cell_key, ym""",
-            rid, months[0], months[-1],
-        )
+        if live_version:
+            rows = await c.fetch(
+                f"""select cell_key, ym, harmonized, modis_raw, viirs_raw from {L.cell_month_live(4, 5)}
+                    where release_id = $1 and ym between $2 and $3 order by cell_key, ym""",
+                rid, months[0], months[-1], region, demo,
+            )
+        else:
+            rows = await c.fetch(
+                """select cell_key, ym, harmonized, modis_raw, viirs_raw from cell_month
+                   where release_id = $1 and ym between $2 and $3 order by cell_key, ym""",
+                rid, months[0], months[-1],
+            )
         for row in rows:
             if row["cell_key"] != cur:
                 flush()
@@ -251,7 +298,8 @@ async def series(region: RegionId, year: int, request: Request, c: Conn, release
             cache.popitem(last=False)
     else:
         cache.move_to_end(key)
-    return Response(cache[key], media_type="application/json", headers={"Cache-Control": "public, max-age=3600"})
+    max_age = 30 if live_version else 3600
+    return Response(cache[key], media_type="application/json", headers={"Cache-Control": f"public, max-age={max_age}"})
 
 
 @app.get("/regions/{region}/calendar")
@@ -264,11 +312,14 @@ async def calendar(
     frm: Annotated[YmQ, Query(alias="from")] = None,
     to: YmQ = None,
     format: Literal["json", "csv"] = "json",
+    live: LiveQ = False,
+    demo: DemoQ = False,
 ):
     """calendar rows (cell × month, with bands and z). JSON is capped at 100k rows; CSV streams any size."""
     r = await release_row(c, region, release)
     a, b = month_bounds(frm, to, r)
     rid = r["release_id"]
+    live, demo = await live_mode(c, r, live, demo)
     cells = await region_cells(request, c, rid)
     ids = {x["cell_key"]: x["cell_id"] for x in cells}
     keys = None
@@ -278,11 +329,15 @@ async def calendar(
         unknown = wanted - {ids[k] for k in keys}
         if unknown:
             raise HTTPException(404, f"cells not in region {region!r}: {sorted(unknown)[:5]}")
-    sql = """select cell_key, ym, modis_raw, viirs_raw, harmonized, harmonized_low, harmonized_high, anomaly_z
-             from cell_month where release_id = $1 and ym between $2 and $3"""
+    # $4/$5 are the region and demo flag of the live overlay; only passed with it.
+    src = L.cell_month_live(4, 5) if live else "cell_month cm"
+    sql = f"""select cell_key, ym, modis_raw, viirs_raw, noaa20_raw, harmonized, harmonized_low, harmonized_high, anomaly_z
+              from {src} where release_id = $1 and ym between $2 and $3"""
     args: list = [rid, a, b]
+    if live:
+        args += [region, demo]
     if keys is not None:
-        sql += " and cell_key = any($4::int[])"
+        sql += f" and cell_key = any(${len(args) + 1}::int[])"
         args.append(keys)
     sql += " order by cell_key, ym"
 
@@ -290,7 +345,7 @@ async def calendar(
         ym = row["ym"]
         return {
             "cell_id": ids[row["cell_key"]], "ym": C.ym_str(ym), "year": ym.year, "month": ym.month,
-            "modis_raw": row["modis_raw"], "viirs_raw": row["viirs_raw"],
+            "modis_raw": row["modis_raw"], "viirs_raw": row["viirs_raw"], "noaa20_raw": row["noaa20_raw"],
             "harmonized": r4(row["harmonized"]), "harmonized_low": r4(row["harmonized_low"]),
             "harmonized_high": r4(row["harmonized_high"]), "anomaly_z": r4(row["anomaly_z"]),
         }
@@ -346,6 +401,7 @@ class AreaQuery(BaseModel):
 async def area_months(
     c: asyncpg.Connection, r: asyncpg.Record, cells: list[dict], *,
     cell_ids: set[str] | None = None, bbox=None, polygon=None, exclude_persistent: bool = False,
+    live: bool = False, demo: bool = False,
 ) -> tuple[list[int], list[dict]]:
     """Every month of the release summed over an area: (cell keys, rows in the aggregate endpoint's shape).
 
@@ -356,14 +412,16 @@ async def area_months(
     keys = A.select_cells(cells, cell_ids=cell_ids, bbox=bbox, polygon=polygon, exclude_persistent=exclude_persistent)
     if not keys:
         raise HTTPException(404, "no cells of this region fall in the requested area")
-    months = [dict(m) for m in await c.fetch(REGION_MONTH_SQL, rid)]
+    months = await region_months(c, r, live, demo)
+    src, extra = (L.cell_month_live(3, 4), [r["region_id"], demo]) if live else ("cell_month cm", [])
     sums = {
         s["ym"]: s
         for s in await c.fetch(
-            """select ym, sum(modis_raw)::int modis_raw, sum(viirs_raw)::int viirs_raw, sum(harmonized)::float8 harmonized,
-                      sum(harmonized_low)::float8 harmonized_low, sum(harmonized_high)::float8 harmonized_high
-               from cell_month where release_id = $1 and cell_key = any($2::int[]) group by ym""",
-            rid, keys,
+            f"""select ym, sum(modis_raw)::int modis_raw, sum(viirs_raw)::int viirs_raw, sum(noaa20_raw)::int noaa20_raw,
+                       sum(harmonized)::float8 harmonized,
+                       sum(harmonized_low)::float8 harmonized_low, sum(harmonized_high)::float8 harmonized_high
+                from {src} where release_id = $1 and cell_key = any($2::int[]) group by ym""",
+            rid, keys, *extra,
         )
     }
     # z uses the full record (the baseline), whatever window is returned.
@@ -375,20 +433,24 @@ async def area_months(
             "ym": C.ym_str(m["ym"]), "year": m["ym"].year, "month": m["ym"].month,
             **{f: (r4(s[f]) if s else None) for f in C.ADDITIVE_FIELDS},
             "anomaly_z": r4(z.get(m["ym"])),
+            "source": m["source"],
             **{f: m[f] for f in C.REGION_MONTH_FLAGS},
+            **{f: m[f] for f in ("live", "live_through", "live_provisional") if f in m},
         })
     return keys, out
 
 
 @app.post("/regions/{region}/aggregate")
-async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, release: ReleaseQ = None):
+async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, release: ReleaseQ = None,
+                    live: LiveQ = False, demo: DemoQ = False):
     """Monthly sums over an area, with bands, recomputed anomaly z and the region-wide flags."""
     r = await release_row(c, region, release)
     rid = r["release_id"]
+    live, demo = await live_mode(c, r, live, demo)
     keys, months = await area_months(
         c, r, await region_cells(request, c, rid),
         cell_ids=set(q.cell_ids) if q.cell_ids is not None else None,
-        bbox=q.bbox, polygon=q.polygon, exclude_persistent=q.exclude_persistent,
+        bbox=q.bbox, polygon=q.polygon, exclude_persistent=q.exclude_persistent, live=live, demo=demo,
     )
     a, b = month_bounds(q.frm, q.to, r)
     out = [m for m in months if C.ym_str(a) <= m["ym"] <= C.ym_str(b)]
@@ -400,6 +462,19 @@ async def aggregate(region: RegionId, q: AreaQuery, request: Request, c: Conn, r
         "baseline_years": [r["baseline_first_year"], r["baseline_last_year"]],
         "months": out,
     })
+
+
+# ---------------------------------------------------------------- live pipeline
+
+
+@app.get("/regions/{region}/live")
+async def live_status(region: RegionId, c: Conn, demo: DemoQ = False,
+                      points: Annotated[int, Query(ge=0, le=5000, description="Also return this many of the latest detections")] = 0,
+                      hours: Annotated[int, Query(ge=1, le=24 * 31)] = 72):
+    """What the live pipeline holds for the region: the months it fills, how fresh they are, and `version`,
+    which changes whenever those months change (clients poll it and reload when it moves)."""
+    r = await release_row(c, region, None)
+    return jsonr(await L.status(c, r, await L.use_demo(c, region, demo), points=points, hours=hours))
 
 
 # ---------------------------------------------------------------- weather context

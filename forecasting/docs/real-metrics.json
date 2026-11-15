@@ -1,0 +1,2642 @@
+{
+  "synthetic": false,
+  "mode": "retrospective",
+  "selected": "strict-lebanon-environment",
+  "model_version": "strict-lebanon-environment-90b572f8ac587bab",
+  "selection": "lowest validation Brier within predeclared primary policy; test never used for selection",
+  "selected_by_policy": {
+    "conservative": "conservative-lebanon-environment",
+    "strict": "strict-lebanon-environment"
+  },
+  "code_sha256": "948022a261fe8b019cbf1a7eee443948e083a9d88af92ac50d9395d6b49b9290",
+  "config": {
+    "synthetic": false,
+    "mode": "retrospective",
+    "seed": 42,
+    "grid_deg": 0.1,
+    "horizon_hours": 24,
+    "train_end": "2021-01-01T00:00:00Z",
+    "validation_end": "2023-01-01T00:00:00Z",
+    "embargo_days": 7,
+    "primary_policy": "strict",
+    "regional_cells": [],
+    "heldout_cells": [],
+    "allow_tree": true,
+    "environment_features": [
+      "vegetation_fraction",
+      "elevation_m",
+      "slope_deg",
+      "aspect_sin",
+      "aspect_cos"
+    ],
+    "prediction_scope": "Research probability conditional on daily processed eligible-area fraction >=0.8",
+    "label_product": "VJ114A1.002 daily 1km; not FIRMS 375m",
+    "history_lag_days": 3,
+    "real_data_readiness": {
+      "training_allowed": true,
+      "scope": "retrospective_research_only",
+      "operational_release_allowed": false,
+      "reason": "Real compatible product labels and pre-target static observations; observed target-day weather and reprocessing prevent an operational claim"
+    }
+  },
+  "provenance": {
+    "fire_inventory": {
+      "sha256": "a6c99df011287bd951e2dd8c79aaec62305aa1c9cadcef20b975c21de1754b6d"
+    },
+    "weather": {
+      "sha256": "f4f0d4299c003672b63b588cc7f32948a2ed55ef78b8d27a2d7e4a195d85be40"
+    },
+    "static": {
+      "sha256": "f16c331ba22c4551c46f1b2bf8494e84b467abbd13d1eda833e73d021e46ef63"
+    },
+    "raw_fire_manifests": {
+      "sha256": "eee33c6f6ed69fb3cd0f5e07aaf3efd4bec6e4b1c35e4c7abd0e4482c48a5f12"
+    },
+    "configuration": {
+      "sha256": "87899aae556a3b10afb3653147eea9067412ef4a19b91b3959b6ab12f8c06109"
+    }
+  },
+  "python": "3.12.14",
+  "versions": {
+    "numpy": "2.5.4",
+    "pandas": "3.1.1",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0"
+  },
+  "datasets": {
+    "conservative": {
+      "observations": 362328,
+      "statuses": {
+        "negative": 320645,
+        "uncertain": 40830,
+        "positive": 809,
+        "excluded": 41,
+        "positive_low_coverage": 3
+      },
+      "positive_windows": 809,
+      "detections": 1335,
+      "omitted_feature_windows": 0,
+      "by_region": {
+        "count": {
+          "lebanon": 321454
+        },
+        "sum": {
+          "lebanon": 809.0
+        }
+      },
+      "by_month": {
+        "count": {
+          "1": 22876,
+          "2": 19793,
+          "3": 23775,
+          "4": 26185,
+          "5": 29343,
+          "6": 28936,
+          "7": 30049,
+          "8": 30026,
+          "9": 28956,
+          "10": 29389,
+          "11": 26915,
+          "12": 25211
+        },
+        "sum": {
+          "1": 1.0,
+          "2": 2.0,
+          "3": 6.0,
+          "4": 1.0,
+          "5": 32.0,
+          "6": 80.0,
+          "7": 128.0,
+          "8": 149.0,
+          "9": 150.0,
+          "10": 176.0,
+          "11": 76.0,
+          "12": 8.0
+        }
+      }
+    },
+    "strict": {
+      "observations": 362328,
+      "statuses": {
+        "negative": 319311,
+        "uncertain": 40793,
+        "excluded": 1609,
+        "positive": 612,
+        "positive_low_coverage": 3
+      },
+      "positive_windows": 612,
+      "detections": 1335,
+      "omitted_feature_windows": 0,
+      "by_region": {
+        "count": {
+          "lebanon": 319923
+        },
+        "sum": {
+          "lebanon": 612.0
+        }
+      },
+      "by_month": {
+        "count": {
+          "1": 22845,
+          "2": 19762,
+          "3": 23743,
+          "4": 26072,
+          "5": 29214,
+          "6": 28737,
+          "7": 29825,
+          "8": 29797,
+          "9": 28716,
+          "10": 29211,
+          "11": 26818,
+          "12": 25183
+        },
+        "sum": {
+          "1": 1.0,
+          "2": 2.0,
+          "3": 6.0,
+          "4": 1.0,
+          "5": 25.0,
+          "6": 60.0,
+          "7": 92.0,
+          "8": 106.0,
+          "9": 109.0,
+          "10": 134.0,
+          "11": 69.0,
+          "12": 7.0
+        }
+      }
+    }
+  },
+  "experiments": [
+    {
+      "id": "conservative-lebanon-seasonal",
+      "policy": "conservative",
+      "scope": "lebanon",
+      "algorithm": "seasonal",
+      "features": [
+        "month"
+      ],
+      "train": {
+        "observations": 118477,
+        "positive_windows": 262,
+        "start": "2018-01-05 00:00:00+00:00",
+        "end": "2020-12-24 00:00:00+00:00"
+      },
+      "validation": {
+        "observations": 79042,
+        "positive_windows": 167,
+        "pr_auc_average_precision": 0.0035974413414134976,
+        "precision": 0.003908224116438126,
+        "recall": 0.6946107784431138,
+        "f1": 0.0077727150897882605,
+        "brier": 0.0021061169908135717,
+        "threshold": 0.004497475906379073,
+        "confusion_matrix_tn_fp_fn_tp": [
+          49310,
+          29565,
+          51,
+          116
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 79042,
+            "mean_probability": 0.0023155710008932067,
+            "observed_fraction": 0.0021128007894537083
+          }
+        ]
+      },
+      "threshold": 0.004497475906379073,
+      "test": {
+        "observations": 120610,
+        "positive_windows": 380,
+        "pr_auc_average_precision": 0.006597393590659018,
+        "precision": 0.006271572630676563,
+        "recall": 0.7315789473684211,
+        "f1": 0.012436531191983359,
+        "brier": 0.003134833659679305,
+        "threshold": 0.004497475906379073,
+        "confusion_matrix_tn_fp_fn_tp": [
+          76181,
+          44049,
+          102,
+          278
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 120610,
+            "mean_probability": 0.0022763734558543126,
+            "observed_fraction": 0.0031506508581377996
+          }
+        ],
+        "at_threshold_0_5": {
+          "observations": 120610,
+          "positive_windows": 380,
+          "pr_auc_average_precision": 0.006597393590659018,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier": 0.003134833659679305,
+          "threshold": 0.5,
+          "confusion_matrix_tn_fp_fn_tp": [
+            120230,
+            0,
+            380,
+            0
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 120610,
+              "mean_probability": 0.0022763734558543126,
+              "observed_fraction": 0.0031506508581377996
+            }
+          ]
+        },
+        "by_group": {
+          "region": {
+            "lebanon": {
+              "observations": 120610,
+              "positive_windows": 380,
+              "pr_auc_average_precision": 0.006597393590659018,
+              "precision": 0.006271572630676563,
+              "recall": 0.7315789473684211,
+              "f1": 0.012436531191983359,
+              "brier": 0.003134833659679305,
+              "threshold": 0.004497475906379073,
+              "confusion_matrix_tn_fp_fn_tp": [
+                76181,
+                44049,
+                102,
+                278
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120610,
+                  "mean_probability": 0.0022763734558543126,
+                  "observed_fraction": 0.0031506508581377996
+                }
+              ]
+            }
+          },
+          "sensor": {
+            "VJ114A1_750m_to_1km": {
+              "observations": 120610,
+              "positive_windows": 380,
+              "pr_auc_average_precision": 0.006597393590659018,
+              "precision": 0.006271572630676563,
+              "recall": 0.7315789473684211,
+              "f1": 0.012436531191983359,
+              "brier": 0.003134833659679305,
+              "threshold": 0.004497475906379073,
+              "confusion_matrix_tn_fp_fn_tp": [
+                76181,
+                44049,
+                102,
+                278
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120610,
+                  "mean_probability": 0.0022763734558543126,
+                  "observed_fraction": 0.0031506508581377996
+                }
+              ]
+            }
+          },
+          "event_type": {
+            "flagged": {
+              "observations": 11,
+              "positive_windows": 11,
+              "pr_auc_average_precision": null,
+              "precision": 1.0,
+              "recall": 0.7272727272727273,
+              "f1": 0.8421052631578947,
+              "brier": 0.9925323679624725,
+              "threshold": 0.004497475906379073,
+              "confusion_matrix_tn_fp_fn_tp": [
+                0,
+                0,
+                3,
+                8
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 11,
+                  "mean_probability": 0.0037422537400759706,
+                  "observed_fraction": 1.0
+                }
+              ]
+            },
+            "unflagged": {
+              "observations": 120599,
+              "positive_windows": 369,
+              "pr_auc_average_precision": 0.006464191173877588,
+              "precision": 0.006092195221011305,
+              "recall": 0.7317073170731707,
+              "f1": 0.012083780880773363,
+              "brier": 0.0030445893551881344,
+              "threshold": 0.004497475906379073,
+              "confusion_matrix_tn_fp_fn_tp": [
+                76181,
+                44049,
+                99,
+                270
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120599,
+                  "mean_probability": 0.002276239750905462,
+                  "observed_fraction": 0.0030597268634068274
+                }
+              ]
+            }
+          },
+          "season": {
+            "autumn": {
+              "observations": 32038,
+              "positive_windows": 195,
+              "pr_auc_average_precision": 0.007851305317160209,
+              "precision": 0.007656335961855859,
+              "recall": 0.8564102564102564,
+              "f1": 0.015176989139819148,
+              "brier": 0.006049272887155362,
+              "threshold": 0.004497475906379073,
+              "confusion_matrix_tn_fp_fn_tp": [
+                10198,
+                21645,
+                28,
+                167
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 32038,
+                  "mean_probability": 0.00393986807424902,
+                  "observed_fraction": 0.006086522254822398
+                }
+              ]
+            },
+            "spring": {
+              "observations": 30057,
+              "positive_windows": 20,
+              "pr_auc_average_precision": 0.001453156829991149,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.0006647052433555722,
+              "threshold": 0.004497475906379073,
+              "confusion_matrix_tn_fp_fn_tp": [
+                30037,
+                0,
+                20,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 30057,
+                  "mean_probability": 0.0005040186342127249,
+                  "observed_fraction": 0.0006654024021026716
+                }
+              ]
+            },
+            "summer": {
+              "observations": 33323,
+              "positive_windows": 159,
+              "pr_auc_average_precision": 0.004703107516676609,
+              "precision": 0.004930046635576282,
+              "recall": 0.6981132075471698,
+              "f1": 0.009790949986768986,
+              "brier": 0.004750741447984549,
+              "threshold": 0.004497475906379073,
+              "confusion_matrix_tn_fp_fn_tp": [
+                10760,
+                22404,
+                48,
+                111
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 33323,
+                  "mean_probability": 0.003835318405932782,
+                  "observed_fraction": 0.004771479158539147
+                }
+              ]
+            },
+            "winter": {
+              "observations": 25192,
+              "positive_windows": 6,
+              "pr_auc_average_precision": 0.00048922223880814,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.00023807876169061476,
+              "threshold": 0.004497475906379073,
+              "confusion_matrix_tn_fp_fn_tp": [
+                25186,
+                0,
+                6,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 25192,
+                  "mean_probability": 0.0002133338289285713,
+                  "observed_fraction": 0.0002381708478882185
+                }
+              ]
+            }
+          }
+        },
+        "weekly_bootstrap_pr_auc_95pct": [
+          0.0040238364689341825,
+          0.01302993810371026
+        ]
+      },
+      "parameters": "Beta(1,1) month smoothing"
+    },
+    {
+      "id": "conservative-lebanon-weather",
+      "policy": "conservative",
+      "scope": "lebanon",
+      "algorithm": "weather",
+      "features": [
+        "temperature_c",
+        "humidity_pct",
+        "precip_mm",
+        "wind_u_ms",
+        "wind_v_ms",
+        "rain7_mm",
+        "season_sin",
+        "season_cos"
+      ],
+      "train": {
+        "observations": 118477,
+        "positive_windows": 262,
+        "start": "2018-01-05 00:00:00+00:00",
+        "end": "2020-12-24 00:00:00+00:00"
+      },
+      "validation": {
+        "observations": 79042,
+        "positive_windows": 167,
+        "pr_auc_average_precision": 0.004736935649676726,
+        "precision": 0.006971340046475601,
+        "recall": 0.16167664670658682,
+        "f1": 0.013366336633663366,
+        "brier": 0.0021089115276925687,
+        "threshold": 0.006855813317200588,
+        "confusion_matrix_tn_fp_fn_tp": [
+          75029,
+          3846,
+          140,
+          27
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 79042,
+            "mean_probability": 0.0021227779183172263,
+            "observed_fraction": 0.0021128007894537083
+          }
+        ]
+      },
+      "threshold": 0.006855813317200588,
+      "test": {
+        "observations": 120610,
+        "positive_windows": 380,
+        "pr_auc_average_precision": 0.006643646643696313,
+        "precision": 0.008117389946924758,
+        "recall": 0.1368421052631579,
+        "f1": 0.01532567049808429,
+        "brier": 0.003138002320001591,
+        "threshold": 0.006855813317200588,
+        "confusion_matrix_tn_fp_fn_tp": [
+          113876,
+          6354,
+          328,
+          52
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 120610,
+            "mean_probability": 0.0022385340442894227,
+            "observed_fraction": 0.0031506508581377996
+          }
+        ],
+        "at_threshold_0_5": {
+          "observations": 120610,
+          "positive_windows": 380,
+          "pr_auc_average_precision": 0.006643646643696313,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier": 0.003138002320001591,
+          "threshold": 0.5,
+          "confusion_matrix_tn_fp_fn_tp": [
+            120230,
+            0,
+            380,
+            0
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 120610,
+              "mean_probability": 0.0022385340442894227,
+              "observed_fraction": 0.0031506508581377996
+            }
+          ]
+        },
+        "by_group": {
+          "region": {
+            "lebanon": {
+              "observations": 120610,
+              "positive_windows": 380,
+              "pr_auc_average_precision": 0.006643646643696313,
+              "precision": 0.008117389946924758,
+              "recall": 0.1368421052631579,
+              "f1": 0.01532567049808429,
+              "brier": 0.003138002320001591,
+              "threshold": 0.006855813317200588,
+              "confusion_matrix_tn_fp_fn_tp": [
+                113876,
+                6354,
+                328,
+                52
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120610,
+                  "mean_probability": 0.0022385340442894227,
+                  "observed_fraction": 0.0031506508581377996
+                }
+              ]
+            }
+          },
+          "sensor": {
+            "VJ114A1_750m_to_1km": {
+              "observations": 120610,
+              "positive_windows": 380,
+              "pr_auc_average_precision": 0.006643646643696313,
+              "precision": 0.008117389946924758,
+              "recall": 0.1368421052631579,
+              "f1": 0.01532567049808429,
+              "brier": 0.003138002320001591,
+              "threshold": 0.006855813317200588,
+              "confusion_matrix_tn_fp_fn_tp": [
+                113876,
+                6354,
+                328,
+                52
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120610,
+                  "mean_probability": 0.0022385340442894227,
+                  "observed_fraction": 0.0031506508581377996
+                }
+              ]
+            }
+          },
+          "event_type": {
+            "flagged": {
+              "observations": 11,
+              "positive_windows": 11,
+              "pr_auc_average_precision": null,
+              "precision": 1.0,
+              "recall": 0.18181818181818182,
+              "f1": 0.3076923076923077,
+              "brier": 0.9921046198045915,
+              "threshold": 0.006855813317200588,
+              "confusion_matrix_tn_fp_fn_tp": [
+                0,
+                0,
+                9,
+                2
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 11,
+                  "mean_probability": 0.00396164542417126,
+                  "observed_fraction": 1.0
+                }
+              ]
+            },
+            "unflagged": {
+              "observations": 120599,
+              "positive_windows": 369,
+              "pr_auc_average_precision": 0.006456506874328508,
+              "precision": 0.007807620237351655,
+              "recall": 0.13550135501355012,
+              "f1": 0.014764506127270044,
+              "brier": 0.0030477973200237272,
+              "threshold": 0.006855813317200588,
+              "confusion_matrix_tn_fp_fn_tp": [
+                113876,
+                6354,
+                319,
+                50
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120599,
+                  "mean_probability": 0.0022383768769399528,
+                  "observed_fraction": 0.0030597268634068274
+                }
+              ]
+            }
+          },
+          "season": {
+            "autumn": {
+              "observations": 32038,
+              "positive_windows": 195,
+              "pr_auc_average_precision": 0.00788872564584612,
+              "precision": 0.008009153318077803,
+              "recall": 0.1076923076923077,
+              "f1": 0.014909478168264111,
+              "brier": 0.006058763661056409,
+              "threshold": 0.006855813317200588,
+              "confusion_matrix_tn_fp_fn_tp": [
+                29242,
+                2601,
+                174,
+                21
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 32038,
+                  "mean_probability": 0.00330801851351328,
+                  "observed_fraction": 0.006086522254822398
+                }
+              ]
+            },
+            "spring": {
+              "observations": 30057,
+              "positive_windows": 20,
+              "pr_auc_average_precision": 0.012055394846448877,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.0006636002773467328,
+              "threshold": 0.006855813317200588,
+              "confusion_matrix_tn_fp_fn_tp": [
+                30037,
+                0,
+                20,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 30057,
+                  "mean_probability": 0.0005557989462964835,
+                  "observed_fraction": 0.0006654024021026716
+                }
+              ]
+            },
+            "summer": {
+              "observations": 33323,
+              "positive_windows": 159,
+              "pr_auc_average_precision": 0.00660508333850174,
+              "precision": 0.008192389006342496,
+              "recall": 0.1949685534591195,
+              "f1": 0.015724067968551865,
+              "brier": 0.004753994295585103,
+              "threshold": 0.006855813317200588,
+              "confusion_matrix_tn_fp_fn_tp": [
+                29411,
+                3753,
+                128,
+                31
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 33323,
+                  "mean_probability": 0.0041734921783935916,
+                  "observed_fraction": 0.004771479158539147
+                }
+              ]
+            },
+            "winter": {
+              "observations": 25192,
+              "positive_windows": 6,
+              "pr_auc_average_precision": 0.0006770601526794507,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.000238194831473229,
+              "threshold": 0.006855813317200588,
+              "confusion_matrix_tn_fp_fn_tp": [
+                25186,
+                0,
+                6,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 25192,
+                  "mean_probability": 0.00032662611767091733,
+                  "observed_fraction": 0.0002381708478882185
+                }
+              ]
+            }
+          }
+        },
+        "weekly_bootstrap_pr_auc_95pct": [
+          0.005508542666183395,
+          0.008415784618719953
+        ]
+      },
+      "parameters": "{'memory': None, 'steps': [('standardscaler', StandardScaler()), ('logisticregression', LogisticRegression(max_iter=1000, random_state=42))], 'transform_input': None, 'verbose': False, 'standardscaler': StandardScaler(), 'logisticregression': LogisticRegression(max_iter=1000, random_state=42), 'standardscaler__copy': True, 'standardscaler__with_mean': True, 'standardscaler__with_std': True, 'logisticregression__C': 1.0, 'logisticregression__class_weight': None, 'logisticregression__dual': False, 'logisticregression__fit_intercept': True, 'logisticregression__intercept_scaling': 1, 'logisticregression__l1_ratio': 0.0, 'logisticregression__max_iter': 1000, 'logisticregression__n_jobs': None, 'logisticregression__penalty': 'deprecated', 'logisticregression__random_state': 42, 'logisticregression__solver': 'lbfgs', 'logisticregression__tol': 0.0001, 'logisticregression__verbose': 0, 'logisticregression__warm_start': False}"
+    },
+    {
+      "id": "conservative-lebanon-environment",
+      "policy": "conservative",
+      "scope": "lebanon",
+      "algorithm": "environment",
+      "features": [
+        "temperature_c",
+        "humidity_pct",
+        "precip_mm",
+        "wind_u_ms",
+        "wind_v_ms",
+        "rain7_mm",
+        "vegetation_fraction",
+        "elevation_m",
+        "slope_deg",
+        "aspect_sin",
+        "aspect_cos",
+        "season_sin",
+        "season_cos"
+      ],
+      "train": {
+        "observations": 118477,
+        "positive_windows": 262,
+        "start": "2018-01-05 00:00:00+00:00",
+        "end": "2020-12-24 00:00:00+00:00"
+      },
+      "validation": {
+        "observations": 79042,
+        "positive_windows": 167,
+        "pr_auc_average_precision": 0.009003342061524887,
+        "precision": 0.01397712833545108,
+        "recall": 0.19760479041916168,
+        "f1": 0.02610759493670886,
+        "brier": 0.002102113065074386,
+        "threshold": 0.011361777629762232,
+        "confusion_matrix_tn_fp_fn_tp": [
+          76547,
+          2328,
+          134,
+          33
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 79042,
+            "mean_probability": 0.0021354718095917455,
+            "observed_fraction": 0.0021128007894537083
+          }
+        ]
+      },
+      "threshold": 0.011361777629762232,
+      "test": {
+        "observations": 120610,
+        "positive_windows": 380,
+        "pr_auc_average_precision": 0.012332681401344397,
+        "precision": 0.011612021857923498,
+        "recall": 0.13421052631578947,
+        "f1": 0.02137468566638726,
+        "brier": 0.0031272811327030274,
+        "threshold": 0.011361777629762232,
+        "confusion_matrix_tn_fp_fn_tp": [
+          115889,
+          4341,
+          329,
+          51
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 120610,
+            "mean_probability": 0.002325107167135379,
+            "observed_fraction": 0.0031506508581377996
+          }
+        ],
+        "at_threshold_0_5": {
+          "observations": 120610,
+          "positive_windows": 380,
+          "pr_auc_average_precision": 0.012332681401344397,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier": 0.0031272811327030274,
+          "threshold": 0.5,
+          "confusion_matrix_tn_fp_fn_tp": [
+            120230,
+            0,
+            380,
+            0
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 120610,
+              "mean_probability": 0.002325107167135379,
+              "observed_fraction": 0.0031506508581377996
+            }
+          ]
+        },
+        "by_group": {
+          "region": {
+            "lebanon": {
+              "observations": 120610,
+              "positive_windows": 380,
+              "pr_auc_average_precision": 0.012332681401344397,
+              "precision": 0.011612021857923498,
+              "recall": 0.13421052631578947,
+              "f1": 0.02137468566638726,
+              "brier": 0.0031272811327030274,
+              "threshold": 0.011361777629762232,
+              "confusion_matrix_tn_fp_fn_tp": [
+                115889,
+                4341,
+                329,
+                51
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120610,
+                  "mean_probability": 0.002325107167135379,
+                  "observed_fraction": 0.0031506508581377996
+                }
+              ]
+            }
+          },
+          "sensor": {
+            "VJ114A1_750m_to_1km": {
+              "observations": 120610,
+              "positive_windows": 380,
+              "pr_auc_average_precision": 0.012332681401344397,
+              "precision": 0.011612021857923498,
+              "recall": 0.13421052631578947,
+              "f1": 0.02137468566638726,
+              "brier": 0.0031272811327030274,
+              "threshold": 0.011361777629762232,
+              "confusion_matrix_tn_fp_fn_tp": [
+                115889,
+                4341,
+                329,
+                51
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120610,
+                  "mean_probability": 0.002325107167135379,
+                  "observed_fraction": 0.0031506508581377996
+                }
+              ]
+            }
+          },
+          "event_type": {
+            "flagged": {
+              "observations": 11,
+              "positive_windows": 11,
+              "pr_auc_average_precision": null,
+              "precision": 1.0,
+              "recall": 0.09090909090909091,
+              "f1": 0.16666666666666666,
+              "brier": 0.9858179596338775,
+              "threshold": 0.011361777629762232,
+              "confusion_matrix_tn_fp_fn_tp": [
+                0,
+                0,
+                10,
+                1
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 11,
+                  "mean_probability": 0.0071535028427479105,
+                  "observed_fraction": 1.0
+                }
+              ]
+            },
+            "unflagged": {
+              "observations": 120599,
+              "positive_windows": 369,
+              "pr_auc_average_precision": 0.011955835892884601,
+              "precision": 0.011386927806877705,
+              "recall": 0.13550135501355012,
+              "f1": 0.02100840336134454,
+              "brier": 0.0030376485697173232,
+              "threshold": 0.011361777629762232,
+              "confusion_matrix_tn_fp_fn_tp": [
+                115889,
+                4341,
+                319,
+                50
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120599,
+                  "mean_probability": 0.00232466676255133,
+                  "observed_fraction": 0.0030597268634068274
+                }
+              ]
+            }
+          },
+          "season": {
+            "autumn": {
+              "observations": 32038,
+              "positive_windows": 195,
+              "pr_auc_average_precision": 0.01741729832654369,
+              "precision": 0.01665741254858412,
+              "recall": 0.15384615384615385,
+              "f1": 0.03006012024048096,
+              "brier": 0.006032011722734819,
+              "threshold": 0.011361777629762232,
+              "confusion_matrix_tn_fp_fn_tp": [
+                30072,
+                1771,
+                165,
+                30
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 32038,
+                  "mean_probability": 0.0034366363148048513,
+                  "observed_fraction": 0.006086522254822398
+                }
+              ]
+            },
+            "spring": {
+              "observations": 30057,
+              "positive_windows": 20,
+              "pr_auc_average_precision": 0.010096612142525399,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.0006624840092221527,
+              "threshold": 0.011361777629762232,
+              "confusion_matrix_tn_fp_fn_tp": [
+                30005,
+                32,
+                20,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 30057,
+                  "mean_probability": 0.0006613839488689545,
+                  "observed_fraction": 0.0006654024021026716
+                }
+              ]
+            },
+            "summer": {
+              "observations": 33323,
+              "positive_windows": 159,
+              "pr_auc_average_precision": 0.010868400112579025,
+              "precision": 0.008212749315604223,
+              "recall": 0.1320754716981132,
+              "f1": 0.015463917525773196,
+              "brier": 0.004742123049353618,
+              "threshold": 0.011361777629762232,
+              "confusion_matrix_tn_fp_fn_tp": [
+                30628,
+                2536,
+                138,
+                21
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 33323,
+                  "mean_probability": 0.004249692938177094,
+                  "observed_fraction": 0.004771479158539147
+                }
+              ]
+            },
+            "winter": {
+              "observations": 25192,
+              "positive_windows": 6,
+              "pr_auc_average_precision": 0.002881302598882707,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.000237922261175496,
+              "threshold": 0.011361777629762232,
+              "confusion_matrix_tn_fp_fn_tp": [
+                25184,
+                2,
+                6,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 25192,
+                  "mean_probability": 0.0003507655622598748,
+                  "observed_fraction": 0.0002381708478882185
+                }
+              ]
+            }
+          }
+        },
+        "weekly_bootstrap_pr_auc_95pct": [
+          0.009029188420381659,
+          0.017299926044836614
+        ]
+      },
+      "parameters": "{'memory': None, 'steps': [('standardscaler', StandardScaler()), ('logisticregression', LogisticRegression(max_iter=1000, random_state=42))], 'transform_input': None, 'verbose': False, 'standardscaler': StandardScaler(), 'logisticregression': LogisticRegression(max_iter=1000, random_state=42), 'standardscaler__copy': True, 'standardscaler__with_mean': True, 'standardscaler__with_std': True, 'logisticregression__C': 1.0, 'logisticregression__class_weight': None, 'logisticregression__dual': False, 'logisticregression__fit_intercept': True, 'logisticregression__intercept_scaling': 1, 'logisticregression__l1_ratio': 0.0, 'logisticregression__max_iter': 1000, 'logisticregression__n_jobs': None, 'logisticregression__penalty': 'deprecated', 'logisticregression__random_state': 42, 'logisticregression__solver': 'lbfgs', 'logisticregression__tol': 0.0001, 'logisticregression__verbose': 0, 'logisticregression__warm_start': False}"
+    },
+    {
+      "id": "conservative-lebanon-boosting",
+      "policy": "conservative",
+      "scope": "lebanon",
+      "algorithm": "boosting",
+      "features": [
+        "temperature_c",
+        "humidity_pct",
+        "precip_mm",
+        "wind_u_ms",
+        "wind_v_ms",
+        "rain7_mm",
+        "vegetation_fraction",
+        "elevation_m",
+        "slope_deg",
+        "aspect_sin",
+        "aspect_cos",
+        "season_sin",
+        "season_cos"
+      ],
+      "train": {
+        "observations": 118477,
+        "positive_windows": 262,
+        "start": "2018-01-05 00:00:00+00:00",
+        "end": "2020-12-24 00:00:00+00:00"
+      },
+      "validation": {
+        "observations": 79042,
+        "positive_windows": 167,
+        "pr_auc_average_precision": 0.009852271498215569,
+        "precision": 0.018867924528301886,
+        "recall": 0.059880239520958084,
+        "f1": 0.028694404591104734,
+        "brier": 0.0021056275195025214,
+        "threshold": 0.026036731620381892,
+        "confusion_matrix_tn_fp_fn_tp": [
+          78355,
+          520,
+          157,
+          10
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 79034,
+            "mean_probability": 0.0019356620247700988,
+            "observed_fraction": 0.0021130146519219577
+          },
+          {
+            "lower": 0.1,
+            "n": 8,
+            "mean_probability": 0.11889416892359267,
+            "observed_fraction": 0.0
+          }
+        ]
+      },
+      "threshold": 0.026036731620381892,
+      "test": {
+        "observations": 120610,
+        "positive_windows": 380,
+        "pr_auc_average_precision": 0.009926917436114577,
+        "precision": 0.019153225806451613,
+        "recall": 0.05,
+        "f1": 0.027696793002915453,
+        "brier": 0.00314008991903194,
+        "threshold": 0.026036731620381892,
+        "confusion_matrix_tn_fp_fn_tp": [
+          119257,
+          973,
+          361,
+          19
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 120601,
+            "mean_probability": 0.0020555297017335623,
+            "observed_fraction": 0.0031508859793865722
+          },
+          {
+            "lower": 0.1,
+            "n": 8,
+            "mean_probability": 0.12052408359102355,
+            "observed_fraction": 0.0
+          },
+          {
+            "lower": 0.2,
+            "n": 1,
+            "mean_probability": 0.20149958669927642,
+            "observed_fraction": 0.0
+          }
+        ],
+        "at_threshold_0_5": {
+          "observations": 120610,
+          "positive_windows": 380,
+          "pr_auc_average_precision": 0.009926917436114577,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier": 0.00314008991903194,
+          "threshold": 0.5,
+          "confusion_matrix_tn_fp_fn_tp": [
+            120230,
+            0,
+            380,
+            0
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 120601,
+              "mean_probability": 0.0020555297017335623,
+              "observed_fraction": 0.0031508859793865722
+            },
+            {
+              "lower": 0.1,
+              "n": 8,
+              "mean_probability": 0.12052408359102355,
+              "observed_fraction": 0.0
+            },
+            {
+              "lower": 0.2,
+              "n": 1,
+              "mean_probability": 0.20149958669927642,
+              "observed_fraction": 0.0
+            }
+          ]
+        },
+        "by_group": {
+          "region": {
+            "lebanon": {
+              "observations": 120610,
+              "positive_windows": 380,
+              "pr_auc_average_precision": 0.009926917436114577,
+              "precision": 0.019153225806451613,
+              "recall": 0.05,
+              "f1": 0.027696793002915453,
+              "brier": 0.00314008991903194,
+              "threshold": 0.026036731620381892,
+              "confusion_matrix_tn_fp_fn_tp": [
+                119257,
+                973,
+                361,
+                19
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120601,
+                  "mean_probability": 0.0020555297017335623,
+                  "observed_fraction": 0.0031508859793865722
+                },
+                {
+                  "lower": 0.1,
+                  "n": 8,
+                  "mean_probability": 0.12052408359102355,
+                  "observed_fraction": 0.0
+                },
+                {
+                  "lower": 0.2,
+                  "n": 1,
+                  "mean_probability": 0.20149958669927642,
+                  "observed_fraction": 0.0
+                }
+              ]
+            }
+          },
+          "sensor": {
+            "VJ114A1_750m_to_1km": {
+              "observations": 120610,
+              "positive_windows": 380,
+              "pr_auc_average_precision": 0.009926917436114577,
+              "precision": 0.019153225806451613,
+              "recall": 0.05,
+              "f1": 0.027696793002915453,
+              "brier": 0.00314008991903194,
+              "threshold": 0.026036731620381892,
+              "confusion_matrix_tn_fp_fn_tp": [
+                119257,
+                973,
+                361,
+                19
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120601,
+                  "mean_probability": 0.0020555297017335623,
+                  "observed_fraction": 0.0031508859793865722
+                },
+                {
+                  "lower": 0.1,
+                  "n": 8,
+                  "mean_probability": 0.12052408359102355,
+                  "observed_fraction": 0.0
+                },
+                {
+                  "lower": 0.2,
+                  "n": 1,
+                  "mean_probability": 0.20149958669927642,
+                  "observed_fraction": 0.0
+                }
+              ]
+            }
+          },
+          "event_type": {
+            "flagged": {
+              "observations": 11,
+              "positive_windows": 11,
+              "pr_auc_average_precision": null,
+              "precision": 1.0,
+              "recall": 0.09090909090909091,
+              "f1": 0.16666666666666666,
+              "brier": 0.9860054788471099,
+              "threshold": 0.026036731620381892,
+              "confusion_matrix_tn_fp_fn_tp": [
+                0,
+                0,
+                10,
+                1
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 11,
+                  "mean_probability": 0.007061310518983317,
+                  "observed_fraction": 1.0
+                }
+              ]
+            },
+            "unflagged": {
+              "observations": 120599,
+              "positive_windows": 369,
+              "pr_auc_average_precision": 0.009626362811268833,
+              "precision": 0.018163471241170535,
+              "recall": 0.04878048780487805,
+              "f1": 0.026470588235294117,
+              "brier": 0.00305044142046886,
+              "threshold": 0.026036731620381892,
+              "confusion_matrix_tn_fp_fn_tp": [
+                119257,
+                973,
+                351,
+                18
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120590,
+                  "mean_probability": 0.0020550730835314744,
+                  "observed_fraction": 0.0030599552201675097
+                },
+                {
+                  "lower": 0.1,
+                  "n": 8,
+                  "mean_probability": 0.12052408359102355,
+                  "observed_fraction": 0.0
+                },
+                {
+                  "lower": 0.2,
+                  "n": 1,
+                  "mean_probability": 0.20149958669927642,
+                  "observed_fraction": 0.0
+                }
+              ]
+            }
+          },
+          "season": {
+            "autumn": {
+              "observations": 32038,
+              "positive_windows": 195,
+              "pr_auc_average_precision": 0.01412777181448344,
+              "precision": 0.02880658436213992,
+              "recall": 0.07179487179487179,
+              "f1": 0.041116005873715125,
+              "brier": 0.006050847325778842,
+              "threshold": 0.026036731620381892,
+              "confusion_matrix_tn_fp_fn_tp": [
+                31371,
+                472,
+                181,
+                14
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 32032,
+                  "mean_probability": 0.003168793619452073,
+                  "observed_fraction": 0.006087662337662338
+                },
+                {
+                  "lower": 0.1,
+                  "n": 6,
+                  "mean_probability": 0.12193518961413184,
+                  "observed_fraction": 0.0
+                }
+              ]
+            },
+            "spring": {
+              "observations": 30057,
+              "positive_windows": 20,
+              "pr_auc_average_precision": 0.004133340799960758,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.0006643745003531944,
+              "threshold": 0.026036731620381892,
+              "confusion_matrix_tn_fp_fn_tp": [
+                30037,
+                0,
+                20,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 30057,
+                  "mean_probability": 0.0003878433426800588,
+                  "observed_fraction": 0.0006654024021026716
+                }
+              ]
+            },
+            "summer": {
+              "observations": 33323,
+              "positive_windows": 159,
+              "pr_auc_average_precision": 0.008555096400484729,
+              "precision": 0.010040160642570281,
+              "recall": 0.031446540880503145,
+              "f1": 0.015220700152207,
+              "brier": 0.004767838689920763,
+              "threshold": 0.026036731620381892,
+              "confusion_matrix_tn_fp_fn_tp": [
+                32671,
+                493,
+                154,
+                5
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 33320,
+                  "mean_probability": 0.003895094227871474,
+                  "observed_fraction": 0.004771908763505402
+                },
+                {
+                  "lower": 0.1,
+                  "n": 2,
+                  "mean_probability": 0.11629076552169872,
+                  "observed_fraction": 0.0
+                },
+                {
+                  "lower": 0.2,
+                  "n": 1,
+                  "mean_probability": 0.20149958669927642,
+                  "observed_fraction": 0.0
+                }
+              ]
+            },
+            "winter": {
+              "observations": 25192,
+              "positive_windows": 6,
+              "pr_auc_average_precision": 0.0007345347281467213,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.00023902054183050876,
+              "threshold": 0.026036731620381892,
+              "confusion_matrix_tn_fp_fn_tp": [
+                25178,
+                8,
+                6,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 25192,
+                  "mean_probability": 0.00019665740381345228,
+                  "observed_fraction": 0.0002381708478882185
+                }
+              ]
+            }
+          }
+        },
+        "weekly_bootstrap_pr_auc_95pct": [
+          0.007233443837018474,
+          0.012915167453592526
+        ]
+      },
+      "parameters": "{'categorical_features': 'from_dtype', 'class_weight': None, 'early_stopping': False, 'interaction_cst': None, 'l2_regularization': 2, 'learning_rate': 0.1, 'loss': 'log_loss', 'max_bins': 255, 'max_depth': None, 'max_features': 1.0, 'max_iter': 100, 'max_leaf_nodes': 15, 'min_samples_leaf': 20, 'monotonic_cst': None, 'n_iter_no_change': 10, 'random_state': 42, 'scoring': 'loss', 'tol': 1e-07, 'validation_fraction': 0.1, 'verbose': 0, 'warm_start': False}"
+    },
+    {
+      "id": "strict-lebanon-seasonal",
+      "policy": "strict",
+      "scope": "lebanon",
+      "algorithm": "seasonal",
+      "features": [
+        "month"
+      ],
+      "train": {
+        "observations": 117677,
+        "positive_windows": 202,
+        "start": "2018-01-05 00:00:00+00:00",
+        "end": "2020-12-24 00:00:00+00:00"
+      },
+      "validation": {
+        "observations": 78769,
+        "positive_windows": 130,
+        "pr_auc_average_precision": 0.0027520226038970363,
+        "precision": 0.003146389931552219,
+        "recall": 0.8769230769230769,
+        "f1": 0.006270282162697321,
+        "brier": 0.001646264758848458,
+        "threshold": 0.001817998182001818,
+        "confusion_matrix_tn_fp_fn_tp": [
+          42521,
+          36118,
+          16,
+          114
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 78769,
+            "mean_probability": 0.0018206737782356967,
+            "observed_fraction": 0.0016503954601429496
+          }
+        ]
+      },
+      "threshold": 0.001817998182001818,
+      "test": {
+        "observations": 120155,
+        "positive_windows": 280,
+        "pr_auc_average_precision": 0.004096446719508922,
+        "precision": 0.004131012097964001,
+        "recall": 0.8,
+        "f1": 0.008219580214296198,
+        "brier": 0.002321849121224142,
+        "threshold": 0.001817998182001818,
+        "confusion_matrix_tn_fp_fn_tp": [
+          65875,
+          54000,
+          56,
+          224
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 120155,
+            "mean_probability": 0.0017902594578305968,
+            "observed_fraction": 0.002330323332362365
+          }
+        ],
+        "at_threshold_0_5": {
+          "observations": 120155,
+          "positive_windows": 280,
+          "pr_auc_average_precision": 0.004096446719508922,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier": 0.002321849121224142,
+          "threshold": 0.5,
+          "confusion_matrix_tn_fp_fn_tp": [
+            119875,
+            0,
+            280,
+            0
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 120155,
+              "mean_probability": 0.0017902594578305968,
+              "observed_fraction": 0.002330323332362365
+            }
+          ]
+        },
+        "by_group": {
+          "region": {
+            "lebanon": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.004096446719508922,
+              "precision": 0.004131012097964001,
+              "recall": 0.8,
+              "f1": 0.008219580214296198,
+              "brier": 0.002321849121224142,
+              "threshold": 0.001817998182001818,
+              "confusion_matrix_tn_fp_fn_tp": [
+                65875,
+                54000,
+                56,
+                224
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120155,
+                  "mean_probability": 0.0017902594578305968,
+                  "observed_fraction": 0.002330323332362365
+                }
+              ]
+            }
+          },
+          "sensor": {
+            "VJ114A1_750m_to_1km": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.004096446719508922,
+              "precision": 0.004131012097964001,
+              "recall": 0.8,
+              "f1": 0.008219580214296198,
+              "brier": 0.002321849121224142,
+              "threshold": 0.001817998182001818,
+              "confusion_matrix_tn_fp_fn_tp": [
+                65875,
+                54000,
+                56,
+                224
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120155,
+                  "mean_probability": 0.0017902594578305968,
+                  "observed_fraction": 0.002330323332362365
+                }
+              ]
+            }
+          },
+          "event_type": {
+            "unflagged": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.004096446719508922,
+              "precision": 0.004131012097964001,
+              "recall": 0.8,
+              "f1": 0.008219580214296198,
+              "brier": 0.002321849121224142,
+              "threshold": 0.001817998182001818,
+              "confusion_matrix_tn_fp_fn_tp": [
+                65875,
+                54000,
+                56,
+                224
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120155,
+                  "mean_probability": 0.0017902594578305968,
+                  "observed_fraction": 0.002330323332362365
+                }
+              ]
+            }
+          },
+          "season": {
+            "autumn": {
+              "observations": 31856,
+              "positive_windows": 146,
+              "pr_auc_average_precision": 0.005079409094815027,
+              "precision": 0.00458312405826218,
+              "recall": 1.0,
+              "f1": 0.009124429723142303,
+              "brier": 0.004562817801468605,
+              "threshold": 0.001817998182001818,
+              "confusion_matrix_tn_fp_fn_tp": [
+                0,
+                31710,
+                0,
+                146
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 31856,
+                  "mean_probability": 0.003027832772648178,
+                  "observed_fraction": 0.00458312405826218
+                }
+              ]
+            },
+            "spring": {
+              "observations": 30015,
+              "positive_windows": 16,
+              "pr_auc_average_precision": 0.0011040452218395104,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.0005326134210163063,
+              "threshold": 0.001817998182001818,
+              "confusion_matrix_tn_fp_fn_tp": [
+                29999,
+                0,
+                16,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 30015,
+                  "mean_probability": 0.0004729380602205288,
+                  "observed_fraction": 0.0005330667999333666
+                }
+              ]
+            },
+            "summer": {
+              "observations": 33107,
+              "positive_windows": 113,
+              "pr_auc_average_precision": 0.003352403270226595,
+              "precision": 0.0034871244635193135,
+              "recall": 0.6902654867256637,
+              "f1": 0.006939193096392509,
+              "brier": 0.0034024191600061926,
+              "threshold": 0.001817998182001818,
+              "confusion_matrix_tn_fp_fn_tp": [
+                10704,
+                22290,
+                35,
+                78
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 33107,
+                  "mean_probability": 0.002992519283480773,
+                  "observed_fraction": 0.0034131754613827892
+                }
+              ]
+            },
+            "winter": {
+              "observations": 25177,
+              "positive_windows": 5,
+              "pr_auc_average_precision": 0.00038510465172632806,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.00019852938455627853,
+              "threshold": 0.001817998182001818,
+              "confusion_matrix_tn_fp_fn_tp": [
+                25172,
+                0,
+                5,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 25177,
+                  "mean_probability": 0.00021390207548309447,
+                  "observed_fraction": 0.00019859395480001588
+                }
+              ]
+            }
+          }
+        },
+        "weekly_bootstrap_pr_auc_95pct": [
+          0.0030725452340507617,
+          0.006223979896827713
+        ]
+      },
+      "parameters": "Beta(1,1) month smoothing"
+    },
+    {
+      "id": "strict-lebanon-weather",
+      "policy": "strict",
+      "scope": "lebanon",
+      "algorithm": "weather",
+      "features": [
+        "temperature_c",
+        "humidity_pct",
+        "precip_mm",
+        "wind_u_ms",
+        "wind_v_ms",
+        "rain7_mm",
+        "season_sin",
+        "season_cos"
+      ],
+      "train": {
+        "observations": 117677,
+        "positive_windows": 202,
+        "start": "2018-01-05 00:00:00+00:00",
+        "end": "2020-12-24 00:00:00+00:00"
+      },
+      "validation": {
+        "observations": 78769,
+        "positive_windows": 130,
+        "pr_auc_average_precision": 0.003351375455496764,
+        "precision": 0.00482780817508851,
+        "recall": 0.11538461538461539,
+        "f1": 0.009267840593141797,
+        "brier": 0.0016476988119141617,
+        "threshold": 0.005755796424065928,
+        "confusion_matrix_tn_fp_fn_tp": [
+          75547,
+          3092,
+          115,
+          15
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 78769,
+            "mean_probability": 0.0016982668464445674,
+            "observed_fraction": 0.0016503954601429496
+          }
+        ]
+      },
+      "threshold": 0.005755796424065928,
+      "test": {
+        "observations": 120155,
+        "positive_windows": 280,
+        "pr_auc_average_precision": 0.004656269150149581,
+        "precision": 0.006431535269709543,
+        "recall": 0.11071428571428571,
+        "f1": 0.01215686274509804,
+        "brier": 0.0023232381134724823,
+        "threshold": 0.005755796424065928,
+        "confusion_matrix_tn_fp_fn_tp": [
+          115086,
+          4789,
+          249,
+          31
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 120155,
+            "mean_probability": 0.0017865979862370293,
+            "observed_fraction": 0.002330323332362365
+          }
+        ],
+        "at_threshold_0_5": {
+          "observations": 120155,
+          "positive_windows": 280,
+          "pr_auc_average_precision": 0.004656269150149581,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier": 0.0023232381134724823,
+          "threshold": 0.5,
+          "confusion_matrix_tn_fp_fn_tp": [
+            119875,
+            0,
+            280,
+            0
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 120155,
+              "mean_probability": 0.0017865979862370293,
+              "observed_fraction": 0.002330323332362365
+            }
+          ]
+        },
+        "by_group": {
+          "region": {
+            "lebanon": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.004656269150149581,
+              "precision": 0.006431535269709543,
+              "recall": 0.11071428571428571,
+              "f1": 0.01215686274509804,
+              "brier": 0.0023232381134724823,
+              "threshold": 0.005755796424065928,
+              "confusion_matrix_tn_fp_fn_tp": [
+                115086,
+                4789,
+                249,
+                31
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120155,
+                  "mean_probability": 0.0017865979862370293,
+                  "observed_fraction": 0.002330323332362365
+                }
+              ]
+            }
+          },
+          "sensor": {
+            "VJ114A1_750m_to_1km": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.004656269150149581,
+              "precision": 0.006431535269709543,
+              "recall": 0.11071428571428571,
+              "f1": 0.01215686274509804,
+              "brier": 0.0023232381134724823,
+              "threshold": 0.005755796424065928,
+              "confusion_matrix_tn_fp_fn_tp": [
+                115086,
+                4789,
+                249,
+                31
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120155,
+                  "mean_probability": 0.0017865979862370293,
+                  "observed_fraction": 0.002330323332362365
+                }
+              ]
+            }
+          },
+          "event_type": {
+            "unflagged": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.004656269150149581,
+              "precision": 0.006431535269709543,
+              "recall": 0.11071428571428571,
+              "f1": 0.01215686274509804,
+              "brier": 0.0023232381134724823,
+              "threshold": 0.005755796424065928,
+              "confusion_matrix_tn_fp_fn_tp": [
+                115086,
+                4789,
+                249,
+                31
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120155,
+                  "mean_probability": 0.0017865979862370293,
+                  "observed_fraction": 0.002330323332362365
+                }
+              ]
+            }
+          },
+          "season": {
+            "autumn": {
+              "observations": 31856,
+              "positive_windows": 146,
+              "pr_auc_average_precision": 0.005878709818008218,
+              "precision": 0.006711409395973154,
+              "recall": 0.08904109589041095,
+              "f1": 0.012481997119539127,
+              "brier": 0.004566938589639457,
+              "threshold": 0.005755796424065928,
+              "confusion_matrix_tn_fp_fn_tp": [
+                29786,
+                1924,
+                133,
+                13
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 31856,
+                  "mean_probability": 0.0026853912349942377,
+                  "observed_fraction": 0.00458312405826218
+                }
+              ]
+            },
+            "spring": {
+              "observations": 30015,
+              "positive_windows": 16,
+              "pr_auc_average_precision": 0.006028348524114455,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.0005322178881116483,
+              "threshold": 0.005755796424065928,
+              "confusion_matrix_tn_fp_fn_tp": [
+                29999,
+                0,
+                16,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 30015,
+                  "mean_probability": 0.00047635628201153895,
+                  "observed_fraction": 0.0005330667999333666
+                }
+              ]
+            },
+            "summer": {
+              "observations": 33107,
+              "positive_windows": 113,
+              "pr_auc_average_precision": 0.004404585156212976,
+              "precision": 0.006243496357960458,
+              "recall": 0.1592920353982301,
+              "f1": 0.012016021361815754,
+              "brier": 0.0034038103598232738,
+              "threshold": 0.005755796424065928,
+              "confusion_matrix_tn_fp_fn_tp": [
+                30129,
+                2865,
+                95,
+                18
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 33107,
+                  "mean_probability": 0.003237104210799396,
+                  "observed_fraction": 0.0034131754613827892
+                }
+              ]
+            },
+            "winter": {
+              "observations": 25177,
+              "positive_windows": 5,
+              "pr_auc_average_precision": 0.0006337856485266655,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.00019858642087585242,
+              "threshold": 0.005755796424065928,
+              "confusion_matrix_tn_fp_fn_tp": [
+                25172,
+                0,
+                5,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 25177,
+                  "mean_probability": 0.00030401616327687574,
+                  "observed_fraction": 0.00019859395480001588
+                }
+              ]
+            }
+          }
+        },
+        "weekly_bootstrap_pr_auc_95pct": [
+          0.003907331157807019,
+          0.006108322451081827
+        ]
+      },
+      "parameters": "{'memory': None, 'steps': [('standardscaler', StandardScaler()), ('logisticregression', LogisticRegression(max_iter=1000, random_state=42))], 'transform_input': None, 'verbose': False, 'standardscaler': StandardScaler(), 'logisticregression': LogisticRegression(max_iter=1000, random_state=42), 'standardscaler__copy': True, 'standardscaler__with_mean': True, 'standardscaler__with_std': True, 'logisticregression__C': 1.0, 'logisticregression__class_weight': None, 'logisticregression__dual': False, 'logisticregression__fit_intercept': True, 'logisticregression__intercept_scaling': 1, 'logisticregression__l1_ratio': 0.0, 'logisticregression__max_iter': 1000, 'logisticregression__n_jobs': None, 'logisticregression__penalty': 'deprecated', 'logisticregression__random_state': 42, 'logisticregression__solver': 'lbfgs', 'logisticregression__tol': 0.0001, 'logisticregression__verbose': 0, 'logisticregression__warm_start': False}"
+    },
+    {
+      "id": "strict-lebanon-environment",
+      "policy": "strict",
+      "scope": "lebanon",
+      "algorithm": "environment",
+      "features": [
+        "temperature_c",
+        "humidity_pct",
+        "precip_mm",
+        "wind_u_ms",
+        "wind_v_ms",
+        "rain7_mm",
+        "vegetation_fraction",
+        "elevation_m",
+        "slope_deg",
+        "aspect_sin",
+        "aspect_cos",
+        "season_sin",
+        "season_cos"
+      ],
+      "train": {
+        "observations": 117677,
+        "positive_windows": 202,
+        "start": "2018-01-05 00:00:00+00:00",
+        "end": "2020-12-24 00:00:00+00:00"
+      },
+      "validation": {
+        "observations": 78769,
+        "positive_windows": 130,
+        "pr_auc_average_precision": 0.00670723292694471,
+        "precision": 0.012380952380952381,
+        "recall": 0.1,
+        "f1": 0.022033898305084745,
+        "brier": 0.0016438377251732268,
+        "threshold": 0.010946538595884738,
+        "confusion_matrix_tn_fp_fn_tp": [
+          77602,
+          1037,
+          117,
+          13
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 78769,
+            "mean_probability": 0.0016798420720387554,
+            "observed_fraction": 0.0016503954601429496
+          }
+        ]
+      },
+      "threshold": 0.010946538595884738,
+      "test": {
+        "observations": 120155,
+        "positive_windows": 280,
+        "pr_auc_average_precision": 0.009085918718832705,
+        "precision": 0.013119533527696793,
+        "recall": 0.09642857142857143,
+        "f1": 0.023096663815226688,
+        "brier": 0.0023171977727958737,
+        "threshold": 0.010946538595884738,
+        "confusion_matrix_tn_fp_fn_tp": [
+          117844,
+          2031,
+          253,
+          27
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 120155,
+            "mean_probability": 0.0018067425539919245,
+            "observed_fraction": 0.002330323332362365
+          }
+        ],
+        "at_threshold_0_5": {
+          "observations": 120155,
+          "positive_windows": 280,
+          "pr_auc_average_precision": 0.009085918718832705,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier": 0.0023171977727958737,
+          "threshold": 0.5,
+          "confusion_matrix_tn_fp_fn_tp": [
+            119875,
+            0,
+            280,
+            0
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 120155,
+              "mean_probability": 0.0018067425539919245,
+              "observed_fraction": 0.002330323332362365
+            }
+          ]
+        },
+        "by_group": {
+          "region": {
+            "lebanon": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.009085918718832705,
+              "precision": 0.013119533527696793,
+              "recall": 0.09642857142857143,
+              "f1": 0.023096663815226688,
+              "brier": 0.0023171977727958737,
+              "threshold": 0.010946538595884738,
+              "confusion_matrix_tn_fp_fn_tp": [
+                117844,
+                2031,
+                253,
+                27
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120155,
+                  "mean_probability": 0.0018067425539919245,
+                  "observed_fraction": 0.002330323332362365
+                }
+              ]
+            }
+          },
+          "sensor": {
+            "VJ114A1_750m_to_1km": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.009085918718832705,
+              "precision": 0.013119533527696793,
+              "recall": 0.09642857142857143,
+              "f1": 0.023096663815226688,
+              "brier": 0.0023171977727958737,
+              "threshold": 0.010946538595884738,
+              "confusion_matrix_tn_fp_fn_tp": [
+                117844,
+                2031,
+                253,
+                27
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120155,
+                  "mean_probability": 0.0018067425539919245,
+                  "observed_fraction": 0.002330323332362365
+                }
+              ]
+            }
+          },
+          "event_type": {
+            "unflagged": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.009085918718832705,
+              "precision": 0.013119533527696793,
+              "recall": 0.09642857142857143,
+              "f1": 0.023096663815226688,
+              "brier": 0.0023171977727958737,
+              "threshold": 0.010946538595884738,
+              "confusion_matrix_tn_fp_fn_tp": [
+                117844,
+                2031,
+                253,
+                27
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120155,
+                  "mean_probability": 0.0018067425539919245,
+                  "observed_fraction": 0.002330323332362365
+                }
+              ]
+            }
+          },
+          "season": {
+            "autumn": {
+              "observations": 31856,
+              "positive_windows": 146,
+              "pr_auc_average_precision": 0.015821922015929003,
+              "precision": 0.018538713195201745,
+              "recall": 0.11643835616438356,
+              "f1": 0.03198494825964252,
+              "brier": 0.004550588801808819,
+              "threshold": 0.010946538595884738,
+              "confusion_matrix_tn_fp_fn_tp": [
+                30810,
+                900,
+                129,
+                17
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 31856,
+                  "mean_probability": 0.002714014797542551,
+                  "observed_fraction": 0.00458312405826218
+                }
+              ]
+            },
+            "spring": {
+              "observations": 30015,
+              "positive_windows": 16,
+              "pr_auc_average_precision": 0.008341431974349788,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.0005314000821062119,
+              "threshold": 0.010946538595884738,
+              "confusion_matrix_tn_fp_fn_tp": [
+                29993,
+                6,
+                16,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 30015,
+                  "mean_probability": 0.0005591034966578728,
+                  "observed_fraction": 0.0005330667999333666
+                }
+              ]
+            },
+            "summer": {
+              "observations": 33107,
+              "positive_windows": 113,
+              "pr_auc_average_precision": 0.007297276722493005,
+              "precision": 0.00881057268722467,
+              "recall": 0.08849557522123894,
+              "f1": 0.016025641025641024,
+              "brier": 0.0033985149229839432,
+              "threshold": 0.010946538595884738,
+              "confusion_matrix_tn_fp_fn_tp": [
+                31869,
+                1125,
+                103,
+                10
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 33107,
+                  "mean_probability": 0.0031817736370271872,
+                  "observed_fraction": 0.0034131754613827892
+                }
+              ]
+            },
+            "winter": {
+              "observations": 25177,
+              "positive_windows": 5,
+              "pr_auc_average_precision": 0.0029944658659435013,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.00019838481551491993,
+              "threshold": 0.010946538595884738,
+              "confusion_matrix_tn_fp_fn_tp": [
+                25172,
+                0,
+                5,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 25177,
+                  "mean_probability": 0.0003380476200952874,
+                  "observed_fraction": 0.00019859395480001588
+                }
+              ]
+            }
+          }
+        },
+        "weekly_bootstrap_pr_auc_95pct": [
+          0.006892484532146005,
+          0.013933439484065334
+        ]
+      },
+      "parameters": "{'memory': None, 'steps': [('standardscaler', StandardScaler()), ('logisticregression', LogisticRegression(max_iter=1000, random_state=42))], 'transform_input': None, 'verbose': False, 'standardscaler': StandardScaler(), 'logisticregression': LogisticRegression(max_iter=1000, random_state=42), 'standardscaler__copy': True, 'standardscaler__with_mean': True, 'standardscaler__with_std': True, 'logisticregression__C': 1.0, 'logisticregression__class_weight': None, 'logisticregression__dual': False, 'logisticregression__fit_intercept': True, 'logisticregression__intercept_scaling': 1, 'logisticregression__l1_ratio': 0.0, 'logisticregression__max_iter': 1000, 'logisticregression__n_jobs': None, 'logisticregression__penalty': 'deprecated', 'logisticregression__random_state': 42, 'logisticregression__solver': 'lbfgs', 'logisticregression__tol': 0.0001, 'logisticregression__verbose': 0, 'logisticregression__warm_start': False}"
+    },
+    {
+      "id": "strict-lebanon-boosting",
+      "policy": "strict",
+      "scope": "lebanon",
+      "algorithm": "boosting",
+      "features": [
+        "temperature_c",
+        "humidity_pct",
+        "precip_mm",
+        "wind_u_ms",
+        "wind_v_ms",
+        "rain7_mm",
+        "vegetation_fraction",
+        "elevation_m",
+        "slope_deg",
+        "aspect_sin",
+        "aspect_cos",
+        "season_sin",
+        "season_cos"
+      ],
+      "train": {
+        "observations": 117677,
+        "positive_windows": 202,
+        "start": "2018-01-05 00:00:00+00:00",
+        "end": "2020-12-24 00:00:00+00:00"
+      },
+      "validation": {
+        "observations": 78769,
+        "positive_windows": 130,
+        "pr_auc_average_precision": 0.007876797267079495,
+        "precision": 0.034482758620689655,
+        "recall": 0.023076923076923078,
+        "f1": 0.027649769585253458,
+        "brier": 0.0016506505840701334,
+        "threshold": 0.04764224407353486,
+        "confusion_matrix_tn_fp_fn_tp": [
+          78555,
+          84,
+          127,
+          3
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 78760,
+            "mean_probability": 0.0016109125890069469,
+            "observed_fraction": 0.0016378872524123922
+          },
+          {
+            "lower": 0.1,
+            "n": 7,
+            "mean_probability": 0.13360740933698287,
+            "observed_fraction": 0.14285714285714285
+          },
+          {
+            "lower": 0.2,
+            "n": 2,
+            "mean_probability": 0.22825853035984126,
+            "observed_fraction": 0.0
+          }
+        ]
+      },
+      "threshold": 0.04764224407353486,
+      "test": {
+        "observations": 120155,
+        "positive_windows": 280,
+        "pr_auc_average_precision": 0.0075201694385897905,
+        "precision": 0.02702702702702703,
+        "recall": 0.017857142857142856,
+        "f1": 0.021505376344086023,
+        "brier": 0.0023281482652924524,
+        "threshold": 0.04764224407353486,
+        "confusion_matrix_tn_fp_fn_tp": [
+          119695,
+          180,
+          275,
+          5
+        ],
+        "calibration": [
+          {
+            "lower": 0.0,
+            "n": 120130,
+            "mean_probability": 0.0016670509128148983,
+            "observed_fraction": 0.0023224839756929992
+          },
+          {
+            "lower": 0.1,
+            "n": 25,
+            "mean_probability": 0.12118661937533347,
+            "observed_fraction": 0.04
+          }
+        ],
+        "at_threshold_0_5": {
+          "observations": 120155,
+          "positive_windows": 280,
+          "pr_auc_average_precision": 0.0075201694385897905,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier": 0.0023281482652924524,
+          "threshold": 0.5,
+          "confusion_matrix_tn_fp_fn_tp": [
+            119875,
+            0,
+            280,
+            0
+          ],
+          "calibration": [
+            {
+              "lower": 0.0,
+              "n": 120130,
+              "mean_probability": 0.0016670509128148983,
+              "observed_fraction": 0.0023224839756929992
+            },
+            {
+              "lower": 0.1,
+              "n": 25,
+              "mean_probability": 0.12118661937533347,
+              "observed_fraction": 0.04
+            }
+          ]
+        },
+        "by_group": {
+          "region": {
+            "lebanon": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.0075201694385897905,
+              "precision": 0.02702702702702703,
+              "recall": 0.017857142857142856,
+              "f1": 0.021505376344086023,
+              "brier": 0.0023281482652924524,
+              "threshold": 0.04764224407353486,
+              "confusion_matrix_tn_fp_fn_tp": [
+                119695,
+                180,
+                275,
+                5
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120130,
+                  "mean_probability": 0.0016670509128148983,
+                  "observed_fraction": 0.0023224839756929992
+                },
+                {
+                  "lower": 0.1,
+                  "n": 25,
+                  "mean_probability": 0.12118661937533347,
+                  "observed_fraction": 0.04
+                }
+              ]
+            }
+          },
+          "sensor": {
+            "VJ114A1_750m_to_1km": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.0075201694385897905,
+              "precision": 0.02702702702702703,
+              "recall": 0.017857142857142856,
+              "f1": 0.021505376344086023,
+              "brier": 0.0023281482652924524,
+              "threshold": 0.04764224407353486,
+              "confusion_matrix_tn_fp_fn_tp": [
+                119695,
+                180,
+                275,
+                5
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120130,
+                  "mean_probability": 0.0016670509128148983,
+                  "observed_fraction": 0.0023224839756929992
+                },
+                {
+                  "lower": 0.1,
+                  "n": 25,
+                  "mean_probability": 0.12118661937533347,
+                  "observed_fraction": 0.04
+                }
+              ]
+            }
+          },
+          "event_type": {
+            "unflagged": {
+              "observations": 120155,
+              "positive_windows": 280,
+              "pr_auc_average_precision": 0.0075201694385897905,
+              "precision": 0.02702702702702703,
+              "recall": 0.017857142857142856,
+              "f1": 0.021505376344086023,
+              "brier": 0.0023281482652924524,
+              "threshold": 0.04764224407353486,
+              "confusion_matrix_tn_fp_fn_tp": [
+                119695,
+                180,
+                275,
+                5
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 120130,
+                  "mean_probability": 0.0016670509128148983,
+                  "observed_fraction": 0.0023224839756929992
+                },
+                {
+                  "lower": 0.1,
+                  "n": 25,
+                  "mean_probability": 0.12118661937533347,
+                  "observed_fraction": 0.04
+                }
+              ]
+            }
+          },
+          "season": {
+            "autumn": {
+              "observations": 31856,
+              "positive_windows": 146,
+              "pr_auc_average_precision": 0.010236617721372087,
+              "precision": 0.03278688524590164,
+              "recall": 0.0273972602739726,
+              "f1": 0.029850746268656716,
+              "brier": 0.004572716161707405,
+              "threshold": 0.04764224407353486,
+              "confusion_matrix_tn_fp_fn_tp": [
+                31592,
+                118,
+                142,
+                4
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 31837,
+                  "mean_probability": 0.0027145074478886993,
+                  "observed_fraction": 0.004554449225743632
+                },
+                {
+                  "lower": 0.1,
+                  "n": 19,
+                  "mean_probability": 0.12448266188669709,
+                  "observed_fraction": 0.05263157894736842
+                }
+              ]
+            },
+            "spring": {
+              "observations": 30015,
+              "positive_windows": 16,
+              "pr_auc_average_precision": 0.0032449591561137243,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.0005330732366583416,
+              "threshold": 0.04764224407353486,
+              "confusion_matrix_tn_fp_fn_tp": [
+                29998,
+                1,
+                16,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 30015,
+                  "mean_probability": 0.0003522229809921994,
+                  "observed_fraction": 0.0005330667999333666
+                }
+              ]
+            },
+            "summer": {
+              "observations": 33107,
+              "positive_windows": 113,
+              "pr_auc_average_precision": 0.006402460763381881,
+              "precision": 0.016666666666666666,
+              "recall": 0.008849557522123894,
+              "f1": 0.011560693641618497,
+              "brier": 0.003414485462078857,
+              "threshold": 0.04764224407353486,
+              "confusion_matrix_tn_fp_fn_tp": [
+                32935,
+                59,
+                112,
+                1
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 33101,
+                  "mean_probability": 0.002976764419296425,
+                  "observed_fraction": 0.003413794145191988
+                },
+                {
+                  "lower": 0.1,
+                  "n": 6,
+                  "mean_probability": 0.11074915142268194,
+                  "observed_fraction": 0.0
+                }
+              ]
+            },
+            "winter": {
+              "observations": 25177,
+              "positive_windows": 5,
+              "pr_auc_average_precision": 0.0008079926909282582,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "brier": 0.00019965227697973017,
+              "threshold": 0.04764224407353486,
+              "confusion_matrix_tn_fp_fn_tp": [
+                25170,
+                2,
+                5,
+                0
+              ],
+              "calibration": [
+                {
+                  "lower": 0.0,
+                  "n": 25177,
+                  "mean_probability": 0.00018807644756759786,
+                  "observed_fraction": 0.00019859395480001588
+                }
+              ]
+            }
+          }
+        },
+        "weekly_bootstrap_pr_auc_95pct": [
+          0.005363358024663694,
+          0.009841590638690351
+        ]
+      },
+      "parameters": "{'categorical_features': 'from_dtype', 'class_weight': None, 'early_stopping': False, 'interaction_cst': None, 'l2_regularization': 2, 'learning_rate': 0.1, 'loss': 'log_loss', 'max_bins': 255, 'max_depth': None, 'max_features': 1.0, 'max_iter': 100, 'max_leaf_nodes': 15, 'min_samples_leaf': 20, 'monotonic_cst': None, 'n_iter_no_change': 10, 'random_state': 42, 'scoring': 'loss', 'tol': 1e-07, 'validation_fraction': 0.1, 'verbose': 0, 'warm_start': False}"
+    }
+  ],
+  "limitations": [
+    "Satellite detections are incomplete incident labels",
+    "No independent incident grouping available; seven-day embargo does not guarantee separation of long-running incidents",
+    "Sensor subgroup metrics describe positive-detection attribution, not sensor-specific population performance",
+    "Bootstrap intervals condition on fitted model and labels; they omit source and label uncertainty"
+  ]
+}

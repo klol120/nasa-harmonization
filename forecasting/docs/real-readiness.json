@@ -1,0 +1,124 @@
+{
+  "code_sha256": "1b00ec6a43b6ff146e4342ee60c8ac6843f8b44df26d75262c99ccf7338eb42d",
+  "config": {
+    "grid_deg": 0.1,
+    "bbox": [
+      35.0,
+      33.0,
+      36.7,
+      34.75
+    ],
+    "start": "2012-01-01T00:00:00Z",
+    "end_exclusive": "2026-01-01T00:00:00Z",
+    "horizon_hours": 24,
+    "primary_product": "viirs-snpp",
+    "recurrence_fit_end_exclusive": "2021-01-01T00:00:00Z",
+    "recurrence_round_degrees": 0.01,
+    "recurrence_min_active_days": 30,
+    "recurrence_min_years": 3,
+    "train_end_exclusive": "2021-01-01T00:00:00Z",
+    "validation_end_exclusive": "2023-01-01T00:00:00Z",
+    "embargo_days": 7,
+    "scope": "bounding_rectangle_pending_verified_national_and_vegetation_mask",
+    "coverage_status": "missing",
+    "weather_mode": "historical_observed_retrospective_only"
+  },
+  "training_allowed": false,
+  "blockers": [
+    "no compatible satellite observability masks: no verified negative labels",
+    "candidate bbox lacks a verified national/vegetation mask",
+    "historically available vegetation/terrain features missing",
+    "POWER history has no verified issue/availability timestamps for operational evaluation",
+    "complete multi-year forecast meteorology not acquired"
+  ],
+  "raw_detection_rows": 17946,
+  "flags": {
+    "unflagged": 13969,
+    "uncertain": 2288,
+    "probable": 1689
+  },
+  "reason_flags": {
+    "source_type_flag": 1689,
+    "low_confidence_flag": 1292,
+    "invalid_metadata_flag": 0,
+    "recurrence_candidate": 2535,
+    "beirut_review_match": 1
+  },
+  "candidate_cells": 306,
+  "primary_product": "viirs-snpp",
+  "policies": {
+    "conservative": {
+      "windows": 1564884,
+      "labels": {
+        "uncertain": 1558416,
+        "positive": 6468
+      },
+      "split_counts": {
+        "train": {
+          "positive": 4271,
+          "uncertain": 999409
+        },
+        "embargo": {
+          "positive": 18,
+          "uncertain": 9162
+        },
+        "validation": {
+          "positive": 844,
+          "uncertain": 217946
+        },
+        "test": {
+          "positive": 1335,
+          "uncertain": 331899
+        }
+      }
+    },
+    "strict": {
+      "windows": 1564884,
+      "labels": {
+        "uncertain": 1557712,
+        "excluded": 3289,
+        "positive": 3883
+      },
+      "split_counts": {
+        "train": {
+          "excluded": 2409,
+          "positive": 2229,
+          "uncertain": 999042
+        },
+        "embargo": {
+          "positive": 16,
+          "uncertain": 9160,
+          "excluded": 4
+        },
+        "validation": {
+          "excluded": 364,
+          "positive": 631,
+          "uncertain": 217795
+        },
+        "test": {
+          "excluded": 512,
+          "positive": 1007,
+          "uncertain": 331715
+        }
+      }
+    }
+  },
+  "source_hashes": {
+    "detections.csv": "936ca2d0f469d67db4b894dc1c38f26f9eaa8fe458add5269de121104dff7e3a",
+    "weather_historical.csv": "f4f0d4299c003672b63b588cc7f32948a2ed55ef78b8d27a2d7e4a195d85be40",
+    "real-preparation.json": "0dc86ea424883e8b0618a4dafb602513fb63c7f23d4759ecc7b25b6d9dd84b29"
+  },
+  "outputs": {
+    "candidate-windows-conservative.csv.gz": "263521e8774e00c249b40dcc6b69737bb166f3ca7d2a56b6729805abd03ec971",
+    "candidate-windows-strict.csv.gz": "0caca81898f9707867e7f43019a8c1fb2b7ab11663f91c00b117a959a23a481d"
+  },
+  "test_usage": "Only label-quality bookkeeping; test labels/features not fitted or used for model selection",
+  "notes": [
+    "No confirmed industrial or conflict attribution made",
+    "No-detection examples remain uncertain",
+    "No probability model was trained",
+    "Recurrence evidence frozen before validation/test",
+    "Candidate rectangle is NOT a Lebanon national forecast grid"
+  ],
+  "historical_snapshot_note": "Initial stage evidence only; see current-results.json and production-status.json for completed actual acquisition and real training."
+}

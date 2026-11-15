@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "seed": 20261115,
+  "mode": "retrospective",
+  "reference_doi": "10.1029/2022GL099368",
+  "target": "VJ114A1.002 next-24h satellite-detected vegetation-associated fire occurrence",
+  "training_end": "2021-01-01T00:00:00Z",
+  "calibration_end": "2022-01-01T00:00:00Z",
+  "validation_end": "2023-01-01T00:00:00Z",
+  "embargo_days": 14,
+  "history_days": 10,
+  "history_lag_days": 3,
+  "ndvi_lag_days_after_composite_end": 16,
+  "ndvi_max_age_days": 120,
+  "ndvi_months": [
+    [
+      "2023-01-01",
+      "2026-05-01"
+    ]
+  ],
+  "soil_periods": [
+    [
+      "2023-01-01",
+      "2026-09-30"
+    ]
+  ],
+  "fresh_confirmation_dates": [
+    "2026-11-01",
+    "2026-11-07"
+  ],
+  "fresh_confirmation_note": "Fixed outcome-independent dates before collection or inspection of their fire labels; short retrospective diagnostic, not adequate production confirmation",
+  "global_geographic_holdouts": [
+    "canadian_prairie",
+    "argentina",
+    "madagascar",
+    "borneo",
+    "western_australia"
+  ],
+  "greek_training_policy": "Greek panel was held out historically; only pre-2021 Greek labels may enter this new protocol, and Greece is removed from the independent geographic test",
+  "greek_matching_fraction": 0.5,
+  "greek_matching_features": [
+    "summer_temperature_c",
+    "summer_rain_mm",
+    "elevation_m",
+    "slope_deg",
+    "vegetation_fraction"
+  ],
+  "model_families": [
+    "seasonal",
+    "logistic_weather",
+    "xgboost_weather",
+    "logistic",
+    "random_forest",
+    "xgboost",
+    "lstm32",
+    "lstm64"
+  ],
+  "training_arms": [
+    "global",
+    "greek",
+    "lebanon",
+    "global_greek_lebanon"
+  ],
+  "lstm_epochs": 10,
+  "lstm_adaptation_epochs": 6,
+  "lstm_batch_size": 2048,
+  "torch_threads": 3,
+  "selection": "Lebanese 2022 validation AP with Brier tie-break; global validation winner also frozen; no new or previously viewed test outcome selects settings",
+  "class_weight": "No case-control downsampling; capped square-root inverse prevalence weighting for neural fitting, followed by natural-prevalence calibration",
+  "production_approved": false,
+  "limitations": [
+    "Historical observed weather is not an issued forecast archive",
+    "Composite lags do not prove historical processing-version availability",
+    "Monthly 0.05deg NDVI and coarse modeled wetness differ from Greek 1km inputs",
+    "Global fire labels remain two outcome-independent dates/month",
+    "New confirmation is only two November dates",
+    "Keep existing cloud/QA and conflict quarantines"
+  ],
+  "greek_fire_sampling": "Every calendar day 2018-2022, outcome-independent; expanded after zero positive training windows in the two-dates/month panel",
+  "purpose": "Additional NASA inputs for already-known historical evaluation only; no fitting, calibration, model selection or threshold changes"
+}

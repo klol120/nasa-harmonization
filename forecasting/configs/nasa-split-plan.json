@@ -1,0 +1,16 @@
+{
+  "status": "Historical S-NPP split plan; actual NOAA-20 run uses 2018-2020 training, 2021-2022 validation and 2023-2025 testing. See noaa20-dataset.json and docs/current-results.json.",
+  "train_start": "2012-01-01T00:00:00Z",
+  "train_end_exclusive": "2021-01-01T00:00:00Z",
+  "validation_end_exclusive": "2023-01-01T00:00:00Z",
+  "test_end_exclusive": "2026-01-01T00:00:00Z",
+  "embargo_days": 7,
+  "primary_sensor": "VIIRS S-NPP",
+  "secondary_sensor_use": "MODIS and NOAA-20 retained separately for sensitivity and coverage review",
+  "constraints": [
+    "2023-2025 Lebanese test labels may not guide feature/model/threshold selection",
+    "POWER historical weather would make this a retrospective prototype, not operational forecast validation",
+    "No-detection windows require independent observation coverage before becoming negative labels",
+    "Publication times, land-cover and terrain inputs, national grid and incident separation still need validation"
+  ]
+}

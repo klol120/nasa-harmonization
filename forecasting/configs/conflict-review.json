@@ -1,0 +1,20 @@
+{
+  "policy_id": "user_southern_lebanon_conflict_20231007_v1",
+  "start": "2023-10-07T00:00:00Z",
+  "end_exclusive": null,
+  "timezone": "UTC",
+  "governorate_pcodes": ["LB4", "LB6"],
+  "governorate_names": ["El Nabatieh", "South"],
+  "boundary_buffer_m": 1000,
+  "cell_rule": "Exclude whole cell-window if its polygon intersects the buffered governorate union and its time window overlaps the exclusion period",
+  "reason": "User-requested broad conflict-contamination quarantine; no claim that every excluded fire was caused by a strike",
+  "source_url": "https://data.humdata.org/dataset/cod-ab-lbn",
+  "source_api_url": "https://data.humdata.org/api/3/action/package_show?id=cod-ab-lbn",
+  "source_provider": "Council for Development and Reconstruction (CDR), distributed by OCHA on HDX",
+  "source_layer": "lbn_admin1.geojson",
+  "license": "CC BY-IGO 3.0",
+  "license_url": "http://creativecommons.org/licenses/by/3.0/igo/legalcode",
+  "role": "Historical label/evaluation-quality information only, never a forecasting feature",
+  "completeness": "Not a strike catalogue. Other Lebanese areas may also contain conflict-related detections. ACLED and official UN reports do not establish an exhaustive strike-to-fire inventory here.",
+  "scope_exception": "User explicitly requested online conflict sources for exclusion; environmental predictors remain NASA-only."
+}

@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "mode": "retrospective",
+  "synthetic": false,
+  "seed": 20261114,
+  "sampling": "Two deterministic uniformly selected days per month per site, without using fire outcomes; 2 by 2 degree fixed global panels, not an exhaustive global raster or a probability sample of all land",
+  "grid_deg": 0.1,
+  "horizon_hours": 24,
+  "start": "2018-01-01T00:00:00Z",
+  "end_exclusive": "2023-01-01T00:00:00Z",
+  "days_per_month": 2,
+  "product": "VJ114A1",
+  "version": "002",
+  "collection_id": "C2545310874-LPCLOUD",
+  "landcover_year": 2010,
+  "history_lag_days": 3,
+  "min_processed_fraction": 0.8,
+  "min_vegetation_fraction_per_pixel": 0.25,
+  "min_eligible_pixels_per_cell": 5,
+  "training_end": "2021-01-01T00:00:00Z",
+  "calibration_end": "2022-01-01T00:00:00Z",
+  "validation_end": "2023-01-01T00:00:00Z",
+  "embargo_days": 7,
+  "known_lebanon_benchmark": [
+    "2023-01-01T00:00:00Z",
+    "2026-01-01T00:00:00Z"
+  ],
+  "fresh_lebanon_confirmation": [
+    "2026-01-01T00:00:00Z",
+    "2026-11-01T00:00:00Z"
+  ],
+  "primary_selection": "Lebanese 2022 validation average precision; Brier breaks ties. Global validation changes and forgetting reported; no confirmation metric selects models.",
+  "weather_parameters": [
+    "T2M",
+    "T2M_MAX",
+    "RH2M",
+    "PRECTOTCORR",
+    "WS10M",
+    "WD10M"
+  ],
+  "weather_points_per_site": 16,
+  "max_download_workers": 4,
+  "min_free_bytes": 50000000,
+  "sites": [
+    {
+      "id": "greece",
+      "south": 37,
+      "west": 22,
+      "north": 39,
+      "east": 24,
+      "continent": "europe",
+      "geographic_holdout": false
+    }
+  ],
+  "algorithms": [
+    "seasonal_climatology",
+    "logistic_regression",
+    "random_forest",
+    "extra_trees",
+    "histogram_gradient_boosting",
+    "dense_neural_network_32",
+    "dense_neural_network_64_32",
+    "dense_neural_network_128_64_32"
+  ],
+  "adaptation_methods": [
+    "global_only",
+    "Lebanon_only_control",
+    "global_plus_Lebanon_probability_calibration",
+    "global_and_local_probability_ensemble",
+    "regularized_local_adaptation_for_linear_models",
+    "continued_weight_training_for_neural_networks",
+    "global_score_augmented_local_tree_models"
+  ],
+  "data_limitations": [
+    "Historical observed POWER is not an issued forecast",
+    "Daily masks give coverage-conditioned detections, not complete fire incidents",
+    "No authoritative global facility/conflict labels",
+    "Fixed 2010 ecological layer is reprocessed and not verified historically available",
+    "Global micro and site-macro metrics describe only this sampled panel"
+  ],
+  "conflict_exclusion_config": "conflict-review.json",
+  "conflict_exclusion_note": "Southern Lebanon is broadly quarantined from 2023-10-07 onward using user-authorized CDR/OCHA boundaries; not a model feature.",
+  "daily_sampling": true
+}

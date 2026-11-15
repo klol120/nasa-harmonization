@@ -13,24 +13,35 @@ API docs: https://wel3a-api.blackwave-481696ae.francecentral.azurecontainerapps.
 ## How it fits together
 
 ```
-export/export/{region}/   harmonized data (data contract v0.4, made by the firecal pipeline)
-        │  python -m firecal_api.cli ingest   (checks every contract rule, then loads)
-        ▼
-PostgreSQL ──► backend/ (FastAPI) ──► web/ (React + MapLibre + ECharts, also an Electron app)
+pipeline/  python -m firecal all --region R      ->  pipeline/data/export/{region}/  (data contract 0.5)
+backend/   python -m firecal_api.cli ingest       <-  pipeline/data/export (default EXPORT_DIR)
+           (checks every contract rule, then loads into PostgreSQL)
+web/       VITE_API_URL=http://127.0.0.1:8000     <-  backend API
+
+live       NASA FIRMS API -> poller (schedule) -> Azure Event Hubs -> consumer -> live tables -> API ?live=1
+           (the days after an export's last day of data, with the pipeline's rules; functions/, backend/firecal_api/live/)
 ```
 
-| folder | what |
-|---|---|
-| [`data_contract.md`](data_contract.md) | units, flags and rules of the exported data |
-| [`export/export/`](export/export) | the exports for `lebanon`, `greece`, `eastmed` |
-| [`backend/`](backend/README.md) | database, ingest, API, accounts, alerts, tests |
-| [`web/`](web/README.md) | the website / desktop app |
-| [`infra/azure/`](infra/azure) | one-time setup for GitHub → Azure deploys |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | branches, pull requests, how deploys work |
+| folder | what | read first |
+|---|---|---|
+| [`pipeline/`](pipeline/) | **firecal**, the harmonization pipeline. FIRMS download → cleaning → 0.05° fire-days → MODIS→VIIRS calibration (monthly ratios, Terra-only correction, NOAA-20 continuation) → splice → anomalies → export. Also `python -m firecal add-country <Country>`. | `pipeline/CLAUDE.md`, `pipeline/docs/FINAL_RATIOS.md` |
+| [`data_contract.md`](data_contract.md) | units, flags and rules of the exported data | |
+| [`backend/`](backend/README.md) | FastAPI + PostgreSQL: database, ingest, API, accounts, alerts, tests | `backend/README.md` |
+| [`web/`](web/README.md) | the website / desktop app (React + MapLibre + ECharts, also an Electron app); reads only the backend API | `web/README.md` |
+| [`forecasting/`](forecasting/README.md) | isolated research pipeline (Ali): next-24-hour satellite-detected fire occurrence in Lebanon, NASA-only inputs, global pretraining, conflict-filtered evaluation. Not approved for operational use. | `forecasting/README.md` |
+| [`functions/`](functions/README.md) | the live pipeline's two Azure Functions: a poller that reads new NASA FIRMS detections on a schedule and a consumer that harmonizes them (rules in `backend/firecal_api/live/`) | `functions/README.md` |
+| [`infra/azure/`](infra/azure) | one-time setup for GitHub → Azure deploys and for the live pipeline | |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | branches, pull requests, how deploys work | |
+
+- **Shared exports.** The exports in git are `pipeline/data/export/*`: `meta.json`, `region_monthly.json`,
+  `cells.geojson`, `calendar.parquet` and `cells_series/`. They are enough for the backend to load every
+  region. Everything else under `pipeline/data/` regenerates from FIRMS (the downloader needs a FIRMS
+  MAP_KEY in `pipeline/.env`, never committed).
+- **Frozen ratios.** Tag `v1.0-data` marks them (`pipeline/docs/FINAL_RATIOS.md`).
 
 ## Run it locally
 
-**With Docker** (database, API and website in one go; loads the exports on first start):
+**With Docker** (database, API and website in one go; mounts `pipeline/data/export` and loads it on first start):
 
 ```sh
 cp .env.example .env        # optional settings (Google sign-in, email); works as is

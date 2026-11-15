@@ -1,28 +1,33 @@
-"""Data contract v0.4: constants and the small pure helpers shared by ingest, API and tests."""
+"""Data contract v0.4/v0.5: constants and the small pure helpers shared by ingest, API and tests."""
 
 import math
 from datetime import date
 
 # Contract versions this backend can load. A rename/removal/type change bumps the version,
 # so anything else is refused rather than half-loaded.
-SUPPORTED_CONTRACT_VERSIONS = {"0.4"}
+SUPPORTED_CONTRACT_VERSIONS = {"0.4", "0.5"}
 
 GRID_DEG = 0.05
 GRID_COLS = 7200  # 360 / 0.05
 
 REGION_MONTH_FIELDS = (
-    "ym", "year", "month", "modis_raw", "viirs_raw", "harmonized", "harmonized_low", "harmonized_high",
-    "anomaly_z", "is_estimate", "has_gap", "data_available", "partial_month", "display_only",
+    "ym", "year", "month", "modis_raw", "viirs_raw", "noaa20_raw", "harmonized", "harmonized_low", "harmonized_high",
+    "anomaly_z", "source", "is_estimate", "has_gap", "data_available", "partial_month", "display_only",
     "low_confidence", "n_cells", "n_persistent_cells",
 )
 REGION_MONTH_FLAGS = ("is_estimate", "has_gap", "data_available", "partial_month", "display_only", "low_confidence")
 
 CALENDAR_FIELDS = (
-    "cell_id", "ym", "year", "month", "modis_raw", "viirs_raw",
+    "cell_id", "ym", "year", "month", "modis_raw", "viirs_raw", "noaa20_raw",
     "harmonized", "harmonized_low", "harmonized_high", "anomaly_z",
 )
 # Values that add up over cells (contract: "Counts and bands add up").
-ADDITIVE_FIELDS = ("modis_raw", "viirs_raw", "harmonized", "harmonized_low", "harmonized_high")
+ADDITIVE_FIELDS = ("modis_raw", "viirs_raw", "noaa20_raw", "harmonized", "harmonized_low", "harmonized_high")
+
+# Added in v0.5 (NOAA-20 continuation of VIIRS after S-NPP's end); absent from v0.4 exports.
+OPTIONAL_CALENDAR_FIELDS = ("noaa20_raw",)
+# region_monthly.source values that mean harmonized is observed S-NPP / calibrated NOAA-20.
+SOURCE_SNPP, SOURCE_NOAA20 = "SNPP", "NOAA20"
 
 SERIES_FIELDS = {"h": "harmonized", "m": "modis_raw", "v": "viirs_raw"}
 

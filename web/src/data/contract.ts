@@ -108,6 +108,10 @@ export interface DatasetMeta {
   estimate_until?: string;
   /** VIIRS joins the record on this date (YYYY-MM-DD). */
   splice_date?: string;
+  /** Contract v0.5: from this date (YYYY-MM-DD) VIIRS is NOAA-20 calibrated to S-NPP. */
+  viirs_switch_date?: string;
+  /** Contract v0.5: NOAA-20 -> S-NPP factors c per calendar month. */
+  continuation?: { strategy?: string; overlap_years?: [number, number]; factors: { month: number; c: number; c_low?: number; c_high?: number }[] };
   /** Years the anomaly baseline is computed over. */
   baseline_years?: [number, number];
   n_cells?: number;
@@ -141,6 +145,15 @@ export interface AreaMonth {
   gap: boolean;
   /** Shown but left out of medians and trends (partial month or display-only year). */
   partial: boolean;
+  /** The feeding sensor covers only part of this month (e.g. the month in progress). */
+  partialMonth: boolean;
+  /**
+   * What feeds the harmonized value (contract v0.5 region_monthly.source): MODIS, SNPP, NOAA20, or two
+   * joined by "+" for a month split at a switch date. Null when unknown or no data.
+   */
+  source: string | null;
+  /** Uncalibrated NOAA-20 fire-days (contract v0.5), null when NOAA-20 has no data. */
+  noaa20: number | null;
 }
 
 export interface AreaSeries {
@@ -176,3 +189,4 @@ export const parseYm = (s: string) => {
 };
 
 export const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+export const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

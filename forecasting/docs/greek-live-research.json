@@ -1,0 +1,25 @@
+{
+  "actual_issued_forecast": true,
+  "model_operationally_validated": false,
+  "model_id": "lstm64-lebanon",
+  "model_sha256": "cb08bb20032e9cec8273a4b48bd1fd0cfcd2dfa5b38dcf038f772645f3896ca6",
+  "prediction_time": "2026-11-16T00:00:00+00:00",
+  "window_end": "2026-11-17T00:00:00+00:00",
+  "cells": 124,
+  "probabilities_returned": 88,
+  "withheld_conflict_scope": 32,
+  "feature_report": {
+    "input_windows": 124,
+    "label_qualified_windows": null,
+    "qualified_positive_windows": null,
+    "missing_history": 0,
+    "missing_past_ndvi": 6,
+    "feature_qualified_windows": 118,
+    "feature_qualified_positive_windows": null,
+    "excluded_positive_windows": null
+  },
+  "forecast_report_sha256": "6cfb0adb9bb5f6752e97763bd582638d55eb7423f7f3c56315cc1b2bd8fb6157",
+  "weather_history_sha256": "3ec93e1aefdef8e7986164ee0e87923b4e59b7e1d3eee5ce8c5d2cbb9d7445ef",
+  "soil_history_sha256": "7524f279469624250e572e3734abb06e81b7493705c91b0adbd950dcf4b15152",
+  "note": "Real future forecast inputs and timestamps; retrospective model and source-transfer/coverage limitations remain. No emergency warning or production approval."
+}

@@ -1,0 +1,19 @@
+{
+  "liveness_http": 200,
+  "scope": "Latest locked Python service with actual retrospective artifact and failed release manifest",
+  "/readyz": {
+    "status": 503,
+    "body": {
+      "ready": false,
+      "failures": [
+        "release_not_approved"
+      ]
+    }
+  },
+  "/forecast": {
+    "status": 503,
+    "body": {
+      "detail": "No approved operational model is ready"
+    }
+  }
+}

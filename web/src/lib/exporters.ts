@@ -1,4 +1,5 @@
 import { chartRegistry } from "../charts/EChart";
+import { UI } from "./colors";
 import { MONTH_ABBR } from "../data/contract";
 import type { AnomalyCell, MonthClimatology, SeasonMetrics, YearTotal } from "./analytics";
 import { toCsv } from "./csv";
@@ -77,11 +78,11 @@ export function chartPng(id?: string) {
   if (!entries.length) return;
   if (id) {
     const [, { chart, title }] = entries[0];
-    downloadDataUrl(`${slug(title)}.png`, chart.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: "#131824" }));
+    downloadDataUrl(`${slug(title)}.png`, chart.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: UI.surface }));
     return;
   }
   for (const [, { chart, title }] of entries) {
-    downloadDataUrl(`${slug(title)}.png`, chart.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: "#131824" }));
+    downloadDataUrl(`${slug(title)}.png`, chart.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: UI.surface }));
   }
 }
 

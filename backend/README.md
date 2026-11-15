@@ -1,8 +1,8 @@
 # Burning-calendar backend
 
 PostgreSQL database and FastAPI service for the `firecal export` output described in
-[`../data_contract.md`](../data_contract.md) (contract **v0.4**). Any region folder shaped like
-`export/export/{region}/` can be loaded; nothing is specific to Lebanon, Greece or EastMed.
+[`../data_contract.md`](../data_contract.md) (contracts **v0.4** and **v0.5**). Any region folder shaped like
+`pipeline/data/export/{region}/` (the pipeline's exports) can be loaded; nothing is specific to Lebanon, Greece or EastMed.
 
 ## Setup
 
@@ -107,6 +107,48 @@ python -m firecal_api.cli weather-import DIR       # (Docker loads /data/weather
 ```
 
 If a parameter isn't in the account's package, `--fields t_mean_c,precip_mm` limits the fetch to the given fields.
+
+## Live pipeline (`firecal_api/live/`)
+
+Keeps the months after an export's last day of data up to date from NASA FIRMS near-real-time
+detections. Exports stay untouched: live months are stored in their own tables (`sql/004_live.sql`) and
+laid over the current release only when a request asks for them with `?live=1`.
+
+```
+FIRMS API --(poller, every 15 min)--> Azure Event Hubs --(consumer)--> live tables --> API ?live=1
+```
+
+- **Fire-days:** a detection maps to its 0.05° cell and UTC day with the contract's formula; a cell-day
+  counts once.
+- **Harmonization follows the firecal pipeline** (`live/harmonize.py`), so live months continue the
+  exports without a step:
+  - nominal and high confidence only; detections in the pipeline's static-source and persistent-source
+    0.01° cells are dropped (`live/excluded_cells.json`, written by `tools/export_excluded_cells.py`);
+  - S-NPP up to 2026-11-02, then NOAA-20 from the switch date 2026-11-03; NOAA-21 is not used;
+  - NOAA-20 fire-days are multiplied by the continuation factors c_m with their 90 % band, read from the
+    release (`meta.calibration.continuation`, contract 0.5) or, for a 0.4 release, from the frozen values
+    of the 0.5 exports.
+  A region without factors or without a cell list gets factor 1 and `live_provisional: true`.
+  After changing the rules, bump `VERSION` there and run `live-recompute`.
+- **Anomalies** use the release's baseline (same formula as `/aggregate`).
+- **Extra fields** on live rows of `/monthly` and `/aggregate`: `live`, `live_through`, `live_sensors`,
+  `live_provisional`, and the contract-0.5 fields `noaa20_raw` and `source` (`viirs_raw` is S-NPP only). `/regions/{r}/live` reports freshness and a `version` that changes with the data.
+- **Demo replay:** a past outbreak replayed as simulated detections, served only with `&demo=1`.
+
+Needs `FIRMS_MAP_KEY` in `backend/.env` (free: https://firms.modaps.eosdis.nasa.gov/api/map_key/). With
+`EVENTHUB_CONNECTION` set, events go through the stream; without it (or with `--direct`) they are
+handled on this machine.
+
+```bash
+python -m firecal_api.cli live-backfill            # everything since the exports' last day, straight into the database
+python -m firecal_api.cli live-poll [--direct]     # one polling pass (what the Azure Function does every 15 min)
+python -m firecal_api.cli live-status              # coverage, months, fire-days per sensor
+python -m firecal_api.cli live-recompute           # rebuild the live months (after changing harmonize.py)
+python -m firecal_api.cli live-replay greece       # demo: replay the August 2021 fires as if live
+python -m firecal_api.cli live-clear-demo          # remove the simulated detections
+```
+
+On Azure the poller and the consumer are the two Functions in [`functions/`](../functions/README.md).
 
 ## Machine learning
 

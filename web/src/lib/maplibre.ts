@@ -11,6 +11,8 @@ export { maplibregl };
 const STYLE_URLS = {
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   darkNoLabels: "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
+  /** Light street map (Carto Positron) for the light theme. */
+  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
 };
 
 export const FALLBACK_STYLE: StyleSpecification = {
@@ -35,6 +37,15 @@ export const NIGHT_LIGHTS_SOURCE = {
   tileSize: 256,
   maxzoom: 8,
   attribution: "Black Marble: NASA Earth Observatory / GIBS",
+};
+
+/** NASA Blue Marble (daytime Earth with shaded relief and ocean depth) from GIBS: the globe in light mode. */
+export const DAY_EARTH_SOURCE = {
+  type: "raster" as const,
+  tiles: ["https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg"],
+  tileSize: 256,
+  maxzoom: 8,
+  attribution: "Blue Marble: NASA Earth Observatory / GIBS",
 };
 
 /** Free, token-less elevation tiles (Mapzen Terrarium on AWS Open Data) for 3D terrain and hillshading. */

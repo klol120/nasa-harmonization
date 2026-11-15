@@ -54,8 +54,10 @@ export function CalendarHeatmap({ cells, mode, unit, selected, onSelect, markers
         if (!c) return "";
         const head = `<b>${MONTH_ABBR[c.month - 1]} ${c.year}</b>`;
         if (c.value === null) return `${head}<br/><span style="color:${UI.muted}">No data for this month. Not counted as zero.</span>`;
-        const lines = [`${head}`, `${fmt(c.value)} ${unit}${c.partial ? " <i>(partial year, not in medians)</i>" : ""}`];
-        if (c.pct !== null) lines.push(`${fmtPct(c.pct)} vs ${MONTH_ABBR[c.month - 1]} median · z ${c.z!.toFixed(1)}`);
+        const partialNote = c.partialMonth ? " <i>(partial month: data still arriving, not in medians)</i>" : c.partial ? " <i>(partial year, not in medians)</i>" : "";
+        const lines = [`${head}`, `${fmt(c.value)} ${unit}${partialNote}`];
+        if (c.pct !== null) lines.push(`${fmtPct(c.pct)} vs ${MONTH_ABBR[c.month - 1]} median${c.z !== null ? ` · z ${c.z.toFixed(1)}` : ""}`);
+        if (c.source?.includes("NOAA20")) lines.push(`<span style="color:${UI.muted}">${c.source === "NOAA20" ? "VIIRS NOAA-20, calibrated to S-NPP" : "S-NPP, then VIIRS NOAA-20 calibrated to S-NPP"}</span>`);
         if (c.estimate) lines.push(`<span style="color:${UI.muted}">Modelled estimate from MODIS (not detections)${c.lowConfidence ? " · <b>low confidence</b>" : ""}</span>`);
         if (c.gap) lines.push(`<span style="color:${UI.muted}">A satellite outage touched this month</span>`);
         const ev = events?.get(c.i);
@@ -129,7 +131,7 @@ export function CalendarHeatmap({ cells, mode, unit, selected, onSelect, markers
         // Empty slots first, so months outside the selected range read as "not shown" rather than missing.
         overlay(
           years.flatMap((_, x) => MONTH_ABBR.map((__, y) => [x, y, -1])),
-          (r) => ({ type: "rect", shape: { ...inset(r, 1.5), r: 2 }, style: { fill: "rgba(255,255,255,0.025)" } }),
+          (r) => ({ type: "rect", shape: { ...inset(r, 1.5), r: 2 }, style: { fill: UI.wash } }),
           0,
         ),
         overlay(nodata, (r) => ({ type: "rect", shape: inset(r, 0.75), style: { fill: { image: hatch(), repeat: "repeat" } as any } }), 2, false),
@@ -145,7 +147,7 @@ export function CalendarHeatmap({ cells, mode, unit, selected, onSelect, markers
           }),
           5,
         ),
-        overlay(selCell.map(([x, y]) => [x, y, sel]), (r) => ({ type: "rect", shape: { ...inset(r, 0.5), r: 2 }, style: { fill: "transparent", stroke: "#ffffff", lineWidth: 2 } }), 4),
+        overlay(selCell.map(([x, y]) => [x, y, sel]), (r) => ({ type: "rect", shape: { ...inset(r, 0.5), r: 2 }, style: { fill: "transparent", stroke: UI.hl, lineWidth: 2 } }), 4),
         {
           // Sensor-change markers: a dashed rule on the left edge of the year's column.
           type: "custom",
@@ -220,14 +222,17 @@ function dots() {
 }
 
 let hatchCanvas: HTMLCanvasElement | null = null;
+let hatchFor = "";
 function hatch() {
-  if (hatchCanvas) return hatchCanvas;
+  // Rebuilt when the theme changes the no-data colour.
+  if (hatchCanvas && hatchFor === UI.noData) return hatchCanvas;
+  hatchFor = UI.noData;
   const c = document.createElement("canvas");
   c.width = c.height = 6;
   const g = c.getContext("2d")!;
   g.fillStyle = UI.noData;
   g.fillRect(0, 0, 6, 6);
-  g.strokeStyle = "#394157";
+  g.strokeStyle = UI.hatch;
   g.lineWidth = 1;
   g.beginPath();
   g.moveTo(0, 6);
