@@ -96,8 +96,9 @@ def acquire(cells_path, catalog_path, out, token_file):
     records = [json.loads(p.read_text()) for p in sorted(out.glob('*.json')) if p.name != 'manifest.json']
     report = {'cells_requested': len(cells), 'cells_obtained': len(records), 'records': records, 'attempted': attempted,
               'failures': failures, 'source_catalog_sha256': hashlib.sha256(Path(catalog_path).read_bytes()).hexdigest(),
-              'selection': '2017 June-October, catalogue cloud ordering; no fire outcomes used',
-              'limitations': ['One 960m landscape crop per roughly 10km cell', 'Static 2017 proxy becomes stale',
+              'selection': 'Configured catalogue acquisition dates, cloud ordering; no fire outcomes used',
+              'observation_years': sorted({r['observation_time'][:4] for r in records}),
+              'limitations': ['One 960m landscape crop per roughly 10km cell', 'Static landscape proxy becomes stale',
                              'Source versions processed after original acquisition; retrospective availability assumption']}
     (out / 'manifest.json').write_text(json.dumps(report, indent=2))
     print(json.dumps({'cells_requested': len(cells), 'cells_obtained': len(records), 'failed_granules': len(failures)}))

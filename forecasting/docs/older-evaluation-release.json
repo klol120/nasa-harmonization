@@ -1,0 +1,8 @@
+{
+  "approved": false,
+  "evaluation_only": true,
+  "no_refitting": true,
+  "project_primary_replaced": false,
+  "selected_external_unchanged": "prithvi-v2-100m-tl-frozen_encoder",
+  "reason": "Backward-time, cross-sensor retrospective diagnostic; no operational validation"
+}

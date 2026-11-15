@@ -180,14 +180,16 @@ def download_checkpoint(record):
     return stream
 
 
-def extract(root, config_path):
+def extract(root, config_path, patches_root=None, token_root=None):
     import torch
     from datetime import datetime, timezone
     root = Path(root)
     config = json.loads(Path(config_path).read_text())
     torch.set_num_threads(config['threads'])
     folder = root / 'data/pretrained-models'
-    patches = folder / 'hls-patches'
+    patches = Path(patches_root) if patches_root is not None else folder / 'hls-patches'
+    token_root = Path(token_root) if token_root is not None else folder
+    token_root.mkdir(parents=True, exist_ok=True)
     manifest = json.loads((patches / 'manifest.json').read_text())
     records = manifest['records']
     if not records:
@@ -198,15 +200,16 @@ def extract(root, config_path):
         if hashlib.sha256(path.read_bytes()).hexdigest() != r['sha256']:
             raise ValueError('HLS subset integrity failure')
         when = datetime.fromisoformat(r['observation_time'].replace('Z', '+00:00'))
-        if when.year != 2017:
-            raise ValueError('Static landscape must precede all supervised years')
+        limit = datetime.fromisoformat(config.get('image_observation_end_exclusive', '2018-01-01')).replace(tzinfo=timezone.utc)
+        if when >= limit:
+            raise ValueError('Static landscape must precede the configured earliest evaluation/training year')
         with np.load(path) as a:
             image = a['reflectance'].astype(np.float32)
             images.append((image, a['good']))
         temporal.append([[when.year, when.timetuple().tm_yday]])
         coords.append([r['latitude'], r['longitude']])
     for record in config['models']:
-        out = folder / (record['id'] + '-tokens.npz')
+        out = token_root / (record['id'] + '-tokens.npz')
         if out.exists():
             meta = json.loads(out.with_suffix('.json').read_text())
             if meta['model'] != record or hashlib.sha256(out.read_bytes()).hexdigest() != meta['token_sha256']:
@@ -256,5 +259,7 @@ if __name__ == '__main__':
     parser.add_argument('operation', nargs='?', choices=['discover', 'extract'], default='extract')
     parser.add_argument('--root', default='.')
     parser.add_argument('--config', default='configs/pretrained-transfer.json')
+    parser.add_argument('--patches', help='Separate exact HLS subset archive; defaults to the original 2017 archive')
+    parser.add_argument('--out', help='Separate extracted-token cache; never overwrite a different image population')
     args = parser.parse_args()
-    discover(args.root, args.config) if args.operation == 'discover' else extract(args.root, args.config)
+    discover(args.root, args.config) if args.operation == 'discover' else extract(args.root, args.config, args.patches, args.out)

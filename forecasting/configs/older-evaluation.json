@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "seed": 20261115,
+  "mode": "retrospective",
+  "source_commit": "5ed618654bc8cf73137f382357f8a39f03c2fbfb",
+  "models": [
+    {
+      "id": "prithvi-v1-100m",
+      "repository": "ibm-nasa-geospatial/Prithvi-EO-1.0-100M",
+      "revision": "f3a9ea7a1723621b0aeceb4de993093704d712c5",
+      "file": "Prithvi_EO_V1_100M.pt",
+      "sha256": "7fac0c8a8693198e32a055e0c5a967f8b005f382182b63df1b29fdcd5c880731",
+      "bytes": 453671052,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "prithvi-v2-tiny-tl",
+      "repository": "ibm-nasa-geospatial/Prithvi-EO-2.0-tiny-TL",
+      "revision": "335eadc2c45ad5abe7bd307223e1c48c5b60c41b",
+      "file": "Prithvi_EO_V2_tiny_TL.pt",
+      "sha256": "d47326db9bad502b611f73e3e3f3a0e68b7b82640d67c22c795417f7209f8d70",
+      "bytes": 129258736,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "prithvi-v2-100m-tl",
+      "repository": "ibm-nasa-geospatial/Prithvi-EO-2.0-100M-TL",
+      "revision": "2c84e383194986040f883cc43d7869002c425e1b",
+      "file": "Prithvi_EO_V2_100M_TL.pt",
+      "sha256": "d45406d5fc51af1d9657d48f2e2c3ff077408a2e1113f9a242889a4fe4469b17",
+      "bytes": 454660610,
+      "license": "Apache-2.0"
+    }
+  ],
+  "head_epochs": 12,
+  "batch_size": 2048,
+  "learning_rate": 0.001,
+  "layernorm_learning_rate": 0.0001,
+  "hidden_width": 32,
+  "threads": 3,
+  "strategies": [
+    "frozen_encoder",
+    "final_layernorm_tuning"
+  ],
+  "train_years": [
+    2018,
+    2020
+  ],
+  "calibration_year": 2021,
+  "validation_year": 2022,
+  "embargo_days": 14,
+  "selection": "Lebanese validation average precision with Brier tie break; thresholds selected on validation only",
+  "evaluation": "Previously viewed 2023-2025 and Jan-Oct 2026 Lebanese outcomes; diagnostic, not fresh confirmation",
+  "hls_policy": "One QA-screened 32x32 native 30m Landsat HLS crop at the recorded cell vegetation centroid, observed June-October 2017; no fire-outcome selection",
+  "limitations": [
+    "These are NASA-pretrained image encoders, not pretrained fire-occurrence predictors",
+    "Static 2017 imagery is a limited landscape proxy, not current fuel condition",
+    "Modern pretrained weights and reprocessing were unavailable at historical prediction times",
+    "EO2 pretraining is global and Lebanese image overlap cannot be ruled out",
+    "Observed historical weather remains a perfect-weather forecast proxy",
+    "Previously viewed tests and repeated validation searches cannot establish fresh independent improvement"
+  ],
+  "production_approved": false,
+  "operation": "older_year_evaluation_only",
+  "years": [
+    2016,
+    2017
+  ],
+  "evaluation_start": "2016-01-01T00:00:00Z",
+  "evaluation_end_exclusive": "2018-01-01T00:00:00Z",
+  "label_product": "VNP14A1.002",
+  "training_label_product": "VJ114A1.002",
+  "sensor_transfer": true,
+  "image_observation_end_exclusive": "2016-01-01",
+  "hls_period": [
+    "2015-06-01T00:00:00Z",
+    "2015-10-31T23:59:59Z"
+  ],
+  "ndvi_months": [
+    [
+      "2015-09-01",
+      "2017-12-01"
+    ]
+  ],
+  "soil_periods": [
+    [
+      "2015-12-01",
+      "2017-12-31"
+    ]
+  ],
+  "soil_regions": [
+    "lebanon"
+  ],
+  "policies": [
+    "strict",
+    "conservative"
+  ],
+  "fit_allowed": false,
+  "calibration_allowed": false,
+  "threshold_changes_allowed": false,
+  "classification": "Backward temporal and S-NPP sensor-transfer diagnostic; not prospective forecasting",
+  "original_snpp_models": "Excluded: their fitting already includes 2016-2017",
+  "frozen_inputs": {
+    "outputs/pretrained-transfer/selection-frozen.json": "3ee9053f629827d932aea11a6df2807e119d4d5fbc703c726ba3c7b734c72867",
+    "outputs/greek-temporal-benchmark/selection-frozen.json": "e899e385bb6e517006d4b8eb40043d47505a4ddf16f9e48ea977d608cd85f0a3",
+    "outputs/gridded-real/dataset-strict.csv.gz": "969b51361906d517427abd3e165cdb33b995da201b976cf7f74c85b845927bd7",
+    "outputs/gridded-real/dataset-conservative.csv.gz": "2ce75cb28c916e2b5e76943e15d051d77f0dac882020aec32218a958f8944e9c"
+  }
+}

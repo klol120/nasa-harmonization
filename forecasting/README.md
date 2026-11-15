@@ -1,6 +1,6 @@
 # Lebanon satellite-detected vegetation-fire occurrence
 
-**Completed: global NASA pretraining, Greek/Lebanese adaptation, temporal LSTMs, external NASA-pretrained encoder comparisons and southern-conflict exclusions. Production release remains blocked.** Read the [latest experiment](docs/pretrained-results.md), [adaptation statecharts](docs/pretrained-statecharts.md), [Greek temporal results](docs/greek-experiment-results.md), [source ledger](docs/sources.md) and [decisions](../decisions.md). The [earlier global results](docs/global-results.md) and [Lebanon-only results](docs/current-results.md) remain historical baselines.
+**Completed: global NASA pretraining, Greek/Lebanese adaptation, temporal LSTMs, external NASA-pretrained encoder comparisons and southern-conflict exclusions. Production release remains blocked.** Read the [2016–2017 evaluation](docs/older-evaluation-results.md), [older-evaluation statecharts](docs/older-evaluation-statecharts.md), [pretrained experiment](docs/pretrained-results.md), [Greek temporal results](docs/greek-experiment-results.md), [source ledger](docs/sources.md) and [decisions](../decisions.md). The [earlier global results](docs/global-results.md) and [Lebanon-only results](docs/current-results.md) remain historical baselines.
 
 The [literature review](docs/literature-review.md) compares six published fire-model
 studies and explains high reported scores, task/sampling differences and proposed
@@ -339,3 +339,49 @@ Use the committed [measured report](docs/pretrained-results.md), [JSON](docs/pre
 Modern encoder availability, potential EO2 image overlap, reprocessing availability,
 old small landscape crops, already-viewed tests, sparse independent fires and
 observed-weather proxies prevent production approval. No API deployment is made.
+
+## Older-year evaluation: 2016–2017
+
+This scores frozen 2018–2020-trained models without fitting or threshold changes.
+NOAA-20 labels are unavailable in these years, so the experiment uses the original
+NASA S-NPP VNP14A1.002 labels under both strict and conservative policies. Earlier
+S-NPP models already trained on these years are excluded. The last eleven days of
+2017 are withheld to keep the existing 14-day gap before the earliest fitting target.
+
+Use the existing CPU environment, protected-source token file and system GDAL
+reader from the external-model setup. Run from `forecasting/`:
+
+```sh
+uv run --no-sync python -m firecast.older_evaluation discover
+uv run --no-sync python -m firecast.greek_environment soil --config configs/older-evaluation.json --out data/older-soil
+uv run --no-sync python -m firecast.greek_environment ndvi --config configs/older-evaluation.json --out data/older-ndvi --token-file "$EARTHDATA_TOKEN_FILE"
+/usr/bin/python3 scripts/acquire_hls_patches.py --cells outputs/noaa20-real/cells.csv --catalog data/older-pretrained/hls-catalog.json --out data/older-pretrained/hls-patches --token-file "$EARTHDATA_TOKEN_FILE"
+uv run --no-sync python -m firecast.older_evaluation check-hls
+uv run --no-sync python -m firecast.pretrained_encoder extract --config configs/older-evaluation.json --patches data/older-pretrained/hls-patches --out data/older-pretrained
+uv run --no-sync python -m firecast.older_evaluation prepare
+uv run --no-sync python -m firecast.older_evaluation score
+uv run --no-sync python -m firecast.publish_older
+```
+
+The committed config pins this execution's source-model/label hashes. An independent
+reproduction can register its own correctly trained artifacts **before inspecting
+older results**, using `older_evaluation register --config configs/older-reproduction.json`.
+Pass that new config with `--config` to every operation above. Registration refuses
+to replace an existing different snapshot and checks fitting dates. New labelled
+experiment output directories are also required (`--data`, `--out`); do not silently
+reuse an old scored cohort with new models. The original checked-in protocol remains
+unchanged. `--rebuild-unscored` is only for correcting an unscored intermediate;
+it preserves its old manifest and refuses to overwrite the default scored experiment.
+
+2017 imagery cannot serve as input to a 2016 test. Separate 2015 HLS observations
+replace only input tokens; pretrained weights, head weights, preprocessing,
+calibration and thresholds stay fixed. Unavailable inputs and quarantined positives
+remain excluded. Overlapping NDVI/soil source dates must agree exactly before
+deduplication. Existing raw S-NPP caches remain packed and preserved; their audited
+label exports can be used directly without restoring all tiles.
+
+Read the [measured results](docs/older-evaluation-results.md), [JSON](docs/older-evaluation-results.json),
+[CSV](docs/older-evaluation-results.csv), [statecharts](docs/older-evaluation-statecharts.md)
+and executed notebook 12. This is backward-time, cross-sensor retrospective transfer;
+modern pretraining and processing were unavailable at historical issue times. It is
+not a prospective operational backtest, and it does not promote any model.

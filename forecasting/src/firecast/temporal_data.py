@@ -54,7 +54,7 @@ def ndvi_asof(times, cell_indices, months, values, lag_days=16, max_age=120):
 
 
 class HistoryStore:
-    def __init__(self, root, config, include_known=False):
+    def __init__(self, root, config, include_known=False, extra_soil_paths=None, extra_ndvi_roots=None):
         root = Path(root)
         self.config = config
         raw = ['weather_point_id', 'lat', 'lon', 'date', 'T2M', 'T2M_MAX', 'RH2M', 'PRECTOTCORR', 'WS10M', 'WD10M']
@@ -81,6 +81,20 @@ class HistoryStore:
             if sha(extra_path) != extra_report['sha256']:
                 raise ValueError('Known-benchmark soil checksum mismatch')
             soil = pd.concat([soil, pd.read_csv(extra_path)], ignore_index=True)
+        self.extra_source_audit = {'soil_overlap_rows': 0, 'ndvi_duplicate_months': []}
+        for extra_path in extra_soil_paths or []:
+            extra_path = Path(extra_path)
+            extra_report = json.loads((extra_path.parent / 'soil-report.json').read_text())
+            if sha(extra_path) != extra_report['sha256']:
+                raise ValueError('Additional soil archive checksum mismatch')
+            extra = pd.read_csv(extra_path)
+            keys = ['weather_region', 'weather_point_id', 'date']
+            overlap = extra.merge(soil, on=keys, suffixes=('_extra', '_original'))
+            for key in ['GWETROOT', 'GWETTOP']:
+                if not np.array_equal(overlap[key + '_extra'], overlap[key + '_original'], equal_nan=True):
+                    raise ValueError('Overlapping soil sources disagree; do not silently mix versions')
+            self.extra_source_audit['soil_overlap_rows'] += len(overlap)
+            soil = pd.concat([soil, extra], ignore_index=True).drop_duplicates(keys, keep='first')
         weather = weather.merge(soil, on=['weather_region', 'weather_point_id', 'date'], how='left', validate='one_to_one')
         self.set_weather(weather)
         ndvi_root = root / 'data/greek-ndvi'
@@ -89,6 +103,9 @@ class HistoryStore:
         reports = [(ndvi_root, json.loads((ndvi_root / 'ndvi-report.json').read_text()))]
         if include_known:
             extra_root = root / 'data/greek-ndvi-known'
+            reports.append((extra_root, json.loads((extra_root / 'ndvi-report.json').read_text())))
+        for extra_root in extra_ndvi_roots or []:
+            extra_root = Path(extra_root)
             reports.append((extra_root, json.loads((extra_root / 'ndvi-report.json').read_text())))
         months, values = [], []
         for source_root, report in reports:
@@ -104,7 +121,13 @@ class HistoryStore:
                 with np.load(path) as a:
                     v = a['NDVI'].astype(np.float32) * .0001
                     v[~ndvi_good(a['NDVI'], a['VI_Quality'], a['pixel_reliability'])] = np.nan
-                months.append(record['month'] + '-01')
+                month = record['month'] + '-01'
+                if month in months:
+                    if not np.array_equal(values[months.index(month)], v, equal_nan=True):
+                        raise ValueError('Overlapping NDVI sources disagree; do not silently mix versions')
+                    self.extra_source_audit['ndvi_duplicate_months'].append(month)
+                    continue
+                months.append(month)
                 values.append(v)
         if len(set(months)) != len(months):
             raise ValueError('Overlapping NDVI benchmark sources')

@@ -61,7 +61,7 @@
     "Full time-varying vegetation and authoritative non-target incident/facility adjudication"
   ],
   "publication_status_note": "This validation snapshot predates the user-requested branch publication; github_pushed describes the snapshot time.",
-  "historical_note": "Earlier local/global/Greek validation snapshots are retained; external_pretrained_extension is the latest completed experiment.",
+  "historical_note": "Earlier snapshots are retained; older_evaluation_extension is the latest completed evaluation-only stage.",
   "global_extension": {
     "completed": true,
     "model_architecture_groups": 8,
@@ -144,5 +144,44 @@
     "fresh_container_build_executed": false,
     "report": "pretrained-results.md",
     "statecharts": "pretrained-statecharts.md"
+  },
+  "older_evaluation_extension": {
+    "years": [
+      2016,
+      2017
+    ],
+    "models_scored": 14,
+    "filtering_policies": [
+      "strict",
+      "conservative"
+    ],
+    "matched_cells": 115,
+    "new_hls_crops_2015": 118,
+    "additional_ndvi_composites_obtained": 28,
+    "ndvi_overlap_months": 4,
+    "soil_point_days_obtained": 9144,
+    "soil_overlap_point_days": 372,
+    "strict_full_positive_windows": {
+      "2016": 90,
+      "2017": 36
+    },
+    "strict_matched_positive_windows": {
+      "2016": 78,
+      "2017": 31
+    },
+    "december_2017_embargo_targets_excluded": [
+      "2017-12-21",
+      "2017-12-31"
+    ],
+    "old_image_inputs_do_not_use_2017": true,
+    "supervised_weights_calibrators_thresholds_unchanged": true,
+    "model_reselected": false,
+    "production_approved": false,
+    "full_tests_passed": 98,
+    "focused_tests_passed": 20,
+    "notebook_12_executed": true,
+    "fresh_container_or_remote_ci": false,
+    "report": "older-evaluation-results.md",
+    "statecharts": "older-evaluation-statecharts.md"
   }
 }

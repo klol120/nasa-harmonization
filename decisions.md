@@ -623,3 +623,56 @@ windows and record actual family/candidate counts and selected parameters.
   passed for temporal/external contracts. Notebook 11 executed actual model loading,
   label-free prediction and AP reproduction. Production approval and deployment
   remain false; fresh container and remote CI checks were not run for this stage.
+
+## 15 November 2026 — requested 2016–2017 evaluation
+
+* Evaluate the existing 2018–2020-trained models without fitting, recalibrating,
+  threshold changes or model selection. Earlier local S-NPP models already used
+  2016–2017 and must not be called held-out references.
+* NOAA-20 VJ114A1 labels do not cover these years. Use the already obtained NASA
+  S-NPP VNP14A1.002 daily masks and original audited strict/conservative label
+  tables; this is an explicit backward-time and cross-sensor diagnostic.
+* The latest pretrained heads contain 2017 HLS tokens, which would introduce
+  future-image information in 2016. Acquire separate 2015 NASA HLS crops and
+  replace only image inputs, preserving encoders, head weights, scalers,
+  calibrators and thresholds. Missing older images remain excluded.
+* Acquire older NASA monthly NDVI and POWER modeled wetness; preserve the
+  original weather and feature definitions. For overlapping source dates require
+  identical values, retain the original copy, and audit overlap counts. Do not
+  silently blend processing versions.
+* Modern model weights and reprocessing were unavailable at historical issue
+  times. Report retrospective transfer, not prospective operational forecast
+  performance. Whole-year 2016/2017 outcomes never select a new model or threshold.
+* Complete acquisition: 28 NDVI composites, 9,144 wetness point-days and 118/124
+  qualifying 2015 HLS crops. Verify/deduplicate four NDVI months and 372 wetness
+  point-days already present. Original image-domain intersection remains 115 cells.
+* Actual earliest supervised fitting target is 5 January 2018. Apply the existing
+  14-day embargo to exclude 21–31 December 2017 (1,364 raw cell-windows, 800 strict
+  qualified examples, no positives). Retain those rows and exclusion masks rather
+  than deleting them. An unscored intermediate was rebuilt for this gap; its
+  superseded manifest is retained. Scored receipts prevent overwriting evaluated
+  cohorts, including when a custom output directory is used.
+* Score 14 frozen models in 72 year/policy/cohort combinations. Strict full-grid
+  cohorts contain 39,260/90 positive windows in 2016 and 37,730/36 in 2017. Matched
+  image cohorts contain 36,587/78 and 35,168/31; missing past NDVI removes two
+  2017 positives and image-domain matching excludes another 12/5 positives.
+* Selected external EO2 100M frozen-head AP is 0.010080 in 2016 and 0.003374 in
+  2017, with no issued alerts at its original threshold: all 78/31 positives are
+  missed, with no false alerts. Precision is not estimable with zero alerts;
+  retain the metric zero convention only alongside its estimability flag.
+  Local LSTM matched AP is 0.018303/0.003107, detecting 3/78 with 87 false alerts
+  in 2016 and 0/31 with 73 false alerts in 2017. Other candidate scores are also
+  retained, including higher-ranking nonselected Tiny variants; do not promote
+  one after inspecting this older evaluation.
+* Add explicit older-source discovery and registration for independent reproductions.
+  Registrations pin already trained models before older outcomes are inspected;
+  they cannot silently replace different existing snapshots. The committed run's
+  protocol and original model files remain unchanged. Published HLS metadata corrects
+  one legacy narrative year while retaining exact source dates and the cached
+  extraction manifest hash; raw arrays and tokens are unchanged.
+* Full suite: 98 passed, one existing Starlette warning. Twenty focused checks
+  passed, including overlap refusal, image-only input substitution, preservation
+  of uncertain positives, past-image bounds and immutable registrations/scored
+  cohorts. Notebook 12 executed and reproduced the selected external model's AP
+  and confusion counts without supplying labels as prediction inputs. No new
+  training, calibration, threshold selection, Docker build or remote CI is claimed.

@@ -1,5 +1,20 @@
 # NASA source ledger: actual acquisition, 14–15 November 2026
 
+The requested 2016–2017 evaluation reuses preserved S-NPP VNP14A1.002 daily labels
+and their original FIRMS review/cloud/coverage audits. NOAA-20 training labels do
+not cover these years. New NASA inputs comprise 28 MOD13C2.061 monthly composites
+(September 2015–December 2017), 9,144 POWER relative-soil-wetness point-days at 12
+Lebanese points, and 118 qualifying HLS L30 v2 crops observed June–October 2015.
+Four NDVI months and 372 soil point-days overlap existing caches; exact equality
+is verified and original copies retained. These are not all additional unique
+observations. Original POWER weather already covers both years. HLS cloud/quality
+screening and raw exact crops, CMR links, observation/retrieval times, product
+versions and SHA256 are retained separately. Only 2015 HLS inputs, never future
+2017 images, feed the older comparison. Published metadata corrects a legacy
+hardcoded descriptive year while preserving the cached evidence's original hash.
+See [the older-year report](older-evaluation-results.md) for sensor-transfer,
+temporal-embargo, historical-availability and changed-cohort limitations.
+
 The external-checkpoint experiment additionally acquired NASA HLS Landsat L30 v2
 six-band 30m reflectance/Fmask crops observed June–October 2017, for 115/124
 Lebanese grid cells. Each crop is a native 32x32 window, not full-cell coverage.
