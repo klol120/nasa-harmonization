@@ -27,8 +27,9 @@ with the Azure API URL). The API must list the site's origin in `CORS_ORIGINS`.
 | Exports | Calendar and analytics CSV, chart PNGs, map PNG |
 
 Units are **fire-days** (0.05° cells with at least one detection per day). Months before 2012-01 are modelled
-from MODIS and labelled as estimates; months without data show as "no data", never as zero. The view state
-lives in the URL hash (`#src=api:lebanon&s=harmonized&…`), so a link reproduces the view.
+from MODIS and labelled as estimates; months without data show as "no data", never as zero. The address bar
+shows only the page and region (`#/calendar/lebanon`); the rest of the view is kept with the browser history, and
+the Share button copies a full link (`#/calendar/lebanon?s=harmonized&…`) that reproduces the view.
 
 ## Accounts (optional)
 
