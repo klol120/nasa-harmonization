@@ -18,6 +18,10 @@ dependencies = [
 
 [dependency-groups]
 dev = ["pytest>=8", "httpx>=0.27"]
+ml = [
+    "numpy>=2.0",
+    "scikit-learn>=1.5",
+]
 
 [project.scripts]
 firecal-db = "firecal_api.cli:main"
