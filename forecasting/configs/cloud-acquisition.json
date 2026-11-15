@@ -1,0 +1,7 @@
+{
+  "start": "20120101",
+  "end": "20251231",
+  "latitudes": [33.5, 34.5],
+  "longitudes": [35.5, 36.5],
+  "purpose": "NASA SYN1DEG/POWER daily cloud context over bounding area, not overpass cloud masks"
+}

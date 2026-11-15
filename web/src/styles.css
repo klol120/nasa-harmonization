@@ -1114,3 +1114,24 @@ kbd {
   .palette-foot span:last-child { display: none; }
 }
 html[data-motion="off"] .sk { animation: none; }
+
+/* ---- live pipeline badge ---- */
+.live { position: relative; flex-shrink: 0; }
+.live-pill { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; border-radius: 999px; border: 0.5px solid color-mix(in srgb, var(--green) 45%, transparent); background: color-mix(in srgb, var(--green) 12%, transparent); color: var(--text); font-size: 12px; cursor: pointer; white-space: nowrap; }
+.live-pill:hover { border-color: var(--green); }
+.live-pill b { font-weight: 600; letter-spacing: 0.02em; }
+.live-text { color: var(--muted); }
+.live-dot { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+.live-dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--green); animation: ring 2s ease-out infinite; }
+.live.is-fresh .live-pill { border-color: var(--green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 22%, transparent); transition: box-shadow 0.3s; }
+.live.is-demo .live-pill { border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.live.is-demo .live-dot, .live.is-demo .live-dot::after { background: var(--accent); border-color: var(--accent); }
+.live-pop { position: absolute; top: 42px; right: 0; z-index: 60; width: 330px; max-width: calc(100vw - 24px); padding: 14px 16px; border-radius: 18px; background: var(--glass-strong); backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur)); border: 0.5px solid var(--glass-rim); box-shadow: var(--glass-shadow); }
+.live-pop-title { margin: 0 0 10px; font-size: 14px; font-weight: 600; }
+.live-pop dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; margin: 0 0 10px; font-size: 12px; }
+.live-pop dt { color: var(--muted); }
+.live-pop dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.live-note { margin: 0 0 10px; font-size: 11px; line-height: 1.45; color: var(--muted); }
+@media (max-width: 1640px) {
+  .live-text { display: none; }
+}

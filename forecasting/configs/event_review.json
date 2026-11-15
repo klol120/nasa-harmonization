@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "event_id": "beirut-port-2020-08-04",
+      "event": "Beirut port explosion, 4 August 2020",
+      "center_lat": 33.901,
+      "center_lon": 35.519,
+      "provisional_radius_km": 3,
+      "provisional_start_utc": "2020-08-04T14:00:00Z",
+      "provisional_end_utc": "2020-08-05T18:00:00Z",
+      "confidence": "uncertain",
+      "reference_portals": [
+        "https://firms.modaps.eosdis.nasa.gov/country/"
+      ],
+      "status": "Historical NASA FIRMS public country files queried; one S-NPP spatial-temporal match; causation unverified",
+      "detections_found": 1,
+      "rationale": "Provisional review window covers event timing and subsequent satellite overpasses; final window needs authoritative timing, acquisition footprints and geolocation uncertainty.",
+      "action": "Review acquisition footprint and source-specific type/confidence; test radius/time sensitivity. Do not assume the explosion caused the detection or automatically exclude it.",
+      "matches": [
+        {
+          "product": "viirs-snpp",
+          "source_url": "https://firms.modaps.eosdis.nasa.gov/data/country/viirs-snpp/2020/viirs-snpp_2020_Lebanon.csv",
+          "detected_at": "2020-08-04T23:35:00Z",
+          "lat": 33.90074,
+          "lon": 35.52045,
+          "distance_km": 0.136911
+        }
+      ]
+    }
+  ]
+}

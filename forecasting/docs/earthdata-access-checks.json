@@ -1,0 +1,27 @@
+[
+  {
+    "product": "VNP14IMG",
+    "status": 403,
+    "url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019213.0012.002.2024094200802/VNP14IMG.A2019213.0012.002.2024094200802.nc"
+  },
+  {
+    "product": "VNP14A1",
+    "status": 403,
+    "url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14A1.002/VNP14A1.A2019213.h21v05.002.2022356071123/VNP14A1.A2019213.h21v05.002.2022356071123.h5"
+  },
+  {
+    "product": "MCD12Q1",
+    "status": 403,
+    "url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MCD12Q1.061/MCD12Q1.A2019001.h21v05.061.2022169193259/MCD12Q1.A2019001.h21v05.061.2022169193259.hdf"
+  },
+  {
+    "product": "MOD13Q1",
+    "status": 403,
+    "url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD13Q1.061/MOD13Q1.A2019209.h20v05.061.2020304165641/MOD13Q1.A2019209.h20v05.061.2020304165641.hdf"
+  },
+  {
+    "product": "SRTMGL1",
+    "status": 403,
+    "url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N34E035.SRTMGL1.hgt/N34E035.SRTMGL1.hgt.zip"
+  }
+]

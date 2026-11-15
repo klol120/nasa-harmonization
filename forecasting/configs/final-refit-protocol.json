@@ -1,0 +1,19 @@
+{
+  "fixed_before_manual_confirmation_review": true,
+  "base_selection_sha256": "c61ccde48b86aa840a88c26e8e97e5c7858e4146f3f28f9b8f43530d4802fc2a",
+  "fixed_transfer_id": "strict-neural_64_32-ensemble-0.75",
+  "source_and_local_fit_period": "2018 through 2024, same geographic holdouts and conflict exclusions",
+  "calibration_period": "2025, natural prevalence; same boundary gaps",
+  "family_architecture_mixture_and_optimizer_settings": "Copy exactly from validation-selected artifacts; no new search or test-driven changes",
+  "evaluation": [
+    "Matching-family global source before adaptation",
+    "Matching-family adapted global/local recipe",
+    "Matching-family local-only control",
+    "Fixed original Lebanese model"
+  ],
+  "global_confirmation": "New sampled 2026 temporal and geographic data; not yet acquired",
+  "lebanon_confirmation": "Same fixed 2026 fold already scored automatically by the first frozen benchmark; not a new independent Lebanese test",
+  "outcome_review": "No numerical 2026 outcomes have been manually reviewed before fixing this refit protocol",
+  "selection_rule": "No confirmation score chooses or changes the refit recipe",
+  "production_approved": false
+}

@@ -17,6 +17,9 @@ pipeline/  python -m firecal all --region R      ->  pipeline/data/export/{regio
 backend/   python -m firecal_api.cli ingest       <-  pipeline/data/export (default EXPORT_DIR)
            (checks every contract rule, then loads into PostgreSQL)
 web/       VITE_API_URL=http://127.0.0.1:8000     <-  backend API
+
+live       NASA FIRMS API -> poller (schedule) -> Azure Event Hubs -> consumer -> live tables -> API ?live=1
+           (the days after an export's last day of data, with the pipeline's rules; functions/, backend/firecal_api/live/)
 ```
 
 | folder | what | read first |
@@ -25,7 +28,9 @@ web/       VITE_API_URL=http://127.0.0.1:8000     <-  backend API
 | [`data_contract.md`](data_contract.md) | units, flags and rules of the exported data | |
 | [`backend/`](backend/README.md) | FastAPI + PostgreSQL: database, ingest, API, accounts, alerts, tests | `backend/README.md` |
 | [`web/`](web/README.md) | the website / desktop app (React + MapLibre + ECharts, also an Electron app); reads only the backend API | `web/README.md` |
-| [`infra/azure/`](infra/azure) | one-time setup for GitHub → Azure deploys | |
+| [`forecasting/`](forecasting/README.md) | isolated research pipeline (Ali): next-24-hour satellite-detected fire occurrence in Lebanon, NASA-only inputs, global pretraining, conflict-filtered evaluation. Not approved for operational use. | `forecasting/README.md` |
+| [`functions/`](functions/README.md) | the live pipeline's two Azure Functions: a poller that reads new NASA FIRMS detections on a schedule and a consumer that harmonizes them (rules in `backend/firecal_api/live/`) | `functions/README.md` |
+| [`infra/azure/`](infra/azure) | one-time setup for GitHub → Azure deploys and for the live pipeline | |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | branches, pull requests, how deploys work | |
 
 - **Shared exports.** The exports in git are `pipeline/data/export/*`: `meta.json`, `region_monthly.json`,
@@ -36,30 +41,12 @@ web/       VITE_API_URL=http://127.0.0.1:8000     <-  backend API
 
 ## Run it locally
 
-**With Docker** (pipeline, database, API and website in one go):
+**With Docker** (database, API and website in one go; mounts `pipeline/data/export` and loads it on first start):
 
 ```sh
-cp .env.example .env        # optional settings (FIRMS key, Google sign-in, email); works as is
+cp .env.example .env        # optional settings (Google sign-in, email); works as is
 docker compose up --build   # website http://localhost:5173 · API http://localhost:8010/docs
 ```
-
-What happens on every `docker compose up`:
-
-```
-pipeline-seed  copies the exports committed in git into the `pipeline-data` volume (seconds)
-     ├─► api       loads them and serves the website right away
-     └─► pipeline  NASA FIRMS up to yesterday → every region recomputed → new exports in the volume
-                   → writes pipeline_status.json → the api sees it and loads the new releases (no restart)
-```
-
-- The pipeline needs `FIRMS_MAP_KEY` in `.env` ([free key](https://firms.modaps.eosdis.nasa.gov/api/map_key/)).
-  Without it, or with `PIPELINE_RUN=0`, the site serves the committed exports.
-- The **first run** downloads every FIRMS archive (2000–2025) and this year's data through the area API: about
-  an hour. Downloads stay in the volume, so later runs fetch only the new days and then recompute.
-- `config.yaml`'s `coverage` is extended to what FIRMS reports as available (inside the container only), so
-  new months show up as data, not as "no data". S-NPP stays capped at the day it stopped sending data.
-- Follow it with `docker compose logs -f pipeline`; the last run's summary is `pipeline_status.json` in the volume.
-- `docker compose down -v` deletes the volume (and the database): the next start downloads everything again.
 
 **Without Docker** (needs PostgreSQL, [uv](https://docs.astral.sh/uv/) and Node 22):
 

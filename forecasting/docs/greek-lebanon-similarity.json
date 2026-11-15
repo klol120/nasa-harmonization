@@ -1,0 +1,595 @@
+{
+  "purpose": "Exploratory environmental similarity, not fire-model performance or evidence of transfer benefit",
+  "period": [
+    "2018-01-01",
+    "2021-01-01"
+  ],
+  "weighting": "Equal eligible grid cells; nearest NASA POWER point; no ocean point without an assigned cell",
+  "profiles": {
+    "greece": {
+      "summary": {
+        "eligible_cells": 326,
+        "used_weather_points": 16,
+        "development_point_days": 17536,
+        "annual_temperature_c": 16.34385114862747,
+        "annual_rain_mm": 723.8378118609407,
+        "summer_rain_mm": 105.83414110429449,
+        "winter_rain_mm": 283.94298568507156,
+        "summer_temperature_c": 25.24892164903871,
+        "winter_temperature_c": 7.820409780167121,
+        "elevation_m_mean": 463.11641741434414,
+        "slope_deg_mean": 13.711764919517483,
+        "vegetation_fraction_mean": 0.8243684286627971,
+        "elevation_m_std": 355.0953558093611,
+        "slope_deg_std": 4.952081001131126,
+        "vegetation_fraction_std": 0.2752975212451211
+      },
+      "monthly": [
+        {
+          "month": 1,
+          "temperature_c": 6.52141368164127,
+          "maximum_temperature_c": 10.153164126921299,
+          "humidity_pct": 81.89852694768784,
+          "monthly_rain_mm": 89.53748466257669
+        },
+        {
+          "month": 2,
+          "temperature_c": 7.884509240230893,
+          "maximum_temperature_c": 11.69368391560136,
+          "humidity_pct": 82.36384152084781,
+          "monthly_rain_mm": 75.33832310838446
+        },
+        {
+          "month": 3,
+          "temperature_c": 10.46484497658157,
+          "maximum_temperature_c": 15.246360577874531,
+          "humidity_pct": 77.39853024605844,
+          "monthly_rain_mm": 93.91749488752555
+        },
+        {
+          "month": 4,
+          "temperature_c": 13.5147978868439,
+          "maximum_temperature_c": 18.202923653715064,
+          "humidity_pct": 72.09035787321062,
+          "monthly_rain_mm": 48.02005112474438
+        },
+        {
+          "month": 5,
+          "temperature_c": 18.48565670558744,
+          "maximum_temperature_c": 23.7984972623524,
+          "humidity_pct": 64.89147206280097,
+          "monthly_rain_mm": 24.44708588957055
+        },
+        {
+          "month": 6,
+          "temperature_c": 23.40067450579414,
+          "maximum_temperature_c": 28.615454669393326,
+          "humidity_pct": 57.27814587593729,
+          "monthly_rain_mm": 45.638006134969324
+        },
+        {
+          "month": 7,
+          "temperature_c": 26.22496668645689,
+          "maximum_temperature_c": 31.543156540668907,
+          "humidity_pct": 52.13373837324361,
+          "monthly_rain_mm": 25.906748466257667
+        },
+        {
+          "month": 8,
+          "temperature_c": 26.121123754865096,
+          "maximum_temperature_c": 31.304702486971436,
+          "humidity_pct": 51.90008542779867,
+          "monthly_rain_mm": 34.28938650306749
+        },
+        {
+          "month": 9,
+          "temperature_c": 22.64752556237219,
+          "maximum_temperature_c": 27.905320040899795,
+          "humidity_pct": 58.497449216087254,
+          "monthly_rain_mm": 53.40687116564417
+        },
+        {
+          "month": 10,
+          "temperature_c": 18.06941486905469,
+          "maximum_temperature_c": 23.25847351408404,
+          "humidity_pct": 69.87042581964509,
+          "monthly_rain_mm": 30.934948875255625
+        },
+        {
+          "month": 11,
+          "temperature_c": 13.242978527607363,
+          "maximum_temperature_c": 16.98353783231084,
+          "humidity_pct": 80.00817552828902,
+          "monthly_rain_mm": 83.33423312883434
+        },
+        {
+          "month": 12,
+          "temperature_c": 9.055306418629197,
+          "maximum_temperature_c": 12.43565736526156,
+          "humidity_pct": 83.47042219143745,
+          "monthly_rain_mm": 119.06717791411042
+        }
+      ]
+    },
+    "southern_turkey": {
+      "summary": {
+        "eligible_cells": 333,
+        "used_weather_points": 16,
+        "development_point_days": 17536,
+        "annual_temperature_c": 13.564749183490058,
+        "annual_rain_mm": 655.4994494494495,
+        "summer_rain_mm": 67.5488888888889,
+        "winter_rain_mm": 361.6446546546547,
+        "summer_temperature_c": 23.094014451727713,
+        "winter_temperature_c": 3.632784607002256,
+        "elevation_m_mean": 1017.3753560641102,
+        "slope_deg_mean": 12.80148334701706,
+        "vegetation_fraction_mean": 0.9373341605493032,
+        "elevation_m_std": 475.5889166980207,
+        "slope_deg_std": 5.20416728704144,
+        "vegetation_fraction_std": 0.16423125544770642
+      },
+      "monthly": [
+        {
+          "month": 1,
+          "temperature_c": 1.961445316284026,
+          "maximum_temperature_c": 6.693277471019407,
+          "humidity_pct": 81.73464916529433,
+          "monthly_rain_mm": 137.47914914914915
+        },
+        {
+          "month": 2,
+          "temperature_c": 4.151433675054365,
+          "maximum_temperature_c": 9.319881063329339,
+          "humidity_pct": 79.84654219490426,
+          "monthly_rain_mm": 76.29097097097097
+        },
+        {
+          "month": 3,
+          "temperature_c": 7.251954535180342,
+          "maximum_temperature_c": 13.404614291711065,
+          "humidity_pct": 71.92798734218088,
+          "monthly_rain_mm": 52.70984984984985
+        },
+        {
+          "month": 4,
+          "temperature_c": 11.365499165832498,
+          "maximum_temperature_c": 17.55559025692359,
+          "humidity_pct": 64.61271638304972,
+          "monthly_rain_mm": 28.502352352352357
+        },
+        {
+          "month": 5,
+          "temperature_c": 16.610353902289386,
+          "maximum_temperature_c": 22.774751848622817,
+          "humidity_pct": 58.55620652910975,
+          "monthly_rain_mm": 41.72084084084084
+        },
+        {
+          "month": 6,
+          "temperature_c": 20.205926593259925,
+          "maximum_temperature_c": 26.328652318985657,
+          "humidity_pct": 57.89446012679347,
+          "monthly_rain_mm": 51.1488888888889
+        },
+        {
+          "month": 7,
+          "temperature_c": 24.373902935193257,
+          "maximum_temperature_c": 31.64273789918951,
+          "humidity_pct": 44.178957344441216,
+          "monthly_rain_mm": 6.4478978978978985
+        },
+        {
+          "month": 8,
+          "temperature_c": 24.70221382672996,
+          "maximum_temperature_c": 32.117223675288194,
+          "humidity_pct": 41.7219270883787,
+          "monthly_rain_mm": 9.952102102102101
+        },
+        {
+          "month": 9,
+          "temperature_c": 21.6213953953954,
+          "maximum_temperature_c": 29.02362362362362,
+          "humidity_pct": 45.603848181514856,
+          "monthly_rain_mm": 15.943553553553555
+        },
+        {
+          "month": 10,
+          "temperature_c": 15.950851496657947,
+          "maximum_temperature_c": 22.84365752849624,
+          "humidity_pct": 56.43212276792921,
+          "monthly_rain_mm": 34.192232232232236
+        },
+        {
+          "month": 11,
+          "temperature_c": 9.261557223890556,
+          "maximum_temperature_c": 15.585394728061395,
+          "humidity_pct": 67.29871438104772,
+          "monthly_rain_mm": 53.23707707707708
+        },
+        {
+          "month": 12,
+          "temperature_c": 4.785474829668377,
+          "maximum_temperature_c": 9.61841325196164,
+          "humidity_pct": 81.00855662113726,
+          "monthly_rain_mm": 147.87453453453452
+        }
+      ]
+    },
+    "portugal": {
+      "summary": {
+        "eligible_cells": 393,
+        "used_weather_points": 16,
+        "development_point_days": 17536,
+        "annual_temperature_c": 16.00135691201872,
+        "annual_rain_mm": 792.7296607294317,
+        "summer_rain_mm": 33.181653944020354,
+        "winter_rain_mm": 185.47684478371502,
+        "summer_temperature_c": 22.948883006375002,
+        "winter_temperature_c": 9.220810472914401,
+        "elevation_m_mean": 207.37671682146714,
+        "slope_deg_mean": 5.324689950705532,
+        "vegetation_fraction_mean": 0.9841142132308961,
+        "elevation_m_std": 121.26037238688154,
+        "slope_deg_std": 2.695170752216751,
+        "vegetation_fraction_std": 0.08591477032869946
+      },
+      "monthly": [
+        {
+          "month": 1,
+          "temperature_c": 8.183480806588415,
+          "maximum_temperature_c": 13.890079619141426,
+          "humidity_pct": 84.85049440477167,
+          "monthly_rain_mm": 58.998625954198474
+        },
+        {
+          "month": 2,
+          "temperature_c": 9.846900761269675,
+          "maximum_temperature_c": 16.233614025411864,
+          "humidity_pct": 78.84374216063541,
+          "monthly_rain_mm": 33.07217133163698
+        },
+        {
+          "month": 3,
+          "temperature_c": 11.521630413964814,
+          "maximum_temperature_c": 17.367261758187638,
+          "humidity_pct": 77.55329858546061,
+          "monthly_rain_mm": 128.61924512298557
+        },
+        {
+          "month": 4,
+          "temperature_c": 13.405919423240036,
+          "maximum_temperature_c": 18.77187390443879,
+          "humidity_pct": 78.90942324003393,
+          "monthly_rain_mm": 121.03424088210348
+        },
+        {
+          "month": 5,
+          "temperature_c": 18.17281786095379,
+          "maximum_temperature_c": 24.93129251142302,
+          "humidity_pct": 68.6465900571835,
+          "monthly_rain_mm": 48.754418999151824
+        },
+        {
+          "month": 6,
+          "temperature_c": 19.863235793044954,
+          "maximum_temperature_c": 26.977890585241727,
+          "humidity_pct": 64.83189341249647,
+          "monthly_rain_mm": 19.562468193384223
+        },
+        {
+          "month": 7,
+          "temperature_c": 24.1906013844428,
+          "maximum_temperature_c": 32.59488877944677,
+          "humidity_pct": 56.00502448767407,
+          "monthly_rain_mm": 6.398244274809161
+        },
+        {
+          "month": 8,
+          "temperature_c": 24.792811841637256,
+          "maximum_temperature_c": 33.74830911926455,
+          "humidity_pct": 51.06285096719472,
+          "monthly_rain_mm": 7.220941475826971
+        },
+        {
+          "month": 9,
+          "temperature_c": 23.100813118461975,
+          "maximum_temperature_c": 31.068996041843373,
+          "humidity_pct": 52.86999378003958,
+          "monthly_rain_mm": 21.635436810856657
+        },
+        {
+          "month": 10,
+          "temperature_c": 16.668867821281022,
+          "maximum_temperature_c": 23.525062518810362,
+          "humidity_pct": 69.0188314317765,
+          "monthly_rain_mm": 108.72911789652248
+        },
+        {
+          "month": 11,
+          "temperature_c": 12.237333616058805,
+          "maximum_temperature_c": 16.910135990952785,
+          "humidity_pct": 86.59506219960419,
+          "monthly_rain_mm": 145.29870229007633
+        },
+        {
+          "month": 12,
+          "temperature_c": 9.632049850885112,
+          "maximum_temperature_c": 14.540150756518647,
+          "humidity_pct": 87.9453142356836,
+          "monthly_rain_mm": 93.40604749787956
+        }
+      ]
+    },
+    "morocco": {
+      "summary": {
+        "eligible_cells": 400,
+        "used_weather_points": 16,
+        "development_point_days": 17536,
+        "annual_temperature_c": 16.880195027372263,
+        "annual_rain_mm": 628.2970833333334,
+        "summer_rain_mm": 19.340416666666666,
+        "winter_rain_mm": 169.04041666666666,
+        "summer_temperature_c": 24.719925776583036,
+        "winter_temperature_c": 9.832004169646167,
+        "elevation_m_mean": 1043.5482688731934,
+        "slope_deg_mean": 9.777865911949815,
+        "vegetation_fraction_mean": 0.9591643526597201,
+        "elevation_m_std": 633.1765978248172,
+        "slope_deg_std": 5.613577762452011,
+        "vegetation_fraction_std": 0.14103099133087726
+      },
+      "monthly": [
+        {
+          "month": 1,
+          "temperature_c": 8.143138440860215,
+          "maximum_temperature_c": 14.839247311827956,
+          "humidity_pct": 67.85765456989247,
+          "monthly_rain_mm": 67.3875
+        },
+        {
+          "month": 2,
+          "temperature_c": 10.52221546592775,
+          "maximum_temperature_c": 18.103377463054187,
+          "humidity_pct": 61.74038536535304,
+          "monthly_rain_mm": 41.93541666666667
+        },
+        {
+          "month": 3,
+          "temperature_c": 12.180456989247313,
+          "maximum_temperature_c": 18.891129032258068,
+          "humidity_pct": 69.08435483870967,
+          "monthly_rain_mm": 137.83291666666668
+        },
+        {
+          "month": 4,
+          "temperature_c": 13.852256944444443,
+          "maximum_temperature_c": 20.638930555555557,
+          "humidity_pct": 70.20472916666667,
+          "monthly_rain_mm": 78.293125
+        },
+        {
+          "month": 5,
+          "temperature_c": 18.511202956989248,
+          "maximum_temperature_c": 26.078131720430108,
+          "humidity_pct": 60.961028225806444,
+          "monthly_rain_mm": 26.848125
+        },
+        {
+          "month": 6,
+          "temperature_c": 20.87538888888889,
+          "maximum_temperature_c": 28.980979166666668,
+          "humidity_pct": 57.798986111111105,
+          "monthly_rain_mm": 4.767083333333334
+        },
+        {
+          "month": 7,
+          "temperature_c": 26.186626344086022,
+          "maximum_temperature_c": 34.72573252688172,
+          "humidity_pct": 45.15580645161291,
+          "monthly_rain_mm": 2.471041666666667
+        },
+        {
+          "month": 8,
+          "temperature_c": 27.097762096774193,
+          "maximum_temperature_c": 35.62172043010752,
+          "humidity_pct": 41.974758064516124,
+          "monthly_rain_mm": 12.102291666666666
+        },
+        {
+          "month": 9,
+          "temperature_c": 23.519680555555556,
+          "maximum_temperature_c": 31.168458333333337,
+          "humidity_pct": 50.55007638888889,
+          "monthly_rain_mm": 56.646458333333335
+        },
+        {
+          "month": 10,
+          "temperature_c": 17.72918682795699,
+          "maximum_temperature_c": 24.88590053763441,
+          "humidity_pct": 58.69284946236559,
+          "monthly_rain_mm": 78.234375
+        },
+        {
+          "month": 11,
+          "temperature_c": 12.644402777777778,
+          "maximum_temperature_c": 18.920458333333332,
+          "humidity_pct": 69.67390972222222,
+          "monthly_rain_mm": 62.061249999999994
+        },
+        {
+          "month": 12,
+          "temperature_c": 10.830658602150537,
+          "maximum_temperature_c": 17.569845430107527,
+          "humidity_pct": 69.77489247311827,
+          "monthly_rain_mm": 59.7175
+        }
+      ]
+    },
+    "lebanon": {
+      "summary": {
+        "eligible_cells": 124,
+        "used_weather_points": 9,
+        "development_point_days": 9864,
+        "annual_temperature_c": 16.39755459736284,
+        "annual_rain_mm": 467.00284946236553,
+        "summer_rain_mm": 8.460295698924732,
+        "winter_rain_mm": 310.3363440860215,
+        "summer_temperature_c": 24.376601871121903,
+        "winter_temperature_c": 7.366123704041641,
+        "elevation_m_mean": 945.4611417097786,
+        "slope_deg_mean": 12.353577523595701,
+        "vegetation_fraction_mean": 0.9213593326280813,
+        "elevation_m_std": 599.3821179580477,
+        "slope_deg_std": 4.629665260979659,
+        "vegetation_fraction_std": 0.1755910177232207
+      },
+      "monthly": [
+        {
+          "month": 1,
+          "temperature_c": 5.880266215747485,
+          "maximum_temperature_c": 10.485096253902187,
+          "humidity_pct": 81.53355879292404,
+          "monthly_rain_mm": 141.48284946236558
+        },
+        {
+          "month": 2,
+          "temperature_c": 7.527640102759679,
+          "maximum_temperature_c": 12.681646075003973,
+          "humidity_pct": 77.11253913078023,
+          "monthly_rain_mm": 64.2355376344086
+        },
+        {
+          "month": 3,
+          "temperature_c": 10.458911723898716,
+          "maximum_temperature_c": 16.422243322927503,
+          "humidity_pct": 72.16614810960805,
+          "monthly_rain_mm": 44.4133064516129
+        },
+        {
+          "month": 4,
+          "temperature_c": 13.452732974910392,
+          "maximum_temperature_c": 19.79662275985663,
+          "humidity_pct": 65.52281541218638,
+          "monthly_rain_mm": 28.168387096774193
+        },
+        {
+          "month": 5,
+          "temperature_c": 19.733727020464794,
+          "maximum_temperature_c": 26.97472771418661,
+          "humidity_pct": 52.593693201526186,
+          "monthly_rain_mm": 11.10021505376344
+        },
+        {
+          "month": 6,
+          "temperature_c": 22.585586917562722,
+          "maximum_temperature_c": 30.152431899641574,
+          "humidity_pct": 51.54317383512544,
+          "monthly_rain_mm": 7.260887096774193
+        },
+        {
+          "month": 7,
+          "temperature_c": 25.424960978147766,
+          "maximum_temperature_c": 33.381746444675684,
+          "humidity_pct": 46.2428243149497,
+          "monthly_rain_mm": 1.106290322580645
+        },
+        {
+          "month": 8,
+          "temperature_c": 25.11925771765522,
+          "maximum_temperature_c": 33.069926292056884,
+          "humidity_pct": 50.831835761359685,
+          "monthly_rain_mm": 0.09311827956989245
+        },
+        {
+          "month": 9,
+          "temperature_c": 24.326898745519713,
+          "maximum_temperature_c": 32.35193100358423,
+          "humidity_pct": 48.781663082437284,
+          "monthly_rain_mm": 2.4383870967741936
+        },
+        {
+          "month": 10,
+          "temperature_c": 20.022360388484216,
+          "maximum_temperature_c": 27.187219042663887,
+          "humidity_pct": 52.330673777315305,
+          "monthly_rain_mm": 10.960376344086022
+        },
+        {
+          "month": 11,
+          "temperature_c": 13.049841397849463,
+          "maximum_temperature_c": 18.890247311827952,
+          "humidity_pct": 66.2216899641577,
+          "monthly_rain_mm": 51.1255376344086
+        },
+        {
+          "month": 12,
+          "temperature_c": 8.690464793617759,
+          "maximum_temperature_c": 13.719805757891086,
+          "humidity_pct": 78.4155194242109,
+          "monthly_rain_mm": 104.61795698924732
+        }
+      ]
+    }
+  },
+  "distances": [
+    {
+      "region": "morocco",
+      "standardized_distance": 1.2740799579862192,
+      "block_distances": {
+        "temperature": 1.3374819567277914,
+        "rain": 1.7300661343177806,
+        "humidity": 1.4352825830175076,
+        "terrain_vegetation": 0.593489157881797
+      }
+    },
+    {
+      "region": "southern_turkey",
+      "standardized_distance": 1.2949645347432985,
+      "block_distances": {
+        "temperature": 2.5651497724477785,
+        "rain": 1.2570368682517135,
+        "humidity": 0.9813639965303754,
+        "terrain_vegetation": 0.376307501743327
+      }
+    },
+    {
+      "region": "greece",
+      "standardized_distance": 1.4600753904333206,
+      "block_distances": {
+        "temperature": 1.1455481166346826,
+        "rain": 1.7838192011334473,
+        "humidity": 1.7292977866812889,
+        "terrain_vegetation": 1.1816364572838636
+      }
+    },
+    {
+      "region": "portugal",
+      "standardized_distance": 1.994627965664061,
+      "block_distances": {
+        "temperature": 1.6047643329939256,
+        "rain": 2.1509179306152664,
+        "humidity": 2.350596958425264,
+        "terrain_vegetation": 1.8722326406217888
+      }
+    }
+  ],
+  "sources_sha256": {
+    "configs/greek-study-focus.json": "851ca1def7d46ca072b7db15eff6b99f3c459c7eae8ea056d727fccdf9f831cd",
+    "data/global-weather/weather.csv.gz": "88656b359d51b76874dc96fc2071f58709e01e675b6eb06349ea7742528d259c",
+    "data/nasa-lebanon/weather_historical.csv": "f4f0d4299c003672b63b588cc7f32948a2ed55ef78b8d27a2d7e4a195d85be40",
+    "data/global-panel/static/greece-cells.csv": "c852209a127767606602e51590e4d3ef2f476f9d3c89c073b815623568fbf27a",
+    "data/global-panel/static/southern_turkey-cells.csv": "663ab1a97ec681cd81f8a97d49164d27abab257a9d9015e77e3ded80869d7025",
+    "data/global-panel/static/portugal-cells.csv": "6e74daa66b4a27949e1d70e2958618caafe0be7494d130211124df0e4c55960e",
+    "data/global-panel/static/morocco-cells.csv": "79c69ad01887b0d9a532bd5398613e00e644282f9727897fbf2beaf41ab05f25",
+    "outputs/noaa20-real/cells.csv": "2f5ef9573e986e3dbd3a306ae14550dd13ad2d9a8cf2d910cb173ff714155985"
+  },
+  "fire_labels_or_test_metrics_read": false,
+  "limitations": [
+    "Three years of weather, not a long-term climate classification",
+    "Fixed two-degree panels do not represent whole countries",
+    "Coarse weather and reprocessed 2010 static layers",
+    "Distance weights are descriptive choices, not validated transfer weights",
+    "Greece remains held out in existing model artifacts; future inclusion changes the protocol"
+  ]
+}

@@ -71,6 +71,31 @@ export interface RegionWeather {
   months: WeatherMonth[];
 }
 
+/** State of the live pipeline for a region (/regions/{r}/live). */
+export interface LiveStatus {
+  region: string;
+  /** False until the pipeline has stored at least one month for the region. */
+  enabled: boolean;
+  demo: boolean;
+  /** A simulated replay is loaded and can be switched on. */
+  demo_available: boolean;
+  /** Changes whenever the region's live months change. */
+  version: string | null;
+  /** Last UTC day covered, "YYYY-MM-DD". */
+  through: string | null;
+  polled_at: string | null;
+  first_month: string | null;
+  last_month: string | null;
+  last_detection_at: string | null;
+  detections_24h: number;
+  harmonization: { version: string; placeholder: boolean };
+  source: string;
+  months: { ym: string; fire_days: number; harmonized: number; through: string; partial_month: boolean; sensors: Record<string, number>; detections: number }[];
+}
+
+export const getLive = (region: string, demo: boolean, signal?: AbortSignal) =>
+  getJson<LiveStatus>(`/regions/${encodeURIComponent(region)}/live${demo ? "?demo=1" : ""}`, { signal });
+
 export const getWeather = (region: string, signal?: AbortSignal) => getJson<RegionWeather>(`/regions/${encodeURIComponent(region)}/weather`, { signal });
 
 /** Name of the burning-outlook model (backend/firecal_api/outlook.py). */
@@ -193,12 +218,15 @@ export function apiSource(summary: RegionSummary): DataSource {
   const id = summary.region;
   const info = regionInfo(id);
   const q = `release=${summary.release_id}`;
+  // Months after the release's last day of data come from the live pipeline (live=1); demo adds a simulated replay.
+  let demo = false;
+  const lq = () => `${q}&live=1${demo ? "&demo=1" : ""}`;
   const base = `/regions/${encodeURIComponent(id)}`;
   let monthly: Promise<MonthRow[]> | null = null;
   let cells: Promise<Map<string, { lat: number; lon: number; persistent: boolean }>> | null = null;
   const series = new Map<number, Promise<SeriesFile>>();
 
-  const getMonthly = () => (monthly ??= getJson<MonthRow[]>(`${base}/monthly?${q}`));
+  const getMonthly = () => (monthly ??= getJson<MonthRow[]>(`${base}/monthly?${lq()}`));
   const getCells = () =>
     (cells ??= getJson<{ features: CellFeature[] }>(`${base}/cells?${q}`).then(
       (fc) => new Map(fc.features.map((f) => [f.properties.cell_id, { lat: f.properties.lat_center, lon: f.properties.lon_center, persistent: f.properties.is_persistent }])),
@@ -206,7 +234,7 @@ export function apiSource(summary: RegionSummary): DataSource {
   const getSeries = (year: number) => {
     let p = series.get(year);
     if (!p) {
-      p = getJson<SeriesFile>(`${base}/series/${year}?${q}`);
+      p = getJson<SeriesFile>(`${base}/series/${year}?${lq()}`);
       p.catch(() => series.delete(year)); // let a failed year be retried
       series.set(year, p);
     }
@@ -217,6 +245,12 @@ export function apiSource(summary: RegionSummary): DataSource {
     id: `api:${id}`,
     label: info.name,
     description: info.blurb,
+
+    refresh(opts) {
+      if (opts?.demo !== undefined) demo = opts.demo;
+      monthly = null;
+      for (const y of [...series.keys()]) if (opts?.fromYear === undefined || y >= opts.fromYear) series.delete(y);
+    },
 
     async load(): Promise<DatasetMeta> {
       const [m, rows] = await Promise.all([getJson<any>(`${base}/meta?${q}`), getMonthly()]);
@@ -281,7 +315,7 @@ export function apiSource(summary: RegionSummary): DataSource {
       }
       const body = { ...(aq.whole ? {} : areaBody(aq.area)), exclude_persistent: aq.excludePersistent };
       try {
-        const res = await getJson<{ n_cells: number; months: MonthRow[] }>(`${base}/aggregate?${q}`, {
+        const res = await getJson<{ n_cells: number; months: MonthRow[] }>(`${base}/aggregate?${lq()}`, {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(body),
