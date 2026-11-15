@@ -44,6 +44,8 @@ interface Props {
   /** Optional extras shown in the panel (email list) and the top-right corner (account). */
   extras?: React.ReactNode;
   corner?: React.ReactNode;
+  /** Opens the newcomer tour (on the first region). */
+  onTour?: () => void;
 }
 
 /**
@@ -84,7 +86,7 @@ const markerAt = (r: RegionSummary): [number, number] => regionInfo(r.region).ma
  * Landing view: a world map where the user picks a region the data server has.
  * Served regions pulse; the countries they cover can be clicked or searched.
  */
-export function WorldPicker({ regions, error, onRetry, onEnter, current, extras, corner }: Props) {
+export function WorldPicker({ regions, error, onRetry, onEnter, current, extras, corner, onTour }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
@@ -480,6 +482,12 @@ export function WorldPicker({ regions, error, onRetry, onEnter, current, extras,
         )}
 
         {extras}
+
+        {onTour && (
+          <button className="world-tour" onClick={onTour}>
+            <span aria-hidden>?</span> New here? Take the one-minute tour
+          </button>
+        )}
 
         <p className="world-foot">
           Or click a highlighted country on the map. Data: NASA FIRMS, harmonized by the Wel3a pipeline. ·{" "}

@@ -78,6 +78,8 @@ interface SidebarProps {
   /** Filter groups for the current page (area, time…), shown one at a time as tabs. */
   filters?: FilterTab[];
   account: React.ReactNode;
+  /** Opens the newcomer tour; absent until there is a region to show it on. */
+  onTour?: () => void;
   collapsed: boolean;
   onCollapse: (c: boolean) => void;
   mobileOpen: boolean;
@@ -106,6 +108,11 @@ export function AppSidebar(p: SidebarProps) {
               <small>Burning calendar</small>
             </span>
           </a>
+          {p.onTour && (
+            <button className="icon-btn sb-tour" onClick={p.onTour} aria-label="Take the tour" title="New here? Take the tour">
+              ?
+            </button>
+          )}
           <button className="icon-btn sb-collapse" onClick={() => p.onCollapse(!p.collapsed)} aria-label={p.collapsed ? "Expand sidebar" : "Collapse sidebar"} title={`${p.collapsed ? "Expand" : "Collapse"} sidebar (Ctrl+B)`}>
             <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
               <rect x="3" y="3.5" width="14" height="13" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />

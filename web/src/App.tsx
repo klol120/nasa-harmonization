@@ -45,6 +45,7 @@ import { MyAreasPanel } from "./account/MyAreasPanel";
 import { NewsletterForm } from "./account/NewsletterForm";
 import { SignInDialog } from "./account/SignInDialog";
 import { ChatWidget } from "./chat/ChatWidget";
+import { Tour, tourSeen } from "./components/Tour";
 import { type ViewState, buildChatContext, suggestionsFor } from "./chat/context";
 import {
   anomalies,
@@ -123,6 +124,9 @@ export default function App() {
   useEffect(() => savePref("wel3a.sidebar", sidebarCollapsed ? "collapsed" : "open"), [sidebarCollapsed]);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  // The newcomer tour: "wanted" until the Overview it walks through is on screen, then open.
+  const [tourWanted, setTourWanted] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
   // What the global shortcuts act on; refreshed every render so the listener never goes stale.
   const keys = useRef<{ step?: (months: number) => void }>({});
   useEffect(() => {
@@ -659,6 +663,34 @@ export default function App() {
   const dataPage = regionPage && ready && page !== "methods";
   keys.current.step = dataPage ? (d) => stepPeriod(Math.sign(d) * (Math.abs(d) === 12 && stepUnit === "month" ? 12 : 1)) : undefined;
 
+  // ---- newcomer tour ---------------------------------------------------
+  /** Opens the tour on the Overview of the open region, or of the first region when none is open. */
+  const startTour = () => {
+    setPaletteOpen(false);
+    setChatOpen(false);
+    setMobileNav(false);
+    if (!sourceId && sources[0]) setSourceId((sources.find((s) => s.id === "api:lebanon") ?? sources[0]).id);
+    if (page !== "overview") navigate("overview");
+    setTourWanted(true);
+  };
+  const overviewReady = ready && regionPage && onOverview && !loading;
+  // First visit: offer it once, the first time a region's Overview is on screen.
+  const tourOffered = useRef(false);
+  useEffect(() => {
+    if (!overviewReady || tourOffered.current) return;
+    tourOffered.current = true;
+    if (!tourSeen()) setTourWanted(true);
+  }, [overviewReady]);
+  // Open once the page has had a moment to lay out (the map and cards animate in).
+  useEffect(() => {
+    if (!tourWanted || !overviewReady) return;
+    const t = window.setTimeout(() => {
+      setTourWanted(false);
+      setTourOpen(true);
+    }, 900);
+    return () => window.clearTimeout(t);
+  }, [tourWanted, overviewReady]);
+
   // ---- assistant -------------------------------------------------------
   // What the assistant is told about the view. Kept in a ref and read when a question is sent,
   // so the answer always matches what is on screen at that moment.
@@ -724,6 +756,7 @@ export default function App() {
     for (const x of exportsList.filter((x) => !x.disabled)) cmd("Export", x.id, `Export ${x.label}`, () => void x.run(), { hint: x.hint, keywords: "download save csv png" });
   }
   cmd("Actions", "assistant", "Ask the assistant", () => setChatOpen(true), { keywords: "chat ai bot question help explain phoenical" });
+  if (sourceId || sources.length) cmd("Actions", "tour", "Take the tour", startTour, { keywords: "help tutorial guide intro onboarding how to use new walkthrough" });
   cmd("Actions", "sidebar", sidebarCollapsed ? "Expand the sidebar" : "Collapse the sidebar", () => setSidebarCollapsed(!sidebarCollapsed), { hint: `${MOD_KEY} B` });
   for (const t of ["light", "dark", "auto"] as const)
     cmd("Appearance", t, t === "auto" ? "Match the system appearance" : `${t === "light" ? "Light" : "Dark"} appearance`, () => setTheme(t), {
@@ -737,6 +770,7 @@ export default function App() {
       {paletteOpen && <CommandPalette open onClose={() => setPaletteOpen(false)} commands={commands} />}
       <SignInDialog />
       <ChatWidget open={chatOpen} onOpenChange={setChatOpen} getContext={getChatContext} scope={chatScope} suggestions={suggestionsFor(chatView)} />
+      {tourOpen && <Tour onClose={() => setTourOpen(false)} />}
       {loading && regionPage && <div className="loading-bar" aria-hidden />}
       {toast && (
         <div className="toast" role="status">
@@ -765,6 +799,7 @@ export default function App() {
         }
         filters={filters}
         account={<AccountMenu onFlash={flash} />}
+        onTour={sourceId || sources.length ? startTour : undefined}
         collapsed={sidebarCollapsed}
         onCollapse={setSidebarCollapsed}
         mobileOpen={mobileNav}
@@ -847,6 +882,7 @@ export default function App() {
         onRetry={() => setRegionsKey((k) => k + 1)}
         onEnter={enterRegion}
         current={sourceId?.startsWith("api:") ? sourceId.slice(4) : undefined}
+        onTour={sources.length ? startTour : undefined}
         extras={
           <div className="world-newsletter">
             <span className="eyebrow">Stay informed</span>
